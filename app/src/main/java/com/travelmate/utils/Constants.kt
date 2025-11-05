@@ -9,6 +9,8 @@ object Constants {
         const val AGENCY_REGISTRATION = "agency_registration"
         const val LOGIN = "login"
         const val HOME = "home"
+        const val USER_HOME = "user_home"
+        const val AGENCY_DASHBOARD = "agency_dashboard"
     }
     
     // SharedPreferences Keys

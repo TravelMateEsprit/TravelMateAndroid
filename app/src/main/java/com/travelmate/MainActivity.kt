@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.travelmate.data.socket.SocketService
 import com.travelmate.ui.navigation.NavGraph
 import com.travelmate.ui.theme.TravelMateTheme
+import com.travelmate.utils.UserPreferences
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -20,6 +21,9 @@ class MainActivity : ComponentActivity() {
     
     @Inject
     lateinit var socketService: SocketService
+    
+    @Inject
+    lateinit var userPreferences: UserPreferences
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +39,8 @@ class MainActivity : ComponentActivity() {
                     
                     NavGraph(
                         navController = navController,
-                        socketService = socketService
+                        socketService = socketService,
+                        userPreferences = userPreferences
                     )
                 }
             }
