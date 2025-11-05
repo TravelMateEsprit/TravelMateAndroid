@@ -1,0 +1,37 @@
+package com.travelmate.utils
+
+object Constants {
+    
+    // Navigation Routes
+    object Routes {
+        const val WELCOME = "welcome"
+        const val USER_REGISTRATION = "user_registration"
+        const val AGENCY_REGISTRATION = "agency_registration"
+        const val LOGIN = "login"
+        const val HOME = "home"
+    }
+    
+    // SharedPreferences Keys
+    object PrefsKeys {
+        const val AUTH_TOKEN = "auth_token"
+        const val USER_ID = "user_id"
+        const val USER_TYPE = "user_type"
+        const val USER_EMAIL = "user_email"
+    }
+    
+    // User Types
+    object UserTypes {
+        const val USER = "USER"
+        const val AGENCY = "AGENCY"
+        const val ADMIN = "ADMIN"
+    }
+    
+    // Date Formats
+    const val DATE_FORMAT = "yyyy-MM-dd"
+    const val DISPLAY_DATE_FORMAT = "dd/MM/yyyy"
+    
+    // Validation
+    const val MIN_PASSWORD_LENGTH = 8
+    const val SIRET_LENGTH = 14
+    const val POSTAL_CODE_LENGTH = 5
+}

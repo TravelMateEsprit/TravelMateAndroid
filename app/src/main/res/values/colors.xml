@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="travelmate_primary">#2F80ED</color>
+    <color name="travelmate_secondary">#56CCF2</color>
+    <color name="travelmate_accent">#F2C94C</color>
+    <color name="travelmate_background">#F9FAFB</color>
+    <color name="travelmate_text_primary">#1F2937</color>
+    <color name="travelmate_text_secondary">#6B7280</color>
+    
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>

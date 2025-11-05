@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">TravelMate</string>
+    
+    <!-- Welcome Screen -->
+    <string name="welcome_title">TravelMate</string>
+    <string name="connection_status_connected">Connecté au serveur</string>
+    <string name="connection_status_connecting">Connexion…</string>
+    <string name="connection_status_disconnected">Déconnecté</string>
+    <string name="btn_register_user">S\'inscrire en tant qu\'Utilisateur</string>
+    <string name="btn_register_agency">S\'inscrire en tant qu\'Agence</string>
+    <string name="btn_login">Se connecter</string>
+    
+    <!-- Registration Common -->
+    <string name="label_email">Email</string>
+    <string name="label_password">Mot de passe</string>
+    <string name="label_confirm_password">Confirmer le mot de passe</string>
+    <string name="error_invalid_email">Format email invalide</string>
+    <string name="error_weak_password">8 caractères min, 1 majuscule, 1 chiffre</string>
+    <string name="error_password_mismatch">Les mots de passe ne correspondent pas</string>
+    <string name="error_required_field">Champ obligatoire</string>
+    
+    <!-- User Registration -->
+    <string name="title_user_registration">Inscription Utilisateur</string>
+    <string name="label_first_name">Prénom</string>
+    <string name="label_last_name">Nom</string>
+    <string name="label_phone">Téléphone</string>
+    <string name="label_date_of_birth">Date de naissance</string>
+    <string name="btn_register">S\'inscrire</string>
+    
+    <!-- Agency Registration -->
+    <string name="title_agency_registration">Inscription Agence</string>
+    <string name="label_agency_name">Nom de l\'agence</string>
+    <string name="label_siret">SIRET</string>
+    <string name="label_address">Adresse</string>
+    <string name="label_city">Ville</string>
+    <string name="label_postal_code">Code postal</string>
+    <string name="label_country">Pays</string>
+    <string name="label_website">Site web</string>
+    <string name="label_description">Description</string>
+    <string name="label_legal_rep_first_name">Prénom du représentant légal</string>
+    <string name="label_legal_rep_last_name">Nom du représentant légal</string>
+    <string name="label_kbis_document">Document KBIS</string>
+    <string name="btn_next">Suivant</string>
+    <string name="btn_previous">Précédent</string>
+    <string name="btn_submit">Soumettre</string>
+    
+    <!-- Login -->
+    <string name="title_login">Connexion</string>
+    <string name="btn_login_submit">Se connecter</string>
+    
+    <!-- Error Messages -->
+    <string name="error_registration_failed">Échec de l\'inscription</string>
+    <string name="error_login_failed">Échec de la connexion</string>
+    <string name="error_network">Erreur réseau</string>
+    <string name="error_socket_disconnected">Socket déconnecté</string>
+    
+    <!-- Success Messages -->
+    <string name="success_registration">Inscription réussie !</string>
+    <string name="success_login">Connexion réussie !</string>
+</resources>
