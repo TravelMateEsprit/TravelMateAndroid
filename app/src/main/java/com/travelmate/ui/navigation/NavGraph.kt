@@ -14,21 +14,32 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.travelmate.data.socket.SocketService
+import com.travelmate.ui.screens.agency.AgencyDashboardScreen
 import com.travelmate.ui.screens.login.LoginScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
+import com.travelmate.ui.screens.user.UserHomeScreen
 import com.travelmate.ui.screens.welcome.WelcomeScreen
 import com.travelmate.utils.Constants
+import com.travelmate.utils.UserPreferences
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
     socketService: SocketService,
+    userPreferences: UserPreferences,
     modifier: Modifier = Modifier
 ) {
+    // Determine start destination based on login status and user type
+    val startDestination = when {
+        !userPreferences.isLoggedIn() -> Constants.Routes.WELCOME
+        userPreferences.isAgency() -> Constants.Routes.AGENCY_DASHBOARD
+        else -> Constants.Routes.USER_HOME
+    }
+    
     NavHost(
         navController = navController,
-        startDestination = Constants.Routes.WELCOME,
+        startDestination = startDestination,
         modifier = modifier
     ) {
         // Écran de bienvenue
@@ -81,10 +92,46 @@ fun NavGraph(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onLoginSuccess = {
-                    // TODO: Navigate to home screen when implemented
-                    navController.navigate(Constants.Routes.HOME) {
+                onLoginSuccess = { userType ->
+                    // Navigate based on user type from login response
+                    // Admin users cannot access mobile app
+                    val destination = when (userType.lowercase()) {
+                        "agence" -> Constants.Routes.AGENCY_DASHBOARD
+                        "admin" -> {
+                            // Admin should not access mobile app
+                            android.util.Log.w("NavGraph", "Admin login attempt - access denied")
+                            Constants.Routes.WELCOME
+                        }
+                        else -> Constants.Routes.USER_HOME
+                    }
+                    
+                    android.util.Log.d("NavGraph", "Login success, userType: $userType, navigating to: $destination")
+                    
+                    navController.navigate(destination) {
                         popUpTo(Constants.Routes.WELCOME) { inclusive = true }
+                    }
+                }
+            )
+        }
+        
+        // User Home screen with bottom navigation
+        composable(Constants.Routes.USER_HOME) {
+            UserHomeScreen(
+                onLogout = {
+                    navController.navigate(Constants.Routes.WELCOME) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+        
+        // Agency Dashboard
+        composable(Constants.Routes.AGENCY_DASHBOARD) {
+            AgencyDashboardScreen(
+                onLogout = {
+                    userPreferences.clearAll()
+                    navController.navigate(Constants.Routes.WELCOME) {
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )

@@ -2,6 +2,7 @@ package com.travelmate.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.travelmate.data.api.AuthApi
+import com.travelmate.data.api.InsuranceApi
 import com.travelmate.data.socket.SocketConfig
 import dagger.Module
 import dagger.Provides
@@ -61,5 +62,11 @@ object NetworkModule {
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi {
         return retrofit.create(AuthApi::class.java)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideInsuranceApi(retrofit: Retrofit): InsuranceApi {
+        return retrofit.create(InsuranceApi::class.java)
     }
 }

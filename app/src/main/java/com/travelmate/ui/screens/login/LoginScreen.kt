@@ -39,7 +39,7 @@ import com.travelmate.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(
     onNavigateBack: () -> Unit,
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (userType: String) -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -70,12 +70,23 @@ fun LoginScreen(
     
     // Gérer les changements d'état
     LaunchedEffect(uiState) {
-        when (uiState) {
+        when (val state = uiState) {
             is LoginUiState.Success -> {
-                showSuccessDialog = true
+                // Get user type from response
+                val userType = state.response.user?.userType ?: "user"
+                android.util.Log.d("LoginScreen", "Login successful, userType: $userType")
+                
+                // Check if admin is trying to login
+                if (userType.lowercase() == "admin") {
+                    errorMessage = "Les comptes administrateurs n'ont pas accès à l'application mobile. Veuillez utiliser l'interface web."
+                    showErrorDialog = true
+                    viewModel.resetState()
+                } else {
+                    showSuccessDialog = true
+                }
             }
             is LoginUiState.Error -> {
-                errorMessage = (uiState as LoginUiState.Error).message
+                errorMessage = state.message
                 showErrorDialog = true
             }
             else -> {}
@@ -84,6 +95,8 @@ fun LoginScreen(
     
     // Dialogue de succès modernisé
     if (showSuccessDialog) {
+        val userType = (uiState as? LoginUiState.Success)?.response?.user?.userType ?: "user"
+        
         AlertDialog(
             onDismissRequest = { },
             icon = {
@@ -114,7 +127,7 @@ fun LoginScreen(
                     onClick = {
                         showSuccessDialog = false
                         viewModel.resetState()
-                        onLoginSuccess()
+                        onLoginSuccess(userType)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )

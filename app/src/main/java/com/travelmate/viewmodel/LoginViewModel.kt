@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.travelmate.data.models.AuthResponse
 import com.travelmate.data.repository.AuthRepository
 import com.travelmate.data.socket.SocketService
+import com.travelmate.utils.UserPreferences
 import com.travelmate.utils.ValidationUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -22,7 +23,8 @@ sealed class LoginUiState {
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val socketService: SocketService,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
@@ -56,6 +58,27 @@ class LoginViewModel @Inject constructor(
                             Log.d("LoginViewModel", "Login success response: $response")
                             val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
                             val authResponse = json.decodeFromString<AuthResponse>(response)
+                            
+                            Log.d("LoginViewModel", "=== SAVING AUTH DATA ===")
+                            Log.d("LoginViewModel", "Access Token: ${authResponse.accessToken.take(20)}...")
+                            Log.d("LoginViewModel", "Refresh Token: ${authResponse.refreshToken.take(20)}...")
+                            Log.d("LoginViewModel", "User ID: ${authResponse.user?._id}")
+                            Log.d("LoginViewModel", "User Type: ${authResponse.user?.userType}")
+                            Log.d("LoginViewModel", "User Email: ${authResponse.user?.email}")
+                            
+                            // Save user data to preferences
+                            userPreferences.saveAuthResponse(
+                                authResponse.accessToken,
+                                authResponse.refreshToken,
+                                authResponse.user
+                            )
+                            
+                            // Verify saved data
+                            Log.d("LoginViewModel", "=== VERIFYING SAVED DATA ===")
+                            Log.d("LoginViewModel", "Saved Access Token: ${userPreferences.getAccessToken()?.take(20)}...")
+                            Log.d("LoginViewModel", "Saved User Type: ${userPreferences.getUserType()}")
+                            Log.d("LoginViewModel", "Saved User ID: ${userPreferences.getUserId()}")
+                            
                             _uiState.value = LoginUiState.Success(authResponse)
                         } catch (e: Exception) {
                             Log.e("LoginViewModel", "Parse error: ${e.message}")
