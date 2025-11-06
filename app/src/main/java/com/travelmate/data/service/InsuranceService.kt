@@ -9,12 +9,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class InsuranceService @Inject constructor(
     private val insuranceApi: InsuranceApi,
+    private val userService: UserService,
     @ApplicationContext private val context: Context
 ) {
     private val prefs: SharedPreferences = context.getSharedPreferences("travelmate_prefs", Context.MODE_PRIVATE)
@@ -320,16 +322,43 @@ class InsuranceService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
+            Log.d("InsuranceService", "=== GET INSURANCE SUBSCRIBERS ===")
+            Log.d("InsuranceService", "Insurance ID: $insuranceId")
+            
             val response = insuranceApi.getInsuranceSubscribers(insuranceId, getAuthToken())
+            Log.d("InsuranceService", "Response code: ${response.code()}")
+            
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val subscribersResponse = response.body()!!
+                Log.d("InsuranceService", "Insurance: ${subscribersResponse.insuranceName}")
+                Log.d("InsuranceService", "Subscribers count: ${subscribersResponse.subscribersCount}")
+                
+                // Le backend renvoie maintenant les objets User complets grâce à .populate()
+                val users = subscribersResponse.subscribers
+                
+                if (users.isEmpty()) {
+                    Log.d("InsuranceService", "No subscribers found")
+                } else {
+                    Log.d("InsuranceService", "Received ${users.size} subscribers with full details")
+                    users.forEachIndexed { index, user ->
+                        Log.d("InsuranceService", "[$index] ${user.email} - ${user.firstName ?: "N/A"} ${user.lastName ?: "N/A"} - Phone: ${user.phone ?: "N/A"}")
+                    }
+                }
+                
+                Result.success(users)
             } else {
-                val errorMsg = "Erreur lors du chargement des inscrits"
+                val errorBody = response.errorBody()?.string()
+                val errorMsg = "Erreur lors du chargement des inscrits - HTTP ${response.code()}: ${response.message()}"
+                Log.e("InsuranceService", errorMsg)
+                Log.e("InsuranceService", "Error body: $errorBody")
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
-            _error.value = e.message ?: "Erreur réseau"
+            val errorMsg = "Exception lors du chargement des inscrits: ${e.javaClass.simpleName} - ${e.message}"
+            Log.e("InsuranceService", errorMsg, e)
+            e.printStackTrace()
+            _error.value = errorMsg
             Result.failure(e)
         } finally {
             _isLoading.value = false

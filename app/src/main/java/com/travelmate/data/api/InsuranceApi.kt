@@ -60,5 +60,5 @@ interface InsuranceApi {
     suspend fun getInsuranceSubscribers(
         @Path("id") insuranceId: String,
         @Header("Authorization") token: String
-    ): Response<List<User>>
+    ): Response<InsuranceSubscribersResponse>
 }
