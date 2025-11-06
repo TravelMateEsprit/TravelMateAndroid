@@ -14,7 +14,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.travelmate.data.socket.SocketService
-import com.travelmate.ui.screens.agency.AgencyDashboardScreen
+import com.travelmate.ui.screens.agency.AgencyMainDashboard
+import com.travelmate.ui.screens.agency.InsuranceFormScreen
+import com.travelmate.ui.screens.agency.InsuranceSubscribersScreen
 import com.travelmate.ui.screens.login.LoginScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
@@ -127,12 +129,55 @@ fun NavGraph(
         
         // Agency Dashboard
         composable(Constants.Routes.AGENCY_DASHBOARD) {
-            AgencyDashboardScreen(
+            AgencyMainDashboard(
+                onNavigateToInsurances = {
+                    // Already in insurances section
+                },
+                onNavigateToInsuranceForm = {
+                    navController.navigate("insurance_form")
+                },
+                onEditInsurance = { insuranceId ->
+                    navController.navigate("insurance_form/$insuranceId")
+                },
+                onViewSubscribers = { insuranceId, insuranceName ->
+                    navController.navigate("insurance_subscribers/$insuranceId/$insuranceName")
+                },
                 onLogout = {
                     userPreferences.clearAll()
                     navController.navigate(Constants.Routes.WELCOME) {
                         popUpTo(0) { inclusive = true }
                     }
+                }
+            )
+        }
+        
+        // Insurance Form - Create
+        composable("insurance_form") {
+            InsuranceFormScreen(
+                insuranceId = null,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        // Insurance Form - Edit
+        composable("insurance_form/{insuranceId}") { backStackEntry ->
+            InsuranceFormScreen(
+                insuranceId = backStackEntry.arguments?.getString("insuranceId"),
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        // Insurance Subscribers
+        composable("insurance_subscribers/{insuranceId}/{insuranceName}") { backStackEntry ->
+            InsuranceSubscribersScreen(
+                insuranceId = backStackEntry.arguments?.getString("insuranceId") ?: "",
+                insuranceName = backStackEntry.arguments?.getString("insuranceName") ?: "",
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

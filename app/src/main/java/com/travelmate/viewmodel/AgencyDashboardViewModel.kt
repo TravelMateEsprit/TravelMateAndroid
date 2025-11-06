@@ -93,4 +93,6 @@ class AgencyDashboardViewModel @Inject constructor(
             }
         }
     }
+    
+    suspend fun getInsuranceSubscribers(insuranceId: String) = insuranceService.getInsuranceSubscribers(insuranceId)
 }

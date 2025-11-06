@@ -50,10 +50,6 @@ fun AgencyDashboardScreen(
             android.util.Log.e("AgencyDashboardScreen", "Error: $it")
         }
     }
-    
-    // Create / Edit dialog state
-    var showFormDialog by remember { mutableStateOf(false) }
-    var editingInsurance by remember { mutableStateOf<Insurance?>(null) }
 
     Scaffold(
         topBar = {
@@ -117,82 +113,13 @@ fun AgencyDashboardScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showFormDialog = true; editingInsurance = null },
+                onClick = onCreateInsurance,
                 containerColor = ColorPrimary
             ) {
                 Icon(Icons.Default.Add, "Ajouter", tint = androidx.compose.ui.graphics.Color.White)
             }
         }
     ) { paddingValues ->
-
-
-        if (showFormDialog) {
-            // form state
-            var name by remember { mutableStateOf(editingInsurance?.name ?: "") }
-            var description by remember { mutableStateOf(editingInsurance?.description ?: "") }
-            var priceText by remember { mutableStateOf(editingInsurance?.price?.toString() ?: "") }
-            var duration by remember { mutableStateOf(editingInsurance?.duration ?: "") }
-            var coverageText by remember { mutableStateOf(editingInsurance?.coverage?.joinToString(", ") ?: "") }
-
-            AlertDialog(
-                onDismissRequest = { showFormDialog = false; editingInsurance = null },
-                title = { Text(if (editingInsurance == null) "Créer une assurance" else "Modifier l'assurance") },
-                text = {
-                    Column {
-                        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nom") })
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Description") })
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(value = priceText, onValueChange = { priceText = it }, label = { Text("Prix") })
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(value = duration, onValueChange = { duration = it }, label = { Text("Durée (ex: 1 mois)") })
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(value = coverageText, onValueChange = { coverageText = it }, label = { Text("Couvertures (séparées par ,)") })
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        // basic validation
-                        val price = priceText.toDoubleOrNull() ?: 0.0
-                        val coverage = coverageText.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                        if (editingInsurance == null) {
-                            val req = com.travelmate.data.models.CreateInsuranceRequest(
-                                name = name,
-                                description = description,
-                                price = price,
-                                duration = duration,
-                                coverage = coverage,
-                                imageUrl = null,
-                                conditions = null,
-                                isActive = true
-                            )
-                            viewModel.createInsurance(req)
-                        } else {
-                            val req = com.travelmate.data.models.UpdateInsuranceRequest(
-                                name = name,
-                                description = description,
-                                price = price,
-                                duration = duration,
-                                coverage = coverage,
-                                imageUrl = null,
-                                conditions = null,
-                                isActive = editingInsurance?.isActive
-                            )
-                            viewModel.editInsurance(editingInsurance!!._id, req)
-                        }
-                        showFormDialog = false
-                        editingInsurance = null
-                    }) {
-                        Text("Valider")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showFormDialog = false; editingInsurance = null }) {
-                        Text("Annuler")
-                    }
-                }
-            )
-        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -263,7 +190,7 @@ fun AgencyDashboardScreen(
                         fontWeight = FontWeight.Bold,
                         color = ColorTextPrimary
                     )
-                    TextButton(onClick = { showFormDialog = true; editingInsurance = null }) {
+                    TextButton(onClick = onCreateInsurance) {
                         Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Ajouter")
@@ -353,7 +280,7 @@ fun AgencyDashboardScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             ModernButton(
                                 text = "Créer une assurance",
-                                onClick = { showFormDialog = true; editingInsurance = null }
+                                onClick = onCreateInsurance
                             )
                         }
                     }
@@ -362,10 +289,7 @@ fun AgencyDashboardScreen(
                 items(insurances) { insurance ->
                     AgencyInsuranceCard(
                             insurance = insurance,
-                            onEdit = {
-                                editingInsurance = insurance
-                                showFormDialog = true
-                            },
+                            onEdit = { onEditInsurance(insurance._id) },
                             onDelete = { viewModel.deleteInsurance(insurance._id) },
                             onToggleActive = { viewModel.toggleInsuranceActive(insurance._id, !insurance.isActive) },
                             onViewSubscribers = { /* TODO */ }
