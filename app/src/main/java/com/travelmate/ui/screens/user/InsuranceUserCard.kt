@@ -22,6 +22,7 @@ fun InsuranceUserCard(
     insurance: Insurance,
     onSubscribe: (String) -> Unit,
     onUnsubscribe: (String) -> Unit,
+    isInMySubscriptionsTab: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     ModernCard(
@@ -183,19 +184,32 @@ fun InsuranceUserCard(
         Spacer(modifier = Modifier.height(12.dp))
         
         // Action Button
-        if (insurance.isSubscribed) {
-            ModernButton(
-                text = "Se désinscrire",
-                onClick = { onUnsubscribe(insurance._id) },
-                backgroundColor = ColorTextSecondary,
-                modifier = Modifier.fillMaxWidth()
-            )
-        } else {
-            ModernButton(
-                text = "S'inscrire",
-                onClick = { onSubscribe(insurance._id) },
-                modifier = Modifier.fillMaxWidth()
-            )
+        when {
+            // Dans l'onglet "Mes inscriptions", toujours afficher "Se désinscrire"
+            isInMySubscriptionsTab -> {
+                ModernButton(
+                    text = "Se désinscrire",
+                    onClick = { onUnsubscribe(insurance._id) },
+                    backgroundColor = ColorTextSecondary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            // Dans l'onglet "Toutes les assurances", afficher selon le statut d'inscription
+            insurance.isSubscribed -> {
+                ModernButton(
+                    text = "Déjà inscrit",
+                    onClick = { /* Aucune action */ },
+                    backgroundColor = ColorSuccess.copy(alpha = 0.7f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            else -> {
+                ModernButton(
+                    text = "S'inscrire",
+                    onClick = { onSubscribe(insurance._id) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

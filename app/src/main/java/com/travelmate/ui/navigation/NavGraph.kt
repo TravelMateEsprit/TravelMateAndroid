@@ -130,9 +130,6 @@ fun NavGraph(
         // Agency Dashboard
         composable(Constants.Routes.AGENCY_DASHBOARD) {
             AgencyMainDashboard(
-                onNavigateToInsurances = {
-                    // Already in insurances section
-                },
                 onNavigateToInsuranceForm = {
                     navController.navigate("insurance_form")
                 },

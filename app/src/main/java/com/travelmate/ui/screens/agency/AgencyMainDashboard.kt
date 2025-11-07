@@ -45,7 +45,6 @@ enum class DashboardSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgencyMainDashboard(
-    onNavigateToInsurances: () -> Unit,
     onNavigateToInsuranceForm: () -> Unit,
     onEditInsurance: (String) -> Unit,
     onViewSubscribers: (String, String) -> Unit,
@@ -243,7 +242,7 @@ fun AgencyMainDashboard(
                     DashboardSection.OVERVIEW -> OverviewSection(
                         stats = stats,
                         insurances = insurances,
-                        onNavigateToInsurances = onNavigateToInsurances,
+                        onNavigateToInsurances = { selectedSection = DashboardSection.INSURANCES },
                         onNavigateToInsuranceForm = onNavigateToInsuranceForm,
                         onSectionClick = { selectedSection = it }
                     )

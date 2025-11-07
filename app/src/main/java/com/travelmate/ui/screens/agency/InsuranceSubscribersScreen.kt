@@ -36,20 +36,30 @@ fun InsuranceSubscribersScreen(
     var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(insuranceId) {
-        android.util.Log.d("InsuranceSubscribers", "Loading subscribers for insurance: $insuranceId")
+        android.util.Log.d("InsuranceSubscribers", "=== LOADING SUBSCRIBERS SCREEN ===")
+        android.util.Log.d("InsuranceSubscribers", "Insurance ID: $insuranceId")
+        android.util.Log.d("InsuranceSubscribers", "Insurance Name: $insuranceName")
+        
         isLoading = true
         error = null
+        
         viewModel.getInsuranceSubscribers(insuranceId)
             .onSuccess { users ->
-                android.util.Log.d("InsuranceSubscribers", "Successfully loaded ${users.size} subscribers")
-                users.forEachIndexed { index, user ->
-                    android.util.Log.d("InsuranceSubscribers", "[$index] ${user.email} - ${user.firstName} ${user.lastName}")
+                android.util.Log.d("InsuranceSubscribers", "✓ Successfully loaded ${users.size} subscribers")
+                if (users.isEmpty()) {
+                    android.util.Log.w("InsuranceSubscribers", "⚠ Users list is EMPTY - will show 'Aucun inscrit'")
+                } else {
+                    users.forEachIndexed { index, user ->
+                        android.util.Log.d("InsuranceSubscribers", "  [$index] ${user.name} - ${user.email} - Phone: ${user.phone}")
+                    }
                 }
                 subscribers = users
                 isLoading = false
+                android.util.Log.d("InsuranceSubscribers", "State updated: subscribers.size=${users.size}, isLoading=false")
             }
             .onFailure { e ->
-                android.util.Log.e("InsuranceSubscribers", "Failed to load subscribers: ${e.message}", e)
+                android.util.Log.e("InsuranceSubscribers", "✗ Failed to load subscribers", e)
+                android.util.Log.e("InsuranceSubscribers", "Error message: ${e.message}")
                 error = e.message
                 isLoading = false
             }
@@ -230,8 +240,12 @@ fun SubscriberCard(user: User) {
                     .background(ColorPrimary.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
+                val initials = buildString {
+                    user.firstName?.firstOrNull()?.uppercase()?.let { append(it) }
+                    user.lastName?.firstOrNull()?.uppercase()?.let { append(it) }
+                }
                 Text(
-                    text = "${user.firstName?.firstOrNull()?.uppercase() ?: ""}${user.lastName?.firstOrNull()?.uppercase() ?: ""}",
+                    text = if (initials.isNotEmpty()) initials else user.email.firstOrNull()?.uppercase()?.toString() ?: "?",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = ColorPrimary
@@ -242,8 +256,14 @@ fun SubscriberCard(user: User) {
             
             // User Info
             Column(modifier = Modifier.weight(1f)) {
+                val displayName = when {
+                    !user.firstName.isNullOrBlank() && !user.lastName.isNullOrBlank() -> 
+                        "${user.firstName} ${user.lastName}"
+                    !user.name.isNullOrBlank() -> user.name
+                    else -> user.email
+                }
                 Text(
-                    "${user.firstName ?: ""} ${user.lastName ?: ""}".trim(),
+                    displayName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = ColorTextPrimary

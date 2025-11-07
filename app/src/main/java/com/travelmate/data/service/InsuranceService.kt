@@ -41,6 +41,13 @@ class InsuranceService @Inject constructor(
         return "Bearer $token"
     }
     
+    private fun updateInsurancesSubscriptionStatus() {
+        val subscribedIds = _mySubscriptions.value.map { it._id }.toSet()
+        _insurances.value = _insurances.value.map { insurance ->
+            insurance.copy(isSubscribed = subscribedIds.contains(insurance._id))
+        }
+    }
+    
     // ========== User Methods ==========
     
     suspend fun getAllInsurances(): Result<List<Insurance>> {
@@ -63,11 +70,19 @@ class InsuranceService @Inject constructor(
                 
                 if (body != null) {
                     Log.d("InsuranceService", "Received ${body.size} insurances")
-                    body.forEachIndexed { index, insurance ->
-                        Log.d("InsuranceService", "[$index] ${insurance.name} - ${insurance._id}")
+                    
+                    // Marquer les assurances auxquelles l'utilisateur est inscrit
+                    val subscribedIds = _mySubscriptions.value.map { it._id }.toSet()
+                    val insurancesWithStatus = body.map { insurance ->
+                        insurance.copy(isSubscribed = subscribedIds.contains(insurance._id))
                     }
-                    _insurances.value = body
-                    Result.success(body)
+                    
+                    insurancesWithStatus.forEachIndexed { index, insurance ->
+                        Log.d("InsuranceService", "[$index] ${insurance.name} - ${insurance._id} - Subscribed: ${insurance.isSubscribed}")
+                    }
+                    
+                    _insurances.value = insurancesWithStatus
+                    Result.success(insurancesWithStatus)
                 } else {
                     val errorMsg = "Response body is null"
                     Log.e("InsuranceService", errorMsg)
@@ -101,8 +116,14 @@ class InsuranceService @Inject constructor(
             val response = insuranceApi.getMySubscriptions(getAuthToken())
             if (response.isSuccessful && response.body() != null) {
                 val subscriptions = response.body()!!
-                _mySubscriptions.value = subscriptions
-                Result.success(subscriptions)
+                // Marquer toutes les souscriptions comme inscrites
+                val subscriptionsWithStatus = subscriptions.map { it.copy(isSubscribed = true) }
+                _mySubscriptions.value = subscriptionsWithStatus
+                
+                // Mettre à jour la liste des assurances pour refléter les changements
+                updateInsurancesSubscriptionStatus()
+                
+                Result.success(subscriptionsWithStatus)
             } else {
                 val errorMsg = "Erreur lors du chargement de vos inscriptions"
                 _error.value = errorMsg
@@ -333,11 +354,11 @@ class InsuranceService @Inject constructor(
                 Log.d("InsuranceService", "Insurance: ${subscribersResponse.insuranceName}")
                 Log.d("InsuranceService", "Subscribers count: ${subscribersResponse.subscribersCount}")
                 
-                // Le backend renvoie maintenant les objets User complets grâce à .populate()
-                val users = subscribersResponse.subscribers
+                // Extraire les objets User du JsonElement
+                val users = subscribersResponse.getSubscriberUsers()
                 
                 if (users.isEmpty()) {
-                    Log.d("InsuranceService", "No subscribers found")
+                    Log.d("InsuranceService", "No subscribers found or subscribers are IDs only")
                 } else {
                     Log.d("InsuranceService", "Received ${users.size} subscribers with full details")
                     users.forEachIndexed { index, user ->
