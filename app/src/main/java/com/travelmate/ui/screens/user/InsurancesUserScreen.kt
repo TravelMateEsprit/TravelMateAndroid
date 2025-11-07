@@ -271,6 +271,7 @@ fun InsurancesUserScreen(
                             insurance = insurance,
                             onSubscribe = { viewModel.subscribeToInsurance(it) },
                             onUnsubscribe = { viewModel.unsubscribeFromInsurance(it) },
+                            isInMySubscriptionsTab = selectedTabIndex == 1,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                         )
                     }
