@@ -20,6 +20,8 @@ import com.travelmate.ui.screens.agency.InsuranceSubscribersScreen
 import com.travelmate.ui.screens.login.LoginScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
+import com.travelmate.ui.screens.user.OffresScreen
+import com.travelmate.ui.screens.user.ReservationScreen
 import com.travelmate.ui.screens.user.UserHomeScreen
 import com.travelmate.ui.screens.welcome.WelcomeScreen
 import com.travelmate.utils.Constants
@@ -123,7 +125,8 @@ fun NavGraph(
                     navController.navigate(Constants.Routes.WELCOME) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                navController = navController
             )
         }
         
@@ -187,6 +190,21 @@ fun NavGraph(
                         popUpTo(0) { inclusive = true }
                     }
                 }
+            )
+        }
+        
+        // Reservation Screen
+        composable(Constants.Routes.RESERVATION) { backStackEntry ->
+            val voyageId = backStackEntry.arguments?.getString("voyageId") ?: ""
+            ReservationScreen(
+                voyageId = voyageId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onReservationSuccess = {
+                    navController.popBackStack()
+                },
+                userPreferences = userPreferences
             )
         }
     }

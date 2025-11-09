@@ -19,7 +19,9 @@ fun CustomTextField(
     modifier: Modifier = Modifier,
     isError: Boolean = false,
     errorMessage: String? = null,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
+    placeholder: String? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
@@ -32,11 +34,20 @@ fun CustomTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
+        placeholder = placeholder?.let { { Text(it) } },
         modifier = modifier.fillMaxWidth(),
         isError = isError,
         supportingText = {
             if (isError && errorMessage != null) {
                 Text(errorMessage)
+            }
+        },
+        leadingIcon = leadingIcon?.let { icon ->
+            {
+                androidx.compose.material3.Icon(
+                    imageVector = icon,
+                    contentDescription = null
+                )
             }
         },
         trailingIcon = trailingIcon,
@@ -48,6 +59,10 @@ fun CustomTextField(
         keyboardActions = keyboardActions,
         singleLine = singleLine,
         maxLines = maxLines,
-        enabled = enabled
+        enabled = enabled,
+        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = com.travelmate.ui.theme.ColorPrimary,
+            unfocusedBorderColor = com.travelmate.ui.theme.ColorTextSecondary.copy(alpha = 0.5f)
+        )
     )
 }

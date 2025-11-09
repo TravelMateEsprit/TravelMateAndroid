@@ -10,7 +10,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.travelmate.ui.theme.*
+import com.travelmate.utils.Constants
 
 sealed class BottomNavItem(
     val route: String,
@@ -27,7 +29,8 @@ sealed class BottomNavItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserHomeScreen(
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    navController: NavController? = null
 ) {
     var selectedTab by remember { mutableStateOf(3) } // Default to Insurances tab
     
@@ -78,7 +81,11 @@ fun UserHomeScreen(
             when (selectedTab) {
                 0 -> PlaceholderScreen("Accueil")
                 1 -> PlaceholderScreen("Groupes")
-                2 -> OffresScreen()
+                2 -> OffresScreen(
+                    onVoyageClick = { voyageId ->
+                        navController?.navigate("reservation/$voyageId")
+                    }
+                )
                 3 -> InsurancesUserScreen()
                 4 -> ProfileScreen(onLogout = onLogout)
             }

@@ -4,12 +4,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.travelmate.data.api.ReservationApi
+import com.travelmate.data.models.ApiErrorResponse
 import com.travelmate.data.models.CreateReservationRequest
 import com.travelmate.data.models.Reservation
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -126,22 +128,76 @@ class ReservationService @Inject constructor(
             _error.value = null
             
             Log.d("ReservationService", "=== CREATE RESERVATION ===")
-            Log.d("ReservationService", "Voyage ID: ${request.id_voyage}, Prix: ${request.prix}")
+            Log.d("ReservationService", "Voyage ID: ${request.id_voyage}")
+            Log.d("ReservationService", "Prix: ${request.prix}")
+            Log.d("ReservationService", "Auth Token: ${getAuthToken()?.take(20)}...")
+            Log.d("ReservationService", "Note: User ID is retrieved from token by backend")
             
             val response = reservationApi.createReservation(getAuthToken(), request)
             Log.d("ReservationService", "Response code: ${response.code()}")
             
-            if (response.isSuccessful && response.body() != null) {
-                val reservation = response.body()!!
-                Log.d("ReservationService", "Successfully created reservation: ${reservation.id_reservation}")
-                // Refresh lists
-                getMyReservations()
-                Result.success(reservation)
+            if (response.isSuccessful) {
+                try {
+                    val reservation = response.body()
+                    if (reservation != null) {
+                        Log.d("ReservationService", "Successfully created reservation: ${reservation.id_reservation}")
+                        // Refresh lists
+                        getMyReservations()
+                        Result.success(reservation)
+                    } else {
+                        // Response body is null, try to get error from response
+                        val errorBody = response.errorBody()?.string()
+                        val errorMsg = errorBody ?: "Réponse vide du serveur - HTTP ${response.code()}"
+                        Log.e("ReservationService", "Response body is null: $errorMsg")
+                        _error.value = errorMsg
+                        Result.failure(Exception(errorMsg))
+                    }
+                } catch (e: Exception) {
+                    // JSON parsing error - log the raw response
+                    val errorBody = try {
+                        response.errorBody()?.string()
+                    } catch (ex: Exception) {
+                        null
+                    }
+                    
+                    Log.e("ReservationService", "Error parsing response: ${e.message}")
+                    Log.e("ReservationService", "Exception type: ${e.javaClass.simpleName}")
+                    Log.e("ReservationService", "Error body: $errorBody")
+                    
+                    val errorMsg = if (e is kotlinx.serialization.SerializationException || 
+                                       e.javaClass.simpleName.contains("JsonDecoding") ||
+                                       e.javaClass.simpleName.contains("Serialization")) {
+                        "Erreur de format de réponse du serveur. Le format JSON ne correspond pas au modèle attendu."
+                    } else {
+                        "Erreur lors du parsing de la réponse: ${e.message}"
+                    }
+                    _error.value = errorMsg
+                    Result.failure(e)
+                }
             } else {
                 val errorBody = response.errorBody()?.string()
-                val errorMsg = "Erreur lors de la création de la réservation - HTTP ${response.code()}"
-                Log.e("ReservationService", errorMsg)
-                Log.e("ReservationService", "Error body: $errorBody")
+                val errorMsg = try {
+                    if (errorBody != null) {
+                        // Try to parse as JSON error response
+                        try {
+                            val json = Json { ignoreUnknownKeys = true }
+                            val apiError = json.decodeFromString<ApiErrorResponse>(errorBody)
+                            apiError.getErrorMessage()
+                        } catch (e: Exception) {
+                            // If parsing fails, use the raw error body
+                            Log.d("ReservationService", "Error body is not JSON, using raw: $errorBody")
+                            errorBody
+                        }
+                    } else {
+                        "Erreur lors de la création de la réservation - HTTP ${response.code()}"
+                    }
+                } catch (e: Exception) {
+                    Log.e("ReservationService", "Error parsing error response: ${e.message}")
+                    errorBody ?: "Erreur lors de la création de la réservation - HTTP ${response.code()}"
+                }
+                Log.e("ReservationService", "HTTP ${response.code()}: $errorMsg")
+                Log.e("ReservationService", "Request sent: id_voyage=${request.id_voyage}, prix=${request.prix}")
+                Log.e("ReservationService", "Raw error body: $errorBody")
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
