@@ -30,7 +30,9 @@ object Constants {
     
     // Date Formats
     const val DATE_FORMAT = "yyyy-MM-dd"
+    const val DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm" // Format for API: YYYY-MM-DD HH:mm
     const val DISPLAY_DATE_FORMAT = "dd/MM/yyyy"
+    const val DISPLAY_DATE_TIME_FORMAT = "dd/MM/yyyy HH:mm"
     
     // Validation
     const val MIN_PASSWORD_LENGTH = 8

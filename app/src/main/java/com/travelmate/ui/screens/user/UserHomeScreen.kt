@@ -78,7 +78,7 @@ fun UserHomeScreen(
             when (selectedTab) {
                 0 -> PlaceholderScreen("Accueil")
                 1 -> PlaceholderScreen("Groupes")
-                2 -> PlaceholderScreen("Offres")
+                2 -> OffresScreen()
                 3 -> InsurancesUserScreen()
                 4 -> ProfileScreen(onLogout = onLogout)
             }
