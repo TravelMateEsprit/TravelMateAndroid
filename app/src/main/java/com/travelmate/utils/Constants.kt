@@ -12,6 +12,10 @@ object Constants {
         const val USER_HOME = "user_home"
         const val AGENCY_DASHBOARD = "agency_dashboard"
         const val RESERVATION = "reservation/{voyageId}"
+        const val MY_RESERVATIONS = "my_reservations"
+        const val VOYAGE_FORM = "voyage_form"
+        const val VOYAGE_EDIT = "voyage_edit/{voyageId}"
+        const val VOYAGE_DETAIL = "voyage_detail/{voyageId}"
     }
     
     // SharedPreferences Keys

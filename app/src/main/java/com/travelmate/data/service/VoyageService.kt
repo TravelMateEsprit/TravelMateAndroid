@@ -98,20 +98,50 @@ class VoyageService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val response = voyageApi.createVoyage(getAuthToken(), request)
+            // Log the request data
+            Log.d("VoyageService", "=== CREATE VOYAGE REQUEST ===")
+            Log.d("VoyageService", "Destination: ${request.destination}")
+            Log.d("VoyageService", "Date de départ: ${request.date_depart}")
+            Log.d("VoyageService", "Date de retour: ${request.date_retour}")
+            Log.d("VoyageService", "Type: ${request.type}")
+            Log.d("VoyageService", "Prix estimé: ${request.prix_estime}")
+            Log.d("VoyageService", "Nombre de places: ${request.nombre_places}")
+            Log.d("VoyageService", "Description: ${request.description}")
+            Log.d("VoyageService", "Image URL: ${request.imageUrl}")
             
-            if (response.isSuccessful && response.body() != null) {
-                val voyage = response.body()!!
-                // Refresh list
-                getAllVoyages()
-                Result.success(voyage)
+            val token = getAuthToken()
+            Log.d("VoyageService", "Auth token: $token")
+            
+            val response = voyageApi.createVoyage(token, request)
+            
+            // Log response details
+            Log.d("VoyageService", "Response code: ${response.code()}")
+            Log.d("VoyageService", "Response message: ${response.message()}")
+            Log.d("VoyageService", "Response headers: ${response.headers()}")
+            
+            if (response.isSuccessful) {
+                response.body()?.let { voyage ->
+                    Log.d("VoyageService", "Voyage created successfully: $voyage")
+                    // Refresh list
+                    getAllVoyages()
+                    Result.success(voyage)
+                } ?: run {
+                    val errorMsg = "Réponse vide du serveur lors de la création du voyage"
+                    Log.e("VoyageService", errorMsg)
+                    _error.value = errorMsg
+                    Result.failure(Exception(errorMsg))
+                }
             } else {
-                val errorMsg = "Erreur lors de la création du voyage - HTTP ${response.code()}"
+                val errorBody = response.errorBody()?.string()
+                val errorMsg = "Erreur lors de la création du voyage - HTTP ${response.code()}: ${response.message()}\n$errorBody"
+                Log.e("VoyageService", errorMsg)
+                Log.e("VoyageService", "Error body: $errorBody")
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
-            val errorMsg = e.message ?: "Erreur réseau"
+            val errorMsg = "Exception lors de la création du voyage: ${e.javaClass.simpleName} - ${e.message}"
+            Log.e("VoyageService", errorMsg, e)
             _error.value = errorMsg
             Result.failure(e)
         } finally {

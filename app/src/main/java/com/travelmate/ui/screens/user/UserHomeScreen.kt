@@ -10,9 +10,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.travelmate.ui.theme.*
 import com.travelmate.utils.Constants
+import com.travelmate.utils.UserPreferences
+import com.travelmate.viewmodel.VoyagesViewModel
+import kotlinx.coroutines.launch
 
 sealed class BottomNavItem(
     val route: String,
@@ -30,9 +34,28 @@ sealed class BottomNavItem(
 @Composable
 fun UserHomeScreen(
     onLogout: () -> Unit = {},
-    navController: NavController? = null
+    navController: NavController? = null,
+    userPreferences: UserPreferences,
+    voyagesViewModel: VoyagesViewModel = hiltViewModel()
 ) {
-    var selectedTab by remember { mutableStateOf(3) } // Default to Insurances tab
+    val userId = remember { userPreferences.getUserId() }
+    var selectedTab by remember { mutableStateOf(2) } // Default to Offers tab to test
+    
+    // Debug logging
+    LaunchedEffect(Unit) {
+        android.util.Log.d("UserHomeScreen", "=== USER DEBUG INFO ===")
+        android.util.Log.d("UserHomeScreen", "UserId: $userId")
+        android.util.Log.d("UserHomeScreen", "UserType: ${userPreferences.getUserType()}")
+        android.util.Log.d("UserHomeScreen", "UserEmail: ${userPreferences.getUserEmail()}")
+        android.util.Log.d("UserHomeScreen", "IsLoggedIn: ${userPreferences.isLoggedIn()}")
+    }
+    
+    // State for delete confirmation dialog
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var voyageToDelete by remember { mutableStateOf<String?>(null) }
+    
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     
     val navItems = listOf(
         BottomNavItem.Home,
@@ -43,6 +66,9 @@ fun UserHomeScreen(
     )
     
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         bottomBar = {
             NavigationBar(
                 containerColor = ColorBackground,
@@ -84,12 +110,93 @@ fun UserHomeScreen(
                 2 -> OffresScreen(
                     onVoyageClick = { voyageId ->
                         navController?.navigate("reservation/$voyageId")
-                    }
+                    },
+                    onMyVoyageClick = { voyageId ->
+                        navController?.navigate(Constants.Routes.VOYAGE_DETAIL.replace("{voyageId}", voyageId))
+                    },
+                    onCreateVoyage = {
+                        navController?.navigate(Constants.Routes.VOYAGE_FORM)
+                    },
+                    onEditVoyage = { voyageId ->
+                        navController?.navigate(Constants.Routes.VOYAGE_EDIT.replace("{voyageId}", voyageId))
+                    },
+                    onDeleteVoyage = { voyageId ->
+                        voyageToDelete = voyageId
+                        showDeleteDialog = true
+                    },
+                    onViewReservations = {
+                        navController?.navigate(Constants.Routes.MY_RESERVATIONS)
+                    },
+                    userId = userId
                 )
                 3 -> InsurancesUserScreen()
                 4 -> ProfileScreen(onLogout = onLogout)
             }
         }
+    }
+    
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+                voyageToDelete = null
+            },
+            title = {
+                Text(
+                    text = "Supprimer le voyage",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            },
+            text = {
+                Text(
+                    text = "Êtes-vous sûr de vouloir supprimer ce voyage ? Cette action est irréversible.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        voyageToDelete?.let { voyageId ->
+                            scope.launch {
+                                voyagesViewModel.deleteVoyage(voyageId) { result ->
+                                    scope.launch {
+                                        if (result.isSuccess) {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Voyage supprimé avec succès",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        } else {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Erreur lors de la suppression: ${result.exceptionOrNull()?.message}",
+                                                duration = SnackbarDuration.Long
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        showDeleteDialog = false
+                        voyageToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ColorError
+                    )
+                ) {
+                    Text("Supprimer")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        voyageToDelete = null
+                    }
+                ) {
+                    Text("Annuler")
+                }
+            }
+        )
     }
 }
 

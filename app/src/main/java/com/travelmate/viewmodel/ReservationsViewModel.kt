@@ -45,6 +45,13 @@ class ReservationsViewModel @Inject constructor(
         }
     }
     
+    fun cancelReservation(reservationId: String, onResult: (Result<Reservation>) -> Unit) {
+        viewModelScope.launch {
+            val result = reservationService.cancelReservation(reservationId)
+            onResult(result)
+        }
+    }
+    
     fun updateReservationStatus(reservationId: String, status: String, onResult: (Result<Reservation>) -> Unit) {
         viewModelScope.launch {
             val result = reservationService.updateReservationStatus(reservationId, status)

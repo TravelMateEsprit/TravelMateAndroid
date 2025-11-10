@@ -20,9 +20,12 @@ import com.travelmate.ui.screens.agency.InsuranceSubscribersScreen
 import com.travelmate.ui.screens.login.LoginScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
+import com.travelmate.ui.screens.user.MyReservationsScreen
 import com.travelmate.ui.screens.user.OffresScreen
 import com.travelmate.ui.screens.user.ReservationScreen
 import com.travelmate.ui.screens.user.UserHomeScreen
+import com.travelmate.ui.screens.user.VoyageDetailScreen
+import com.travelmate.ui.screens.user.VoyageFormScreen
 import com.travelmate.ui.screens.welcome.WelcomeScreen
 import com.travelmate.utils.Constants
 import com.travelmate.utils.UserPreferences
@@ -126,7 +129,8 @@ fun NavGraph(
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                navController = navController
+                navController = navController,
+                userPreferences = userPreferences
             )
         }
         
@@ -205,6 +209,59 @@ fun NavGraph(
                     navController.popBackStack()
                 },
                 userPreferences = userPreferences
+            )
+        }
+        
+        // Voyage Form - Create
+        composable(Constants.Routes.VOYAGE_FORM) {
+            VoyageFormScreen(
+                voyageId = null,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onSuccess = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        // Voyage Form - Edit
+        composable(Constants.Routes.VOYAGE_EDIT) { backStackEntry ->
+            val voyageId = backStackEntry.arguments?.getString("voyageId") ?: ""
+            VoyageFormScreen(
+                voyageId = voyageId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onSuccess = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        // Voyage Detail Screen
+        composable(Constants.Routes.VOYAGE_DETAIL) { backStackEntry ->
+            val voyageId = backStackEntry.arguments?.getString("voyageId") ?: ""
+            VoyageDetailScreen(
+                voyageId = voyageId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onEditVoyage = { voyageId ->
+                    navController.navigate(Constants.Routes.VOYAGE_EDIT.replace("{voyageId}", voyageId))
+                },
+                onDeleteVoyage = { voyageId ->
+                    // This is handled by the VoyageDetailScreen itself
+                }
+            )
+        }
+        
+        // My Reservations Screen
+        composable(Constants.Routes.MY_RESERVATIONS) {
+            MyReservationsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
     }

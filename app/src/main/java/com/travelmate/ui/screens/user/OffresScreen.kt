@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +28,7 @@ import com.travelmate.data.models.Voyage
 import com.travelmate.ui.theme.*
 import com.travelmate.utils.Constants
 import com.travelmate.viewmodel.VoyagesViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -34,13 +36,47 @@ import java.util.*
 @Composable
 fun OffresScreen(
     viewModel: VoyagesViewModel = hiltViewModel(),
-    onVoyageClick: (String) -> Unit = {}
+    onVoyageClick: (String) -> Unit = {},
+    onMyVoyageClick: (String) -> Unit = {},
+    onCreateVoyage: () -> Unit = {},
+    onEditVoyage: (String) -> Unit = {},
+    onDeleteVoyage: (String) -> Unit = {},
+    onViewReservations: () -> Unit = {},
+    userId: String? = null
 ) {
     val voyages by viewModel.voyages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    
+    // Separate voyages into user's own and others
+    val myVoyages = remember(voyages, userId) {
+        android.util.Log.d("OffresScreen", "=== DEBUG VOYAGE OWNERSHIP ===")
+        android.util.Log.d("OffresScreen", "Current userId: $userId")
+        android.util.Log.d("OffresScreen", "Total voyages: ${voyages.size}")
+        voyages.forEach { voyage ->
+            android.util.Log.d("OffresScreen", "Voyage: ${voyage.destination}, creatorId: ${voyage.creatorId}")
+        }
+        
+        if (userId != null) {
+            val filtered = voyages.filter { it.creatorId == userId }
+            android.util.Log.d("OffresScreen", "My voyages count: ${filtered.size}")
+            filtered
+        } else {
+            android.util.Log.d("OffresScreen", "UserId is null - no voyages will be shown as mine")
+            emptyList()
+        }
+    }
+    
+    val otherVoyages = remember(voyages, userId) {
+        if (userId != null) {
+            voyages.filter { it.creatorId != userId }
+        } else {
+            voyages
+        }
+    }
     
     LaunchedEffect(Unit) {
         viewModel.loadAllVoyages()
@@ -79,10 +115,19 @@ fun OffresScreen(
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
-                    IconButton(onClick = { 
-                        viewModel.loadAllVoyages()
-                    }) {
-                        Icon(Icons.Default.Refresh, "Actualiser", tint = Color.White)
+                    Row {
+                        IconButton(onClick = onViewReservations) {
+                            Icon(
+                                Icons.Default.BookmarkBorder, 
+                                "Mes réservations", 
+                                tint = Color.White
+                            )
+                        }
+                        IconButton(onClick = { 
+                            viewModel.loadAllVoyages()
+                        }) {
+                            Icon(Icons.Default.Refresh, "Actualiser", tint = Color.White)
+                        }
                     }
                 }
             }
@@ -190,19 +235,73 @@ fun OffresScreen(
                                 }
                             }
                         }
-                    } else {
-                        items(voyages) { voyage ->
+                } else {
+                    // My Voyages Section
+                    if (myVoyages.isNotEmpty() && userId != null) {
+                        item {
+                            Text(
+                                text = "Mes voyages",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ColorTextPrimary,
+                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                            )
+                        }
+                        items(myVoyages) { voyage ->
                             VoyageCard(
                                 voyage = voyage,
-                                onClick = { onVoyageClick(voyage.id_voyage) },
+                                onClick = { onMyVoyageClick(voyage.id_voyage) },
+                                isMyVoyage = true,
+                                onEdit = { onEditVoyage(voyage.id_voyage) },
+                                onDelete = { onDeleteVoyage(voyage.id_voyage) },
                                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                             )
                         }
+                        
+                        // Other Voyages Section
+                        if (otherVoyages.isNotEmpty()) {
+                            item {
+                                Text(
+                                    text = "Autres voyages",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = ColorTextPrimary,
+                                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                                )
+                            }
+                        }
                     }
+                    
+                    // Other Voyages or All Voyages
+                    items(otherVoyages) { voyage ->
+                        VoyageCard(
+                            voyage = voyage,
+                            onClick = { onVoyageClick(voyage.id_voyage) },
+                            isMyVoyage = false,
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+                    }
+                }
                 }
                 
                 item { Spacer(modifier = Modifier.height(24.dp)) }
             }
+        }
+        
+        // Floating Action Button to create voyage
+        FloatingActionButton(
+            onClick = onCreateVoyage,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = ColorPrimary,
+            contentColor = Color.White
+        ) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = "Créer un voyage",
+                modifier = Modifier.size(24.dp)
+            )
         }
         
         // Snackbar for errors
@@ -217,7 +316,10 @@ fun OffresScreen(
 fun VoyageCard(
     voyage: Voyage,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isMyVoyage: Boolean = false,
+    onEdit: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null
 ) {
     // Format dates
     val dateFormat = SimpleDateFormat(Constants.DATE_TIME_FORMAT, Locale.getDefault())
@@ -245,8 +347,6 @@ fun VoyageCard(
         // Keep original if parsing fails
     }
     
-    // Calculate places remaining (default if not in model)
-    val placesRestantes = (15..45).random() // Simulated, replace with actual field when available
     
     // Get type icon
     val typeIcon = when (voyage.type.lowercase()) {
@@ -262,7 +362,9 @@ fun VoyageCard(
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(
+            containerColor = if (isMyVoyage) ColorAccent.copy(alpha = 0.05f) else Color.White
+        )
     ) {
         Column {
             // Image - Full width at top
@@ -271,6 +373,34 @@ fun VoyageCard(
                     .fillMaxWidth()
                     .height(200.dp)
             ) {
+                // My Voyage Badge
+                if (isMyVoyage) {
+                    Surface(
+                        color = ColorAccent,
+                        shape = RoundedCornerShape(bottomStart = 16.dp, topEnd = 16.dp),
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "Mon voyage",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+                
                 if (!voyage.imageUrl.isNullOrEmpty()) {
                     AsyncImage(
                         model = voyage.imageUrl,
@@ -439,49 +569,6 @@ fun VoyageCard(
                         }
                     }
                     
-                    // Divider
-                    HorizontalDivider(
-                        color = ColorTextSecondary.copy(alpha = 0.2f),
-                        thickness = 1.dp
-                    )
-                    
-                    // Places restantes
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = null,
-                            tint = if (placesRestantes < 10) ColorError else ColorAccent,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            text = "Places restantes",
-                            fontSize = 13.sp,
-                            color = ColorTextSecondary
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        Surface(
-                            color = if (placesRestantes < 10) ColorError.copy(alpha = 0.15f) 
-                                    else ColorAccent.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text(
-                                text = "$placesRestantes",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (placesRestantes < 10) ColorError else ColorAccent,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                            )
-                        }
-                    }
-                    
-                    // Divider
-                    HorizontalDivider(
-                        color = ColorTextSecondary.copy(alpha = 0.2f),
-                        thickness = 1.dp
-                    )
                     
                     // Prix
                     Row(
@@ -517,23 +604,85 @@ fun VoyageCard(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Réserver button
-                Button(
-                    onClick = onClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ColorPrimary
-                    )
-                ) {
-                    Text(
-                        text = "Réserver",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
-                    )
+                // Action buttons
+                android.util.Log.d("VoyageCard", "=== VOYAGE CARD DEBUG ===")
+                android.util.Log.d("VoyageCard", "Voyage: ${voyage.destination}")
+                android.util.Log.d("VoyageCard", "isMyVoyage: $isMyVoyage")
+                android.util.Log.d("VoyageCard", "onEdit != null: ${onEdit != null}")
+                android.util.Log.d("VoyageCard", "onDelete != null: ${onDelete != null}")
+                android.util.Log.d("VoyageCard", "Showing edit/delete buttons: ${isMyVoyage && onEdit != null && onDelete != null}")
+                
+                if (isMyVoyage && onEdit != null && onDelete != null) {
+                    // Edit and Delete buttons for my voyages
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onEdit,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = ColorPrimary
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Modifier",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        
+                        OutlinedButton(
+                            onClick = onDelete,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = ColorError
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Supprimer",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                } else {
+                    // Réserver button for other voyages
+                    Button(
+                        onClick = onClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = ColorPrimary
+                        )
+                    ) {
+                        Text(
+                            text = "Réserver",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
                 }
             }
         }

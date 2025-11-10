@@ -30,6 +30,9 @@ object NetworkModule {
         isLenient = true
         encodeDefaults = false
         explicitNulls = false
+        coerceInputValues = true // Handle malformed values more gracefully
+        allowSpecialFloatingPointValues = true
+        allowStructuredMapKeys = true
     }
     
     @Provides

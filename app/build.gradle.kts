@@ -17,6 +17,9 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+        
+        // Enable Java 8+ API desugaring
+        multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -35,6 +38,7 @@ android {
     }
     
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -93,12 +97,13 @@ dependencies {
     // Coil (Image Loading)
     implementation("io.coil-kt:coil-compose:2.7.0")
     
-    // Cloudinary (Image Upload)
-    implementation("com.cloudinary:cloudinary-android:2.0.0")
 
     // Encrypted SharedPreferences
     implementation("androidx.security:security-crypto:1.1.0")
 
+    // Core Library Desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")

@@ -154,22 +154,30 @@ class ReservationService @Inject constructor(
                     }
                 } catch (e: Exception) {
                     // JSON parsing error - log the raw response
-                    val errorBody = try {
-                        response.errorBody()?.string()
+                    val responseBody = try {
+                        response.body()?.toString() ?: "No response body"
                     } catch (ex: Exception) {
-                        null
+                        "Error reading response body"
                     }
                     
+                    Log.e("ReservationService", "=== JSON PARSING ERROR ===")
                     Log.e("ReservationService", "Error parsing response: ${e.message}")
                     Log.e("ReservationService", "Exception type: ${e.javaClass.simpleName}")
-                    Log.e("ReservationService", "Error body: $errorBody")
+                    Log.e("ReservationService", "Response code: ${response.code()}")
+                    Log.e("ReservationService", "Response body: $responseBody")
                     
-                    val errorMsg = if (e is kotlinx.serialization.SerializationException || 
-                                       e.javaClass.simpleName.contains("JsonDecoding") ||
-                                       e.javaClass.simpleName.contains("Serialization")) {
-                        "Erreur de format de réponse du serveur. Le format JSON ne correspond pas au modèle attendu."
-                    } else {
-                        "Erreur lors du parsing de la réponse: ${e.message}"
+                    val errorMsg = when {
+                        e is kotlinx.serialization.SerializationException || 
+                        e.javaClass.simpleName.contains("JsonDecoding") ||
+                        e.javaClass.simpleName.contains("Serialization") -> {
+                            "Erreur de format JSON du serveur. Le backend retourne des données dans un format inattendu. Vérifiez que l'API retourne des chaînes de caractères pour les IDs au lieu de données hexadécimales."
+                        }
+                        e.message?.contains("id_utilisateur") == true -> {
+                            "Erreur: Le serveur retourne un format d'ID utilisateur invalide. Contactez l'administrateur système."
+                        }
+                        else -> {
+                            "Erreur lors du parsing de la réponse: ${e.message}"
+                        }
                     }
                     _error.value = errorMsg
                     Result.failure(e)
@@ -203,6 +211,48 @@ class ReservationService @Inject constructor(
             }
         } catch (e: Exception) {
             val errorMsg = "Exception: ${e.javaClass.simpleName} - ${e.message}"
+            Log.e("ReservationService", errorMsg, e)
+            _error.value = errorMsg
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun cancelReservation(reservationId: String): Result<Reservation> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+            
+            Log.d("ReservationService", "=== CANCEL RESERVATION ===")
+            Log.d("ReservationService", "Reservation ID: $reservationId")
+            
+            val token = getAuthToken()
+            val response = reservationApi.updateReservationStatus(
+                reservationId,
+                token,
+                mapOf("statut" to "annulee")
+            )
+            
+            Log.d("ReservationService", "Cancel response code: ${response.code()}")
+            
+            if (response.isSuccessful && response.body() != null) {
+                val cancelledReservation = response.body()!!
+                Log.d("ReservationService", "Successfully cancelled reservation: ${cancelledReservation.id_reservation}")
+                
+                // Refresh the reservations list
+                getMyReservations()
+                
+                Result.success(cancelledReservation)
+            } else {
+                val errorBody = response.errorBody()?.string() ?: "No error body"
+                Log.e("ReservationService", "Cancel error response: $errorBody")
+                val errorMsg = "Erreur lors de l'annulation de la réservation: ${response.message()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            val errorMsg = "Erreur lors de l'annulation: ${e.message}"
             Log.e("ReservationService", errorMsg, e)
             _error.value = errorMsg
             Result.failure(e)

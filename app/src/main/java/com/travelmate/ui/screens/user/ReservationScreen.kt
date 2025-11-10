@@ -1,5 +1,6 @@
 package com.travelmate.ui.screens.user
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,12 +13,13 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.launch
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,10 +27,10 @@ import coil.compose.AsyncImage
 import com.travelmate.data.models.Voyage
 import com.travelmate.ui.components.CustomTextField
 import com.travelmate.ui.theme.*
-import com.travelmate.utils.Constants
 import com.travelmate.utils.UserPreferences
 import com.travelmate.viewmodel.ReservationsViewModel
 import com.travelmate.viewmodel.VoyagesViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -62,15 +64,12 @@ fun ReservationScreen(
     
     // Form state
     var nombrePersonnes by remember { mutableStateOf("1") }
-    var paymentMethod by remember { mutableStateOf("") }
-    var cardNumber by remember { mutableStateOf("") }
-    var cardExpiry by remember { mutableStateOf("") }
-    var cardCVC by remember { mutableStateOf("") }
-    var specialRequests by remember { mutableStateOf("") }
     var promoCode by remember { mutableStateOf("") }
     var showSuccessDialog by remember { mutableStateOf(false) }
     
     val snackbarHostState = remember { SnackbarHostState() }
+    
+    val scope = rememberCoroutineScope()
     
     // Load voyage and reservations if not found
     LaunchedEffect(voyageId) {
@@ -104,11 +103,13 @@ fun ReservationScreen(
                     errorMsg
                 }
             }
-            snackbarHostState.showSnackbar(
-                message = displayMessage,
-                duration = SnackbarDuration.Long
-            )
-            reservationsViewModel.clearError()
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = displayMessage,
+                    duration = SnackbarDuration.Long
+                )
+                reservationsViewModel.clearError()
+            }
         }
     }
     
@@ -257,47 +258,42 @@ fun ReservationScreen(
                     userPhone = userPhone,
                     nombrePersonnes = nombrePersonnes,
                     onNombrePersonnesChange = { nombrePersonnes = it },
-                    paymentMethod = paymentMethod,
-                    onPaymentMethodChange = { paymentMethod = it },
-                    cardNumber = cardNumber,
-                    onCardNumberChange = { cardNumber = it },
-                    cardExpiry = cardExpiry,
-                    onCardExpiryChange = { cardExpiry = it },
-                    cardCVC = cardCVC,
-                    onCardCVCChange = { cardCVC = it },
-                    specialRequests = specialRequests,
-                    onSpecialRequestsChange = { specialRequests = it },
-                    promoCode = promoCode,
-                    onPromoCodeChange = { promoCode = it },
                     isLoading = isLoadingReservation,
-                    snackbarHostState = snackbarHostState,
-                    hasExistingReservation = existingReservation != null,
-                    onConfirmReservation = {
-                        // Don't allow creating if reservation already exists
-                        if (existingReservation != null) {
-                            return@ReservationFormCard
-                        }
-                        
-                        val prix = voyage.prix_estime ?: 0.0
-                        val nombrePersonnesInt = nombrePersonnes.toIntOrNull() ?: 1
-                        val totalPrix = prix * nombrePersonnesInt
-                        
-                        val request = com.travelmate.data.models.CreateReservationRequest(
-                            id_voyage = voyage.id_voyage,
-                            prix = totalPrix
-                        )
-                        reservationsViewModel.createReservation(request) { result ->
-                            result.fold(
-                                onSuccess = {
-                                    showSuccessDialog = true
-                                },
-                                onFailure = {
-                                    // Error already shown via snackbar
-                                }
-                            )
-                        }
+                    hasExistingReservation = existingReservation != null
+                ) {
+                    // Don't allow creating if reservation already exists
+                    if (existingReservation != null) {
+                        return@ReservationFormCard
                     }
-                )
+                    
+                    val nombrePersonnesInt = nombrePersonnes.toIntOrNull() ?: 1
+                    
+                    // Create the reservation request with required fields only
+                    val request = com.travelmate.data.models.CreateReservationRequest(
+                        id_voyage = voyage.id_voyage,
+                        prix = voyage.prix_estime ?: 0.0,
+                        nombre_personnes = nombrePersonnesInt,
+                        notes = null
+                    )
+                    
+                    // Show loading state
+                    reservationsViewModel.createReservation(request) { result ->
+                        result.fold(
+                            onSuccess = {
+                                showSuccessDialog = true
+                            },
+                            onFailure = { exception ->
+                                val errorMsg = exception.message ?: "Une erreur est survenue lors de la réservation"
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = errorMsg,
+                                        duration = SnackbarDuration.Long
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
                 
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -306,30 +302,33 @@ fun ReservationScreen(
 }
 
 @Composable
+@SuppressLint("SimpleDateFormat")
 fun VoyageDetailsCard(voyage: Voyage) {
-    val dateFormat = SimpleDateFormat(Constants.DATE_TIME_FORMAT, Locale.getDefault())
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
     val dateDisplayFormat = SimpleDateFormat("dd MMM yyyy", Locale.FRENCH)
     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
     
-    var dateDepartText: String = voyage.date_depart
-    var dateRetourText: String = voyage.date_retour
-    var timeDepartText: String = ""
-    var timeRetourText: String = ""
+    var dateDepartText by remember { mutableStateOf(voyage.date_depart) }
+    var dateRetourText by remember { mutableStateOf(voyage.date_retour) }
+    var timeDepartText by remember { mutableStateOf("") }
+    var timeRetourText by remember { mutableStateOf("") }
     
-    try {
-        val depart = dateFormat.parse(voyage.date_depart)
-        val retour = dateFormat.parse(voyage.date_retour)
-        
-        depart?.let {
-            dateDepartText = dateDisplayFormat.format(it)
-            timeDepartText = timeFormat.format(it)
+    LaunchedEffect(voyage) {
+        try {
+            val depart = dateFormat.parse(voyage.date_depart)
+            val retour = dateFormat.parse(voyage.date_retour)
+            
+            depart?.let {
+                dateDepartText = dateDisplayFormat.format(it)
+                timeDepartText = timeFormat.format(it)
+            }
+            retour?.let {
+                dateRetourText = dateDisplayFormat.format(it)
+                timeRetourText = timeFormat.format(it)
+            }
+        } catch (e: Exception) {
+            // Keep original if parsing fails
         }
-        retour?.let {
-            dateRetourText = dateDisplayFormat.format(it)
-            timeRetourText = timeFormat.format(it)
-        }
-    } catch (e: Exception) {
-        // Keep original if parsing fails
     }
     
     Card(
@@ -372,18 +371,19 @@ fun VoyageDetailsCard(voyage: Voyage) {
                 }
             }
             
-            Column(modifier = Modifier.padding(20.dp)) {
-                // Destination
+            // Content
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
                 Text(
                     text = voyage.destination,
-                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = ColorTextPrimary
                 )
                 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 
-                // Dates
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -391,80 +391,77 @@ fun VoyageDetailsCard(voyage: Voyage) {
                     Column {
                         Text(
                             text = "Départ",
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.bodySmall,
                             color = ColorTextSecondary
                         )
                         Text(
-                            text = "$dateDepartText à $timeDepartText",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = ColorTextPrimary
+                            text = dateDepartText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
                         )
+                        if (timeDepartText.isNotEmpty()) {
+                            Text(
+                                text = timeDepartText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = ColorTextSecondary
+                            )
+                        }
                     }
                     
-                    Icon(
-                        Icons.Default.ArrowForward,
-                        contentDescription = null,
-                        tint = ColorTextSecondary.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                    
-                    Column(horizontalAlignment = Alignment.End) {
+                    Column {
                         Text(
                             text = "Retour",
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.bodySmall,
                             color = ColorTextSecondary
                         )
                         Text(
-                            text = "$dateRetourText à $timeRetourText",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = ColorTextPrimary
+                            text = dateRetourText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
                         )
+                        if (timeRetourText.isNotEmpty()) {
+                            Text(
+                                text = timeRetourText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = ColorTextSecondary
+                            )
+                        }
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 
-                // Type and Price
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
-                        color = ColorAccent.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = voyage.type,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = ColorAccent,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                        )
-                    }
-                    
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "Prix",
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary
-                        )
-                        Text(
-                            text = "${(voyage.prix_estime ?: 0.0).toInt()} €",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = ColorPrimary
-                        )
-                    }
+                    Text(
+                        text = "Prix estimé",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = ColorTextSecondary
+                    )
+                    Text(
+                        text = "${voyage.prix_estime ?: 0} €",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorPrimary
+                    )
+                }
+                
+                if (!voyage.description.isNullOrEmpty()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = voyage.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = ColorTextSecondary
+                    )
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReservationFormCard(
     voyage: Voyage,
@@ -473,24 +470,10 @@ fun ReservationFormCard(
     userPhone: String,
     nombrePersonnes: String,
     onNombrePersonnesChange: (String) -> Unit,
-    paymentMethod: String,
-    onPaymentMethodChange: (String) -> Unit,
-    cardNumber: String,
-    onCardNumberChange: (String) -> Unit,
-    cardExpiry: String,
-    onCardExpiryChange: (String) -> Unit,
-    cardCVC: String,
-    onCardCVCChange: (String) -> Unit,
-    specialRequests: String,
-    onSpecialRequestsChange: (String) -> Unit,
-    promoCode: String,
-    onPromoCodeChange: (String) -> Unit,
     isLoading: Boolean,
-    snackbarHostState: SnackbarHostState,
     hasExistingReservation: Boolean = false,
     onConfirmReservation: () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -498,21 +481,22 @@ fun ReservationFormCard(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
             Text(
-                text = "Informations de réservation",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = ColorTextPrimary
+                text = "Détails de la réservation",
+                style = MaterialTheme.typography.titleMedium,
+                color = ColorTextPrimary,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            // User Details (Pre-filled, read-only)
+
+            // User Information
             Text(
                 text = "Vos informations",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleSmall,
                 color = ColorTextSecondary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -538,7 +522,7 @@ fun ReservationFormCard(
             Spacer(modifier = Modifier.height(12.dp))
             
             CustomTextField(
-                value = userPhone ?: "",
+                value = userPhone,
                 onValueChange = {},
                 label = "Téléphone",
                 enabled = false,
@@ -550,8 +534,7 @@ fun ReservationFormCard(
             // Number of people
             Text(
                 text = "Nombre de personnes",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleSmall,
                 color = ColorTextSecondary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -564,154 +547,36 @@ fun ReservationFormCard(
                     }
                 },
                 label = "Nombre de personnes",
-                leadingIcon = Icons.Default.Person,
+                keyboardType = KeyboardType.Number,
                 modifier = Modifier.fillMaxWidth()
             )
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Payment Information
+            // Price summary
             Text(
-                text = "Informations de paiement",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
+                text = "Récapitulatif",
+                style = MaterialTheme.typography.titleSmall,
                 color = ColorTextSecondary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             
-            // Payment method dropdown
-            var expanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedTextField(
-                    value = paymentMethod.ifEmpty { "Sélectionner un mode de paiement" },
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Mode de paiement") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = ColorPrimary,
-                        unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.5f)
-                    )
+                Text(
+                    text = "Prix par personne",
+                    color = ColorTextSecondary
                 )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    listOf("Carte bancaire", "PayPal", "Espèces", "Virement").forEach { method ->
-                        DropdownMenuItem(
-                            text = { Text(method) },
-                            onClick = {
-                                onPaymentMethodChange(method)
-                                expanded = false
-                            }
-                        )
-                    }
-                }
+                Text(
+                    text = "${voyage.prix_estime ?: 0} €",
+                    fontWeight = FontWeight.Bold
+                )
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Card details (only show if card payment selected)
-            if (paymentMethod == "Carte bancaire") {
-                CustomTextField(
-                    value = cardNumber,
-                    onValueChange = { newValue ->
-                        // Format as XXXX XXXX XXXX XXXX
-                        val formatted = newValue.filter { it.isDigit() }
-                            .chunked(4)
-                            .joinToString(" ")
-                            .take(19)
-                        onCardNumberChange(formatted)
-                    },
-                    label = "Numéro de carte",
-                    leadingIcon = Icons.Default.CreditCard,
-                    placeholder = "1234 5678 9012 3456",
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    CustomTextField(
-                        value = cardExpiry,
-                        onValueChange = { newValue ->
-                            // Format as MM/YY
-                            val formatted = newValue.filter { it.isDigit() }
-                                .chunked(2)
-                                .joinToString("/")
-                                .take(5)
-                            onCardExpiryChange(formatted)
-                        },
-                        label = "Expiration",
-                        placeholder = "MM/YY",
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    CustomTextField(
-                        value = cardCVC,
-                        onValueChange = { newValue ->
-                            // Limit to 3 digits
-                            if (newValue.all { it.isDigit() } && newValue.length <= 3) {
-                                onCardCVCChange(newValue)
-                            }
-                        },
-                        label = "CVC",
-                        placeholder = "123",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Special requests
-            Text(
-                text = "Demandes spéciales (optionnel)",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = ColorTextSecondary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            
-            OutlinedTextField(
-                value = specialRequests,
-                onValueChange = onSpecialRequestsChange,
-                label = { Text("Notes ou demandes spéciales") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
-                maxLines = 4,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = ColorPrimary,
-                    unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.5f)
-                )
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Promo code
-            CustomTextField(
-                value = promoCode,
-                onValueChange = onPromoCodeChange,
-                label = "Code promo (optionnel)",
-                leadingIcon = Icons.Default.LocalOffer,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Total price calculation
-            val totalPrice = (voyage.prix_estime ?: 0.0) * (nombrePersonnes.toIntOrNull() ?: 1)
+            Spacer(modifier = Modifier.height(8.dp))
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -720,13 +585,12 @@ fun ReservationFormCard(
             ) {
                 Text(
                     text = "Total",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "${totalPrice.toInt()} €",
-                    fontSize = 24.sp,
+                    text = "${(voyage.prix_estime ?: 0.0) * (nombrePersonnes.toIntOrNull() ?: 1)} €",
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = ColorPrimary
                 )
@@ -736,42 +600,29 @@ fun ReservationFormCard(
             
             // Confirm button
             Button(
-                onClick = {
-                    if (hasExistingReservation) {
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = "Vous avez déjà une réservation active pour ce voyage.",
-                                duration = SnackbarDuration.Long
-                            )
-                        }
-                    } else {
-                        onConfirmReservation()
-                    }
-                },
+                onClick = onConfirmReservation,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                enabled = !isLoading && !hasExistingReservation && nombrePersonnes.toIntOrNull()?.let { it > 0 } == true && paymentMethod.isNotEmpty(),
-                shape = RoundedCornerShape(12.dp),
+                enabled = !isLoading && !hasExistingReservation,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = ColorPrimary
+                    containerColor = ColorPrimary,
+                    disabledContainerColor = ColorPrimary.copy(alpha = 0.5f)
                 )
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = Color.White
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp)
                     )
                 } else {
                     Text(
-                        text = "Confirmer la réservation",
+                        text = if (hasExistingReservation) "Réservation existante" else "Confirmer la réservation",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
     }
 }
-
