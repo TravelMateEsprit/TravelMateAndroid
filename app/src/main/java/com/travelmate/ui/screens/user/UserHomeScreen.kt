@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.travelmate.ui.screens.groups.GroupsListScreen
 import com.travelmate.ui.theme.*
 
 sealed class BottomNavItem(
@@ -30,7 +31,7 @@ fun UserHomeScreen(
     onLogout: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(3) } // Default to Insurances tab
-    
+
     val navItems = listOf(
         BottomNavItem.Home,
         BottomNavItem.Groups,
@@ -38,7 +39,7 @@ fun UserHomeScreen(
         BottomNavItem.Insurances,
         BottomNavItem.Profile
     )
-    
+
     Scaffold(
         bottomBar = {
             NavigationBar(
@@ -77,7 +78,7 @@ fun UserHomeScreen(
         Box(modifier = Modifier.padding(paddingValues)) {
             when (selectedTab) {
                 0 -> PlaceholderScreen("Accueil")
-                1 -> PlaceholderScreen("Groupes")
+                1 -> GroupsListScreen()
                 2 -> PlaceholderScreen("Offres")
                 3 -> InsurancesUserScreen()
                 4 -> ProfileScreen(onLogout = onLogout)
