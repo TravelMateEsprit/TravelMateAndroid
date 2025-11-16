@@ -13,6 +13,24 @@ interface InsuranceApi {
         @Header("Authorization") token: String
     ): Response<List<Insurance>>
     
+    @GET("insurances/search")
+    suspend fun searchInsurances(
+        @Header("Authorization") token: String,
+        @Query("searchTerm") searchTerm: String? = null,
+        @Query("minPrice") minPrice: Double? = null,
+        @Query("maxPrice") maxPrice: Double? = null,
+        @Query("duration") duration: String? = null,
+        @Query("coverage") coverage: String? = null,
+        @Query("agencyName") agencyName: String? = null,
+        @Query("city") city: String? = null,
+        @Query("country") country: String? = null,
+        @Query("isActive") isActive: Boolean? = true,
+        @Query("sortBy") sortBy: String? = "createdAt",
+        @Query("sortOrder") sortOrder: String? = "desc",
+        @Query("limit") limit: Int? = 20,
+        @Query("page") page: Int? = 0
+    ): Response<SearchInsuranceResponse>
+    
     @GET("insurances/my-subscriptions")
     suspend fun getMySubscriptions(
         @Header("Authorization") token: String
