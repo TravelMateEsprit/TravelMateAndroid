@@ -3,6 +3,8 @@ package com.travelmate.data.repository
 import com.travelmate.data.api.AuthApi
 import com.travelmate.data.models.AgencyRegistrationRequest
 import com.travelmate.data.models.AuthResponse
+import com.travelmate.data.models.ForgotPasswordRequest
+import com.travelmate.data.models.MessageResponse
 import com.travelmate.data.models.LoginRequest
 import com.travelmate.data.models.UserRegistrationRequest
 import javax.inject.Inject
@@ -47,6 +49,21 @@ class AuthRepository @Inject constructor(
                 Result.success(response.body()!!)
             } else {
                 Result.failure(Exception(response.message() ?: "Login failed"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun forgotPassword(email: String): Result<MessageResponse> {
+        return try {
+            val request = ForgotPasswordRequest(email)
+            val response = authApi.forgotPassword(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception(errorBody ?: response.message() ?: "Failed to send reset email"))
             }
         } catch (e: Exception) {
             Result.failure(e)

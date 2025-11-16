@@ -40,6 +40,7 @@ import com.travelmate.viewmodel.LoginViewModel
 fun LoginScreen(
     onNavigateBack: () -> Unit,
     onLoginSuccess: (userType: String) -> Unit,
+    onNavigateToForgotPassword: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -360,7 +361,7 @@ fun LoginScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = { /* TODO */ }) {
+                        TextButton(onClick = onNavigateToForgotPassword) {
                             Text(
                                 "Mot de passe oublié ?",
                                 color = ColorAccent,

@@ -2,6 +2,8 @@ package com.travelmate.data.api
 
 import com.travelmate.data.models.AgencyRegistrationRequest
 import com.travelmate.data.models.AuthResponse
+import com.travelmate.data.models.ForgotPasswordRequest
+import com.travelmate.data.models.MessageResponse
 import com.travelmate.data.models.LoginRequest
 import com.travelmate.data.models.UserRegistrationRequest
 import retrofit2.Response
@@ -12,20 +14,25 @@ import retrofit2.http.POST
 
 interface AuthApi {
     
-    @POST("api/auth/register/user")
+    @POST("auth/signup")
     suspend fun registerUser(
         @Body request: UserRegistrationRequest
     ): Response<AuthResponse>
     
-    @POST("api/auth/register/agency")
+    @POST("auth/signup/agency")
     suspend fun registerAgency(
         @Body request: AgencyRegistrationRequest
     ): Response<AuthResponse>
     
-    @POST("api/auth/login")
+    @POST("auth/login")
     suspend fun login(
         @Body request: LoginRequest
     ): Response<AuthResponse>
+    
+    @POST("auth/forgot-password")
+    suspend fun forgotPassword(
+        @Body request: ForgotPasswordRequest
+    ): Response<MessageResponse>
     
     @GET("api/users/profile")
     suspend fun getUserProfile(

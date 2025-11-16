@@ -18,6 +18,7 @@ import com.travelmate.ui.screens.agency.AgencyMainDashboard
 import com.travelmate.ui.screens.agency.InsuranceFormScreen
 import com.travelmate.ui.screens.agency.InsuranceSubscribersScreen
 import com.travelmate.ui.screens.login.LoginScreen
+import com.travelmate.ui.screens.login.ForgotPasswordScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
 import com.travelmate.ui.screens.user.UserHomeScreen
@@ -94,6 +95,9 @@ fun NavGraph(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
+                onNavigateToForgotPassword = {
+                    navController.navigate(Constants.Routes.FORGOT_PASSWORD)
+                },
                 onLoginSuccess = { userType ->
                     // Navigate based on user type from login response
                     // Admin users cannot access mobile app
@@ -112,6 +116,15 @@ fun NavGraph(
                     navController.navigate(destination) {
                         popUpTo(Constants.Routes.WELCOME) { inclusive = true }
                     }
+                }
+            )
+        }
+        
+        // Mot de passe oublié
+        composable(Constants.Routes.FORGOT_PASSWORD) {
+            ForgotPasswordScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

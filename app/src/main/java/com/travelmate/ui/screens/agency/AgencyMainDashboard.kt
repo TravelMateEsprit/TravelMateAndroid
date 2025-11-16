@@ -475,6 +475,7 @@ fun OverviewSection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsurancesSection(
     insurances: List<com.travelmate.data.models.Insurance>,
@@ -487,12 +488,155 @@ fun InsurancesSection(
     val stats by viewModel.stats.collectAsState()
     val error by viewModel.error.collectAsState()
     
+    // États pour la recherche et les filtres
+    var searchTerm by remember { mutableStateOf("") }
+    var showFilters by remember { mutableStateOf(false) }
+    var selectedPriceRange by remember { mutableStateOf(0f..1000f) }
+    var selectedStatus by remember { mutableStateOf<String?>(null) }
+    
+    // Filtrer les assurances
+    val filteredInsurances = remember(insurances, searchTerm, selectedPriceRange, selectedStatus) {
+        insurances.filter { insurance ->
+            val destinations = insurance.conditions?.destination?.joinToString(" ") ?: ""
+            
+            val matchesSearch = searchTerm.isEmpty() || 
+                insurance.name.contains(searchTerm, ignoreCase = true) ||
+                insurance.description.contains(searchTerm, ignoreCase = true) ||
+                destinations.contains(searchTerm, ignoreCase = true)
+            
+            val matchesPrice = insurance.price in selectedPriceRange
+            
+            val matchesStatus = selectedStatus == null || 
+                (selectedStatus == "active" && insurance.isActive) ||
+                (selectedStatus == "inactive" && !insurance.isActive)
+            
+            matchesSearch && matchesPrice && matchesStatus
+        }
+    }
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Barre de recherche
+        item {
+            OutlinedTextField(
+                value = searchTerm,
+                onValueChange = { searchTerm = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Rechercher une assurance...") },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Rechercher")
+                },
+                trailingIcon = {
+                    Row {
+                        if (searchTerm.isNotEmpty()) {
+                            IconButton(onClick = { searchTerm = "" }) {
+                                Icon(Icons.Default.Close, contentDescription = "Effacer")
+                            }
+                        }
+                        IconButton(onClick = { showFilters = !showFilters }) {
+                            Icon(
+                                Icons.Default.FilterList,
+                                contentDescription = "Filtres",
+                                tint = if (showFilters) ColorPrimary else ColorTextSecondary
+                            )
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = ColorPrimary,
+                    unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                )
+            )
+        }
+        
+        // Panneau de filtres
+        if (showFilters) {
+            item {
+                ModernCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    cornerRadius = 16.dp
+                ) {
+                    Text(
+                        "Filtres",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorTextPrimary
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Filtre de prix
+                    Text(
+                        "Fourchette de prix: ${selectedPriceRange.start.toInt()}€ - ${selectedPriceRange.endInclusive.toInt()}€",
+                        fontSize = 14.sp,
+                        color = ColorTextSecondary
+                    )
+                    RangeSlider(
+                        value = selectedPriceRange,
+                        onValueChange = { selectedPriceRange = it },
+                        valueRange = 0f..2000f,
+                        steps = 19,
+                        colors = SliderDefaults.colors(
+                            thumbColor = ColorPrimary,
+                            activeTrackColor = ColorPrimary
+                        )
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Filtre de statut
+                    Text(
+                        "Statut",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = ColorTextPrimary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilterChip(
+                            selected = selectedStatus == null,
+                            onClick = { selectedStatus = null },
+                            label = { Text("Tous") }
+                        )
+                        FilterChip(
+                            selected = selectedStatus == "active",
+                            onClick = { selectedStatus = "active" },
+                            label = { Text("Actif") }
+                        )
+                        FilterChip(
+                            selected = selectedStatus == "inactive",
+                            onClick = { selectedStatus = "inactive" },
+                            label = { Text("Inactif") }
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Bouton réinitialiser les filtres
+                    OutlinedButton(
+                        onClick = {
+                            selectedPriceRange = 0f..1000f
+                            selectedStatus = null
+                            searchTerm = ""
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Réinitialiser les filtres")
+                    }
+                }
+            }
+        }
+        
         // Stats Grid
         item {
             Text(
@@ -655,8 +799,53 @@ fun InsurancesSection(
                     }
                 }
             }
+        } else if (filteredInsurances.isEmpty()) {
+            item {
+                ModernCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    cornerRadius = 16.dp
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = null,
+                            tint = ColorTextSecondary,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "Aucun résultat",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ColorTextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "Aucune assurance ne correspond à vos critères de recherche",
+                            fontSize = 14.sp,
+                            color = ColorTextSecondary,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedButton(
+                            onClick = {
+                                searchTerm = ""
+                                selectedPriceRange = 0f..1000f
+                                selectedStatus = null
+                            }
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Réinitialiser la recherche")
+                        }
+                    }
+                }
+            }
         } else {
-            items(insurances) { insurance ->
+            items(filteredInsurances) { insurance ->
                 AgencyInsuranceCard(
                     insurance = insurance,
                     onEdit = { onEditInsurance(insurance._id) },

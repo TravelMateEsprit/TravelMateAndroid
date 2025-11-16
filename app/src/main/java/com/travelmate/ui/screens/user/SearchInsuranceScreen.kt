@@ -166,7 +166,9 @@ fun SearchInsuranceScreen(
                             items(searchResults) { insurance ->
                                 InsuranceUserCard(
                                     insurance = insurance,
-                                    onClick = { /* Navigation vers détails */ }
+                                    onSubscribe = { /* TODO: Implémenter la souscription */ },
+                                    onUnsubscribe = { /* TODO: Implémenter la désinscription */ },
+                                    isInMySubscriptionsTab = false
                                 )
                             }
                             
@@ -333,6 +335,7 @@ fun FiltersPanel(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DurationFilter(
     selectedDuration: String?,
@@ -360,6 +363,7 @@ fun DurationFilter(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CoverageFilter(
     selectedCoverage: String?,

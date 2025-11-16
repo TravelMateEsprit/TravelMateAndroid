@@ -8,6 +8,7 @@ object Constants {
         const val USER_REGISTRATION = "user_registration"
         const val AGENCY_REGISTRATION = "agency_registration"
         const val LOGIN = "login"
+        const val FORGOT_PASSWORD = "forgot_password"
         const val HOME = "home"
         const val USER_HOME = "user_home"
         const val AGENCY_DASHBOARD = "agency_dashboard"
