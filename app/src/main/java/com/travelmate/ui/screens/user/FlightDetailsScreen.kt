@@ -1,5 +1,6 @@
 package com.travelmate.ui.screens.user
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -23,6 +25,7 @@ import com.travelmate.data.models.FlightOffer
 import com.travelmate.data.models.FlightSegment
 import com.travelmate.data.models.SegmentDetails
 import com.travelmate.ui.theme.*
+import com.travelmate.utils.PrintHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,11 +35,18 @@ fun FlightDetailsScreen(
     onBookFlight: (FlightOffer) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Détails du vol", color = Color.White) },
+                title = { 
+                    Text(
+                        "Détails du vol",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -46,11 +56,79 @@ fun FlightDetailsScreen(
                         )
                     }
                 },
+                actions = {
+                    IconButton(
+                        onClick = { PrintHelper.printFlightDetails(context, flightOffer) }
+                    ) {
+                        Icon(
+                            Icons.Default.Print,
+                            contentDescription = "Imprimer",
+                            tint = Color.White
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = ColorPrimary
                 )
             )
         },
+        bottomBar = {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shadowElevation = 8.dp,
+                color = Color.White
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { PrintHelper.printFlightDetails(context, flightOffer) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(ColorPrimary, ColorSecondary),
+                                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                        end = androidx.compose.ui.geometry.Offset(1000f, 0f)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.PictureAsPdf,
+                                    null,
+                                    modifier = Modifier.size(24.dp),
+                                    tint = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Exporter en PDF",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
