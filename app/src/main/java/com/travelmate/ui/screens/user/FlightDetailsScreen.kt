@@ -1,6 +1,7 @@
 package com.travelmate.ui.screens.user
 
 import android.content.Context
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,7 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -26,6 +27,7 @@ import com.travelmate.data.models.FlightSegment
 import com.travelmate.data.models.SegmentDetails
 import com.travelmate.ui.theme.*
 import com.travelmate.utils.PrintHelper
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,16 +38,75 @@ fun FlightDetailsScreen(
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-    
+    var showConfirmation by remember { mutableStateOf(false) }
+
+    // Confirmation Dialog
+    if (showConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showConfirmation = false },
+            icon = {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = ColorSuccess,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Réservation confirmée",
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Votre vol a été réservé avec succès !",
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Vol: ${flightOffer.flightNumber ?: "N/A"}",
+                        fontSize = 14.sp,
+                        color = ColorTextSecondary,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "${flightOffer.getFromAirport().code} → ${flightOffer.getToAirport().code}",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = ColorPrimary,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showConfirmation = false
+                        onNavigateBack()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary)
+                ) {
+                    Text("OK")
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
                         "Détails du vol",
                         color = Color.White,
                         fontWeight = FontWeight.Bold
-                    ) 
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
@@ -85,7 +146,7 @@ fun FlightDetailsScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
-                        onClick = { PrintHelper.printFlightDetails(context, flightOffer) },
+                        onClick = { showConfirmation = true },
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),
@@ -111,14 +172,14 @@ fun FlightDetailsScreen(
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Icon(
-                                    Icons.Default.PictureAsPdf,
+                                    Icons.Default.CheckCircle,
                                     null,
                                     modifier = Modifier.size(24.dp),
                                     tint = Color.White
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    "Exporter en PDF",
+                                    "Réserver",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -221,7 +282,7 @@ fun FlightDetailsScreen(
                     }
                 }
             }
-            
+
             // Main Content
             Column(
                 modifier = Modifier
@@ -235,99 +296,9 @@ fun FlightDetailsScreen(
                     to = flightOffer.getToAirport(),
                     type = flightOffer.getTypeValue()
                 )
-                
-                // Duration Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        ColorAccent.copy(alpha = 0.1f),
-                                        ColorAccent.copy(alpha = 0.05f)
-                                    ),
-                                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                                    end = androidx.compose.ui.geometry.Offset(1000f, 0f)
-                                )
-                            )
-                            .padding(20.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    modifier = Modifier.size(48.dp),
-                                    color = Color.Transparent
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(
-                                                brush = Brush.radialGradient(
-                                                    colors = listOf(ColorAccent.copy(alpha = 0.8f), ColorAccent.copy(alpha = 0.6f)),
-                                                    center = androidx.compose.ui.geometry.Offset(24f, 24f),
-                                                    radius = 24f
-                                                ),
-                                                shape = CircleShape
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Schedule,
-                                            null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(26.dp)
-                                        )
-                                    }
-                                }
-                                Column {
-                                    Text(
-                                        text = "Durée totale",
-                                        fontSize = 14.sp,
-                                        color = ColorTextSecondary,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                    Text(
-                                        text = flightOffer.duration ?: flightOffer.getDepartureSegment()?.getDurationValue() ?: "N/A",
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = ColorAccent
-                                    )
-                                }
-                            }
-                            if (flightOffer.getReturnSegment() != null) {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = ColorPrimary.copy(alpha = 0.1f)
-                                ) {
-                                    Text(
-                                        text = "Aller-retour",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = ColorPrimary,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-                
+
                 Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
-                
+
                 // Departure Flight Details
                 flightOffer.getDepartureSegment()?.let { departureSegment ->
                     FlightSegmentDetailsCard(
@@ -338,7 +309,7 @@ fun FlightDetailsScreen(
                         isDirect = departureSegment.isDirect()
                     )
                 }
-                
+
                 // Return Flight Details (if round trip)
                 flightOffer.getReturnSegment()?.let { returnSegment ->
                     Spacer(modifier = Modifier.height(8.dp))
@@ -350,24 +321,24 @@ fun FlightDetailsScreen(
                         isDirect = returnSegment.isDirect()
                     )
                 }
-                
+
                 Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
-                
+
                 // Dates Information
                 DatesInfoSection(flightOffer = flightOffer)
-                
+
                 Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
-                
+
                 // Flight Information
                 FlightInfoSection(flightOffer = flightOffer)
-                
+
                 Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
-                
+
                 // Airport Details
                 AirportDetailsSection(flightOffer = flightOffer)
-                
+
                 Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
-                
+
                 // Price Breakdown
                 PriceBreakdownCard(flightOffer = flightOffer)
             }
@@ -383,160 +354,156 @@ fun FlightRouteHeader(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            ColorPrimary.copy(alpha = 0.08f),
-                            ColorSecondary.copy(alpha = 0.05f),
-                            ColorPrimary.copy(alpha = 0.08f)
-                        ),
-                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                        end = androidx.compose.ui.geometry.Offset(1000f, 0f)
-                    )
-                )
                 .padding(24.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+            // Type Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // From Airport
-                    Column(
-                        horizontalAlignment = Alignment.Start,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = ColorPrimary.copy(alpha = 0.15f)
-                        ) {
-                            Text(
-                                text = from.code,
-                                fontSize = 32.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = ColorPrimary,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                            )
-                        }
-                        Text(
-                            text = from.name.ifEmpty { from.code },
-                            fontSize = 14.sp,
-                            color = ColorTextSecondary,
-                            maxLines = 2,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                        from.city?.let {
-                            Text(
-                                text = it,
-                                fontSize = 12.sp,
-                                color = ColorTextSecondary.copy(alpha = 0.7f),
-                                modifier = Modifier.padding(top = 2.dp)
-                            )
-                        }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = when (type) {
+                        "aller-retour" -> ColorPrimary.copy(alpha = 0.1f)
+                        else -> ColorAccent.copy(alpha = 0.1f)
                     }
-                    
-                    // Flight Icon
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = when (type) {
+                            "aller-retour" -> "Aller-Retour"
+                            "multi-destin" -> "Multi-destinations"
+                            else -> "Aller Simple"
+                        },
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = when (type) {
+                            "aller-retour" -> ColorPrimary
+                            else -> ColorAccent
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Flight Route Display
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // From Airport
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = from.code,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorTextPrimary,
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = from.city ?: from.name,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = ColorTextSecondary,
+                        maxLines = 1
+                    )
+                    from.country?.let {
+                        Text(
+                            text = it,
+                            fontSize = 12.sp,
+                            color = ColorTextSecondary.copy(alpha = 0.7f),
+                            maxLines = 1
+                        )
+                    }
+                }
+
+                // Arrow and Flight Icon
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    // Dashed Line with Plane
+                    Box(
+                        modifier = Modifier.width(80.dp),
+                        contentAlignment = Alignment.Center
                     ) {
+                        // Horizontal dashed line
+                        Canvas(modifier = Modifier.fillMaxWidth().height(2.dp)) {
+                            val pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
+                                floatArrayOf(10f, 10f), 0f
+                            )
+                            drawLine(
+                                color = androidx.compose.ui.graphics.Color(0xFF1976D2),
+                                start = androidx.compose.ui.geometry.Offset(0f, size.height / 2),
+                                end = androidx.compose.ui.geometry.Offset(size.width, size.height / 2),
+                                strokeWidth = 3f,
+                                pathEffect = pathEffect
+                            )
+                        }
+
+                        // Flight icon in center
                         Surface(
                             shape = CircleShape,
-                            modifier = Modifier.size(48.dp),
-                            color = Color.Transparent
+                            color = ColorPrimary,
+                            modifier = Modifier.size(36.dp)
                         ) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        brush = Brush.radialGradient(
-                                            colors = listOf(ColorPrimary, ColorSecondary),
-                                            center = androidx.compose.ui.geometry.Offset(24f, 24f),
-                                            radius = 24f
-                                        ),
-                                        shape = CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
                                     Icons.Default.Flight,
-                                    null,
+                                    contentDescription = null,
                                     tint = Color.White,
-                                    modifier = Modifier.size(28.dp)
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = ColorAccent.copy(alpha = 0.2f),
-                            modifier = Modifier.padding(top = 8.dp)
-                        ) {
-                            Text(
-                                text = when (type) {
-                                    "aller-retour" -> "AR"
-                                    "multi-destin" -> "MD"
-                                    else -> "AS"
-                                },
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = ColorAccent,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
                     }
-                    
-                    // To Airport
-                    Column(
-                        horizontalAlignment = Alignment.End,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = ColorSecondary.copy(alpha = 0.15f)
-                        ) {
-                            Text(
-                                text = to.code,
-                                fontSize = 32.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = ColorSecondary,
-                                textAlign = TextAlign.End,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 8.dp)
-                            )
-                        }
+                }
+
+                // To Airport
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = to.code,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorTextPrimary,
+                        letterSpacing = 1.sp,
+                        textAlign = TextAlign.End
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = to.city ?: to.name,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = ColorTextSecondary,
+                        textAlign = TextAlign.End,
+                        maxLines = 1
+                    )
+                    to.country?.let {
                         Text(
-                            text = to.name.ifEmpty { to.code },
-                            fontSize = 14.sp,
-                            color = ColorTextSecondary,
+                            text = it,
+                            fontSize = 12.sp,
+                            color = ColorTextSecondary.copy(alpha = 0.7f),
                             textAlign = TextAlign.End,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 8.dp),
-                            maxLines = 2
+                            maxLines = 1
                         )
-                        to.city?.let {
-                            Text(
-                                text = it,
-                                fontSize = 12.sp,
-                                color = ColorTextSecondary.copy(alpha = 0.7f),
-                                textAlign = TextAlign.End,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 2.dp)
-                            )
-                        }
                     }
                 }
             }
@@ -572,90 +539,132 @@ fun FlightSegmentDetailsCard(
                     )
                 )
         ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            // Title
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color.Transparent
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(ColorPrimary.copy(alpha = 0.8f), ColorPrimary.copy(alpha = 0.6f)),
-                                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                                    end = androidx.compose.ui.geometry.Offset(200f, 0f)
-                                ),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(
-                            text = title,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color.Transparent
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = if (isDirect) 
-                                        listOf(ColorSuccess.copy(alpha = 0.9f), ColorSuccess.copy(alpha = 0.7f))
-                                    else 
-                                        listOf(ColorWarning.copy(alpha = 0.9f), ColorWarning.copy(alpha = 0.7f)),
-                                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                                    end = androidx.compose.ui.geometry.Offset(100f, 0f)
-                                ),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = if (isDirect) "Direct" else "${segment.getStops()} escale(s)",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-            
-   
-            // Flight Number
-            segment.flightNumber?.let { flightNum ->
-                Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                // Title Row
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Default.Info,
-                        null,
-                        modifier = Modifier.size(16.dp),
-                        tint = ColorTextSecondary
-                    )
-                    Text(
-                        text = "Vol: $flightNum",
-                        fontSize = 12.sp,
-                        color = ColorTextSecondary
-                    )
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color.Transparent
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(ColorPrimary.copy(alpha = 0.8f), ColorPrimary.copy(alpha = 0.6f)),
+                                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                        end = androidx.compose.ui.geometry.Offset(200f, 0f)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = title,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color.Transparent
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = if (isDirect)
+                                            listOf(ColorSuccess.copy(alpha = 0.9f), ColorSuccess.copy(alpha = 0.7f))
+                                        else
+                                            listOf(ColorWarning.copy(alpha = 0.9f), ColorWarning.copy(alpha = 0.7f)),
+                                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                        end = androidx.compose.ui.geometry.Offset(100f, 0f)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isDirect) "Direct" else "${segment.getStops()} escale(s)",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
-            }
+
+                // Duration Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            modifier = Modifier.size(40.dp),
+                            color = ColorAccent.copy(alpha = 0.15f)
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    Icons.Default.Schedule,
+                                    null,
+                                    tint = ColorAccent,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
+                        Column {
+                            Text(
+                                text = "Durée",
+                                fontSize = 12.sp,
+                                color = ColorTextSecondary
+                            )
+                            Text(
+                                text = segment.getDurationValue() ?: "N/A",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ColorAccent
+                            )
+                        }
+                    }
+                }
+
+                // Flight Number
+                segment.flightNumber?.let { flightNum ->
+                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            null,
+                            modifier = Modifier.size(16.dp),
+                            tint = ColorTextSecondary
+                        )
+                        Text(
+                            text = "Vol: $flightNum",
+                            fontSize = 12.sp,
+                            color = ColorTextSecondary
+                        )
+                    }
+                }
             }
         }
     }
@@ -672,7 +681,7 @@ fun DatesInfoSection(flightOffer: FlightOffer) {
             fontWeight = FontWeight.Bold,
             color = ColorPrimary
         )
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -691,40 +700,41 @@ fun DatesInfoSection(flightOffer: FlightOffer) {
                         )
                     )
             ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                flightOffer.getDepartureDate()?.let { date ->
-                    InfoRow(
-                        icon = Icons.Default.CalendarToday,
-                        label = "Date de départ",
-                        value = date
-                    )
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    flightOffer.getDepartureDate()?.let { date ->
+                        InfoRow(
+                            icon = Icons.Default.CalendarToday,
+                            label = "Date de départ",
+                            value = date
+                        )
+                    }
+
+                    flightOffer.getReturnDate()?.let { date ->
+                        Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                        InfoRow(
+                            icon = Icons.Default.CalendarToday,
+                            label = "Date de retour",
+                            value = date
+                        )
+                    }
+
+                    flightOffer.duration?.let { duration ->
+                        Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                        InfoRow(
+                            icon = Icons.Default.Schedule,
+                            label = "Durée totale",
+                            value = duration
+                        )
+                    }
                 }
-                
-                flightOffer.getReturnDate()?.let { date ->
-                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
-                    InfoRow(
-                        icon = Icons.Default.CalendarToday,
-                        label = "Date de retour",
-                        value = date
-                    )
-                }
-                
-                flightOffer.duration?.let { duration ->
-                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
-                    InfoRow(
-                        icon = Icons.Default.Schedule,
-                        label = "Durée totale",
-                        value = duration
-                    )
-                }
-            }
             }
         }
     }
 }
+
 
 @Composable
 fun FlightInfoSection(flightOffer: FlightOffer) {
@@ -737,7 +747,7 @@ fun FlightInfoSection(flightOffer: FlightOffer) {
             fontWeight = FontWeight.Bold,
             color = ColorPrimary
         )
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -756,65 +766,65 @@ fun FlightInfoSection(flightOffer: FlightOffer) {
                         )
                     )
             ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                InfoRow(
-                    icon = Icons.Default.Flight,
-                    label = "Compagnie aérienne",
-                    value = flightOffer.getAirlineName().ifEmpty { "Non spécifiée" }
-                )
-                
-                flightOffer.flightNumber?.let {
-                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
-                    InfoRow(
-                        icon = Icons.Default.Info,
-                        label = "Numéro de vol",
-                        value = it
-                    )
-                }
-                
-                Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
-                InfoRow(
-                    icon = Icons.Default.Schedule,
-                    label = "Type de vol",
-                    value = when (flightOffer.getTypeValue()) {
-                        "aller-retour" -> "Aller-retour"
-                        "multi-destin" -> "Multi-destinations"
-                        else -> "Aller simple"
-                    }
-                )
-                
-                if (flightOffer.availableSeats != null) {
-                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
-                    InfoRow(
-                        icon = Icons.Default.EventSeat,
-                        label = "Places disponibles",
-                        value = "${flightOffer.availableSeats} places"
-                    )
-                }
-                
-                flightOffer.direct?.let { isDirect ->
-                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     InfoRow(
                         icon = Icons.Default.Flight,
-                        label = "Type de trajet",
-                        value = if (isDirect) "Vol direct" else "Avec escale(s)"
+                        label = "Compagnie aérienne",
+                        value = flightOffer.getAirlineName().ifEmpty { "Non spécifiée" }
                     )
-                }
-                
-                flightOffer.stops?.let { stops ->
-                    if (stops > 0) {
+
+                    flightOffer.flightNumber?.let {
                         Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
                         InfoRow(
                             icon = Icons.Default.Info,
-                            label = "Nombre d'escales",
-                            value = "$stops escale(s)"
+                            label = "Numéro de vol",
+                            value = it
                         )
                     }
+
+                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                    InfoRow(
+                        icon = Icons.Default.Schedule,
+                        label = "Type de vol",
+                        value = when (flightOffer.getTypeValue()) {
+                            "aller-retour" -> "Aller-retour"
+                            "multi-destin" -> "Multi-destinations"
+                            else -> "Aller simple"
+                        }
+                    )
+
+                    if (flightOffer.availableSeats != null) {
+                        Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                        InfoRow(
+                            icon = Icons.Default.EventSeat,
+                            label = "Places disponibles",
+                            value = "${flightOffer.availableSeats} places"
+                        )
+                    }
+
+                    flightOffer.direct?.let { isDirect ->
+                        Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                        InfoRow(
+                            icon = Icons.Default.Flight,
+                            label = "Type de trajet",
+                            value = if (isDirect) "Vol direct" else "Avec escale(s)"
+                        )
+                    }
+
+                    flightOffer.stops?.let { stops ->
+                        if (stops > 0) {
+                            Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                            InfoRow(
+                                icon = Icons.Default.Info,
+                                label = "Nombre d'escales",
+                                value = "$stops escale(s)"
+                            )
+                        }
+                    }
                 }
-            }
             }
         }
     }
@@ -824,7 +834,7 @@ fun FlightInfoSection(flightOffer: FlightOffer) {
 fun AirportDetailsSection(flightOffer: FlightOffer) {
     val fromAirport = flightOffer.getFromAirport()
     val toAirport = flightOffer.getToAirport()
-    
+
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -834,7 +844,7 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
             fontWeight = FontWeight.Bold,
             color = ColorPrimary
         )
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -853,96 +863,96 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
                         )
                     )
             ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Departure Airport
-                Column {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.FlightTakeoff,
-                            null,
-                            tint = ColorPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Departure Airport
+                    Column {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.FlightTakeoff,
+                                null,
+                                tint = ColorPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Aéroport de départ",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ColorTextPrimary
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Aéroport de départ",
+                            text = "${fromAirport.code.ifEmpty { "N/A" }} - ${fromAirport.name.ifEmpty { "Aéroport" }}",
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = ColorTextSecondary
                         )
+                        fromAirport.city?.let {
+                            Text(
+                                text = it,
+                                fontSize = 12.sp,
+                                color = ColorTextSecondary.copy(alpha = 0.7f),
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                        fromAirport.country?.let {
+                            Text(
+                                text = it,
+                                fontSize = 12.sp,
+                                color = ColorTextSecondary.copy(alpha = 0.7f)
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "${fromAirport.code.ifEmpty { "N/A" }} - ${fromAirport.name.ifEmpty { "Aéroport" }}",
-                        fontSize = 14.sp,
-                        color = ColorTextSecondary
-                    )
-                    fromAirport.city?.let {
+
+                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+
+                    // Arrival Airport
+                    Column {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.FlightLand,
+                                null,
+                                tint = ColorPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Aéroport d'arrivée",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ColorTextPrimary
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = it,
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(top = 4.dp)
+                            text = "${toAirport.code.ifEmpty { "N/A" }} - ${toAirport.name.ifEmpty { "Aéroport" }}",
+                            fontSize = 14.sp,
+                            color = ColorTextSecondary
                         )
-                    }
-                    fromAirport.country?.let {
-                        Text(
-                            text = it,
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary.copy(alpha = 0.7f)
-                        )
+                        toAirport.city?.let {
+                            Text(
+                                text = it,
+                                fontSize = 12.sp,
+                                color = ColorTextSecondary.copy(alpha = 0.7f),
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                        toAirport.country?.let {
+                            Text(
+                                text = it,
+                                fontSize = 12.sp,
+                                color = ColorTextSecondary.copy(alpha = 0.7f)
+                            )
+                        }
                     }
                 }
-                
-                Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
-                
-                // Arrival Airport
-                Column {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.FlightLand,
-                            null,
-                            tint = ColorPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "Aéroport d'arrivée",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "${toAirport.code.ifEmpty { "N/A" }} - ${toAirport.name.ifEmpty { "Aéroport" }}",
-                        fontSize = 14.sp,
-                        color = ColorTextSecondary
-                    )
-                    toAirport.city?.let {
-                        Text(
-                            text = it,
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                    toAirport.country?.let {
-                        Text(
-                            text = it,
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary.copy(alpha = 0.7f)
-                        )
-                    }
-                }
-            }
             }
         }
     }
@@ -995,7 +1005,7 @@ fun PriceBreakdownCard(flightOffer: FlightOffer) {
             fontWeight = FontWeight.Bold,
             color = ColorPrimary
         )
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -1014,18 +1024,18 @@ fun PriceBreakdownCard(flightOffer: FlightOffer) {
                         )
                     )
             ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                PriceRow("Prix du vol", flightOffer.getFormattedPrice())
-                Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
-                PriceRow(
-                    "Total",
-                    flightOffer.getFormattedPrice(),
-                    isTotal = true
-                )
-            }
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    PriceRow("Prix du vol", flightOffer.getFormattedPrice())
+                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                    PriceRow(
+                        "Total",
+                        flightOffer.getFormattedPrice(),
+                        isTotal = true
+                    )
+                }
             }
         }
     }
@@ -1056,4 +1066,3 @@ fun PriceRow(
         )
     }
 }
-
