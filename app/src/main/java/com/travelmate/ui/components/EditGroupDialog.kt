@@ -23,74 +23,81 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
+import com.travelmate.data.models.Group
 import com.travelmate.ui.theme.ColorPrimary
 import com.travelmate.ui.theme.ColorTextPrimary
 import com.travelmate.ui.theme.ColorTextSecondary
 
 @Composable
-fun CreateGroupDialog(
+fun EditGroupDialog(
+    group: Group,
     onDismiss: () -> Unit,
     onConfirm: (name: String, destination: String, description: String, imageUrl: String?) -> Unit,
     onUploadImage: (uri: Uri, onSuccess: (String) -> Unit, onError: (String) -> Unit) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var destination by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var imageUrl by remember { mutableStateOf<String?>(null) }
+    var name by remember { mutableStateOf(group.name) }
+    var destination by remember { mutableStateOf(group.destination ?: "") }
+    var description by remember { mutableStateOf(group.description) }
+    var imageUrl by remember { mutableStateOf(group.image) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var isUploading by remember { mutableStateOf(false) }
     var uploadError by remember { mutableStateOf<String?>(null) }
 
-    // ✅ LOG pour tracer les changements d'état de l'image
-    LaunchedEffect(imageUrl) {
-        Log.d("CreateGroupDialog", "📍 imageUrl state changed: $imageUrl")
+    // ✅ LOG initial
+    LaunchedEffect(Unit) {
+        Log.d("EditGroupDialog", "=== EDIT GROUP DIALOG OPENED ===")
+        Log.d("EditGroupDialog", "📋 Initial group data:")
+        Log.d("EditGroupDialog", "   • Group ID: ${group._id}")
+        Log.d("EditGroupDialog", "   • Name: ${group.name}")
+        Log.d("EditGroupDialog", "   • Destination: ${group.destination}")
+        Log.d("EditGroupDialog", "   • Description: ${group.description}")
+        Log.d("EditGroupDialog", "   • Image URL: ${group.image ?: "NULL"}")
     }
 
-    LaunchedEffect(isUploading) {
-        Log.d("CreateGroupDialog", "📍 isUploading state changed: $isUploading")
+    // ✅ LOG pour tracer les changements
+    LaunchedEffect(imageUrl) {
+        Log.d("EditGroupDialog", "📍 imageUrl state changed: $imageUrl")
     }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        Log.d("CreateGroupDialog", "=== IMAGE PICKER RESULT ===")
+        Log.d("EditGroupDialog", "=== IMAGE PICKER RESULT ===")
         uri?.let {
-            Log.d("CreateGroupDialog", "✅ Image selected from gallery")
-            Log.d("CreateGroupDialog", "📍 Image URI: $it")
+            Log.d("EditGroupDialog", "✅ New image selected")
+            Log.d("EditGroupDialog", "📍 Image URI: $it")
 
             selectedImageUri = it
             isUploading = true
             uploadError = null
 
-            Log.d("CreateGroupDialog", "📤 Starting upload process...")
+            Log.d("EditGroupDialog", "📤 Starting upload...")
 
             onUploadImage(
                 it,
                 { url ->
-                    Log.d("CreateGroupDialog", "=== UPLOAD SUCCESS CALLBACK ===")
-                    Log.d("CreateGroupDialog", "✅ Upload completed successfully")
-                    Log.d("CreateGroupDialog", "📍 Received URL from backend: $url")
+                    Log.d("EditGroupDialog", "=== UPLOAD SUCCESS ===")
+                    Log.d("EditGroupDialog", "✅ New image uploaded")
+                    Log.d("EditGroupDialog", "📍 New URL from backend: $url")
+                    Log.d("EditGroupDialog", "📍 Old URL was: $imageUrl")
 
                     imageUrl = url
                     isUploading = false
                     uploadError = null
 
-                    Log.d("CreateGroupDialog", "📍 State updated - imageUrl: $imageUrl, isUploading: $isUploading")
+                    Log.d("EditGroupDialog", "📍 imageUrl updated to: $imageUrl")
                 },
                 { error ->
-                    Log.e("CreateGroupDialog", "=== UPLOAD ERROR CALLBACK ===")
-                    Log.e("CreateGroupDialog", "❌ Upload failed")
-                    Log.e("CreateGroupDialog", "📍 Error message: $error")
+                    Log.e("EditGroupDialog", "=== UPLOAD ERROR ===")
+                    Log.e("EditGroupDialog", "❌ Upload failed: $error")
 
                     isUploading = false
                     uploadError = error
                     selectedImageUri = null
-
-                    Log.d("CreateGroupDialog", "📍 State updated - uploadError: $error, isUploading: $isUploading")
                 }
             )
         } ?: run {
-            Log.w("CreateGroupDialog", "⚠️ Image picker returned null URI")
+            Log.w("EditGroupDialog", "⚠️ Image picker returned null")
         }
     }
 
@@ -113,7 +120,7 @@ fun CreateGroupDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Créer un groupe",
+                        "Modifier le groupe",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = ColorTextPrimary
@@ -144,14 +151,14 @@ fun CreateGroupDialog(
                             shape = RoundedCornerShape(12.dp)
                         )
                         .clickable(enabled = !isUploading) {
-                            Log.d("CreateGroupDialog", "📸 Image picker button clicked")
+                            Log.d("EditGroupDialog", "📸 Image picker clicked")
                             imagePickerLauncher.launch("image/*")
                         },
                     contentAlignment = Alignment.Center
                 ) {
                     when {
                         isUploading -> {
-                            Log.d("CreateGroupDialog", "🔄 Showing upload progress indicator")
+                            Log.d("EditGroupDialog", "🔄 Showing upload progress")
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
@@ -166,22 +173,38 @@ fun CreateGroupDialog(
                             }
                         }
                         selectedImageUri != null -> {
-                            Log.d("CreateGroupDialog", "🖼️ Displaying selected image preview: $selectedImageUri")
+                            Log.d("EditGroupDialog", "🖼️ Showing new selected image: $selectedImageUri")
                             AsyncImage(
                                 model = selectedImageUri,
                                 contentDescription = "Photo du groupe",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop,
                                 onError = {
-                                    Log.e("CreateGroupDialog", "❌ Error loading image preview: ${it.result.throwable.message}")
+                                    Log.e("EditGroupDialog", "❌ Error loading preview: ${it.result.throwable.message}")
                                 },
                                 onSuccess = {
-                                    Log.d("CreateGroupDialog", "✅ Image preview loaded successfully")
+                                    Log.d("EditGroupDialog", "✅ Preview loaded")
+                                }
+                            )
+                        }
+                        !imageUrl.isNullOrBlank() -> {
+                            Log.d("EditGroupDialog", "🖼️ Showing existing image: $imageUrl")
+                            AsyncImage(
+                                model = imageUrl,
+                                contentDescription = "Photo du groupe",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                onError = { error ->
+                                    Log.e("EditGroupDialog", "❌ Error loading existing image: ${error.result.throwable.message}")
+                                    Log.e("EditGroupDialog", "❌ Failed URL: $imageUrl")
+                                },
+                                onSuccess = {
+                                    Log.d("EditGroupDialog", "✅ Existing image loaded successfully")
                                 }
                             )
                         }
                         else -> {
-                            Log.d("CreateGroupDialog", "📷 Showing placeholder icon")
+                            Log.d("EditGroupDialog", "📷 Showing placeholder (no image)")
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
@@ -210,7 +233,6 @@ fun CreateGroupDialog(
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
-                    Log.e("CreateGroupDialog", "⚠️ Displaying error message: $uploadError")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -281,58 +303,54 @@ fun CreateGroupDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Button(
-                    onClick = {
-                        if (name.isNotBlank() && description.isNotBlank()) {
-                            Log.d("CreateGroupDialog", "===========================================")
-                            Log.d("CreateGroupDialog", "=== CREATE GROUP BUTTON CLICKED ===")
-                            Log.d("CreateGroupDialog", "===========================================")
-                            Log.d("CreateGroupDialog", "📋 Form Data:")
-                            Log.d("CreateGroupDialog", "   • Name: $name")
-                            Log.d("CreateGroupDialog", "   • Destination: $destination")
-                            Log.d("CreateGroupDialog", "   • Description: $description")
-                            Log.d("CreateGroupDialog", "   • ImageUrl: ${imageUrl ?: "NULL - No image uploaded"}")
-                            Log.d("CreateGroupDialog", "   • isUploading: $isUploading")
-                            Log.d("CreateGroupDialog", "   • selectedImageUri: $selectedImageUri")
-                            Log.d("CreateGroupDialog", "===========================================")
-
-                            if (imageUrl != null) {
-                                Log.d("CreateGroupDialog", "✅ Image URL is present, will be sent to backend")
-                            } else {
-                                Log.w("CreateGroupDialog", "⚠️ No image URL - group will be created without image")
-                            }
-
-                            onConfirm(name, destination, description, imageUrl)
-
-                            Log.d("CreateGroupDialog", "📤 onConfirm callback called with imageUrl: $imageUrl")
-                        } else {
-                            Log.w("CreateGroupDialog", "⚠️ Cannot create group - missing required fields")
-                            Log.w("CreateGroupDialog", "   • Name blank: ${name.isBlank()}")
-                            Log.w("CreateGroupDialog", "   • Description blank: ${description.isBlank()}")
-                        }
-                    },
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = name.isNotBlank() && description.isNotBlank() && !isUploading,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ColorPrimary
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(vertical = 14.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (isUploading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Upload en cours...")
-                    } else {
-                        Text(
-                            "Créer le groupe",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Annuler")
+                    }
+
+                    Button(
+                        onClick = {
+                            if (name.isNotBlank() && description.isNotBlank()) {
+                                Log.d("EditGroupDialog", "===========================================")
+                                Log.d("EditGroupDialog", "=== UPDATE GROUP BUTTON CLICKED ===")
+                                Log.d("EditGroupDialog", "===========================================")
+                                Log.d("EditGroupDialog", "📋 Updated Data:")
+                                Log.d("EditGroupDialog", "   • Group ID: ${group._id}")
+                                Log.d("EditGroupDialog", "   • Name: $name")
+                                Log.d("EditGroupDialog", "   • Destination: $destination")
+                                Log.d("EditGroupDialog", "   • Description: $description")
+                                Log.d("EditGroupDialog", "   • ImageUrl: ${imageUrl ?: "NULL"}")
+                                Log.d("EditGroupDialog", "   • Original image was: ${group.image}")
+                                Log.d("EditGroupDialog", "===========================================")
+
+                                onConfirm(name, destination, description, imageUrl)
+
+                                Log.d("EditGroupDialog", "📤 onConfirm called with imageUrl: $imageUrl")
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        enabled = name.isNotBlank() && description.isNotBlank() && !isUploading,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = ColorPrimary
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        if (isUploading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text("Enregistrer", fontSize = 16.sp)
+                        }
                     }
                 }
             }

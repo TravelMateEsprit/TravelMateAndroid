@@ -10,7 +10,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.travelmate.ui.screens.groups.GroupsListScreen
+import com.travelmate.ui.screens.groups.GroupDetailsScreen
 import com.travelmate.ui.theme.*
 
 sealed class BottomNavItem(
@@ -49,7 +55,10 @@ fun UserHomeScreen(
                 navItems.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = selectedTab == index,
-                        onClick = { selectedTab = index },
+                        onClick = {
+                            selectedTab = index
+                            // ❌ SUPPRIMÉ - Ne pas naviguer ici!
+                        },
                         icon = {
                             Icon(
                                 imageVector = item.icon,
@@ -78,7 +87,36 @@ fun UserHomeScreen(
         Box(modifier = Modifier.padding(paddingValues)) {
             when (selectedTab) {
                 0 -> PlaceholderScreen("Accueil")
-                1 -> GroupsListScreen()
+                1 -> {
+                    // ✅ SOLUTION - Créer un NavController à chaque fois
+                    val groupsNavController = rememberNavController()
+
+                    NavHost(
+                        navController = groupsNavController,
+                        startDestination = "groupsList"
+                    ) {
+                        composable("groupsList") {
+                            GroupsListScreen(
+                                onNavigateToGroupDetails = { groupId ->
+                                    groupsNavController.navigate("groupDetails/$groupId")
+                                }
+                            )
+                        }
+
+                        composable(
+                            route = "groupDetails/{groupId}",
+                            arguments = listOf(
+                                navArgument("groupId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val groupId = backStackEntry.arguments?.getString("groupId") ?: return@composable
+                            GroupDetailsScreen(
+                                groupId = groupId,
+                                onBack = { groupsNavController.popBackStack() }
+                            )
+                        }
+                    }
+                }
                 2 -> PlaceholderScreen("Offres")
                 3 -> InsurancesUserScreen()
                 4 -> ProfileScreen(onLogout = onLogout)

@@ -3,6 +3,6 @@ package com.travelmate.data.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DeleteGroupResponse(
+data class DeleteMessageResponse(
     val message: String
 )

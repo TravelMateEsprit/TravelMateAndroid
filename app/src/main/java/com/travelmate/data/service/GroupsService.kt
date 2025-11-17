@@ -2,14 +2,18 @@ package com.travelmate.data.service
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import android.util.Log
 import com.travelmate.data.api.GroupsApi
 import com.travelmate.data.models.*
-import com.travelmate.network.api.GroupService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,13 +33,22 @@ class GroupsService @Inject constructor(
     private val _myCreatedGroups = MutableStateFlow<List<Group>>(emptyList())
     val myCreatedGroups: StateFlow<List<Group>> = _myCreatedGroups.asStateFlow()
 
+    private val _currentGroup = MutableStateFlow<Group?>(null)
+    val currentGroup: StateFlow<Group?> = _currentGroup.asStateFlow()
+
+    private val _groupMessages = MutableStateFlow<List<MessageGroupe>>(emptyList())
+    val groupMessages: StateFlow<List<MessageGroupe>> = _groupMessages.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    // ✅ Stocker les groupes rejoints localement
+    // ✅ AJOUT : État pour les demandes en attente
+    private val _pendingRequests = MutableStateFlow<List<GroupMember>>(emptyList())
+    val pendingRequests: StateFlow<List<GroupMember>> = _pendingRequests.asStateFlow()
+
     private val _joinedGroupIds = MutableStateFlow<Set<String>>(emptySet())
 
     private fun getAuthToken(): String {
@@ -51,13 +64,13 @@ class GroupsService @Inject constructor(
         if (group.createdBy == null) return false
         val createdByStr = group.createdBy.toString().trim()
         val userIdStr = userId.trim()
-        // Comparaison exacte (ObjectId sont case-sensitive mais on compare sans case pour sécurité)
         return createdByStr.equals(userIdStr, ignoreCase = true) ||
-               createdByStr == userIdStr ||
-               // Si les IDs sont de longueur similaire (ObjectId = 24 chars), vérifier contenu exact
-               (createdByStr.length >= 20 && userIdStr.length >= 20 && 
-                createdByStr.lowercase() == userIdStr.lowercase())
+                createdByStr == userIdStr ||
+                (createdByStr.length >= 20 && userIdStr.length >= 20 &&
+                        createdByStr.lowercase() == userIdStr.lowercase())
     }
+
+    // ========== GROUPS ==========
 
     suspend fun getAllGroups(): Result<List<Group>> {
         return try {
@@ -71,91 +84,29 @@ class GroupsService @Inject constructor(
                 val groups = response.body()!!
                 val userId = getUserId()
 
-                Log.d("GroupsService", "Current user ID: $userId")
-                Log.d("GroupsService", "User ID length: ${userId.length}")
-                Log.d("GroupsService", "Loaded ${groups.size} groups")
-
-                // ✅ Récupérer les membres de chaque groupe pour savoir si l'user est membre
-                // Pour chaque groupe, vérifier l'appartenance via plusieurs méthodes
-                // Note: Si l'utilisateur a rejoint via Swagger, on peut ne pas le détecter immédiatement
-                // mais l'erreur 400 lors d'un join tentatif mettra à jour le cache
                 val groupsWithStatus = groups.map { group ->
-                    // Normaliser l'userId pour la comparaison
-                    val userIdStr = userId.trim()
-                    
-                    // Méthode 1: Vérifier dans le cache local
                     val isInCache = _joinedGroupIds.value.contains(group._id)
-                    
-                    // Méthode 2: Vérifier si créateur
                     val isCreator = isCreator(group, userId)
-                    
-                    // Méthode 3: Vérifier dans le tableau members avec comparaison améliorée
-                    // ObjectId MongoDB sont des strings de 24 caractères hexadécimaux
                     val isMemberInArray = group.members.any { memberId ->
                         val memberIdStr = memberId.toString().trim()
-                        // Comparaison exacte (ObjectId sont case-sensitive mais on compare sans case pour sécurité)
-                        val exactMatch = memberIdStr.equals(userIdStr, ignoreCase = true) || memberIdStr == userIdStr
-                        // Si les deux IDs ont la même longueur (ObjectId = 24 chars), comparer en lowercase
-                        val sameLengthMatch = memberIdStr.length == userIdStr.length && 
-                                            memberIdStr.length >= 20 &&
-                                            memberIdStr.lowercase() == userIdStr.lowercase()
-                        exactMatch || sameLengthMatch
+                        val userIdStr = userId.trim()
+                        memberIdStr.equals(userIdStr, ignoreCase = true) || memberIdStr == userIdStr
                     }
-                    
-                    // Si aucune méthode n'a détecté l'appartenance, on considère qu'on n'est pas membre
-                    // (si l'utilisateur a rejoint via Swagger, l'erreur 400 lors du join mettra à jour le cache)
+
                     val isMember = isInCache || isMemberInArray || isCreator
-                    
-                    // Si on n'est pas sûr et que le groupe a des membres, vérifier via l'API (optionnel, coûteux)
-                    // On skip cette vérification pour l'instant car trop coûteux, mais on peut l'ajouter si nécessaire
 
-                    // Logging détaillé pour debugging
-                    if (isMember) {
-                        Log.d("GroupsService", "✅ User IS member of group: ${group._id} (${group.name})")
-                        Log.d("GroupsService", "  - User ID: $userIdStr (length: ${userIdStr.length})")
-                        Log.d("GroupsService", "  - In joinedGroupIds cache: $isInCache")
-                        Log.d("GroupsService", "  - In members array: $isMemberInArray")
-                        Log.d("GroupsService", "  - Is creator: $isCreator")
-                        Log.d("GroupsService", "  - Group members count: ${group.members.size}")
-                        if (group.members.isNotEmpty()) {
-                            group.members.forEachIndexed { index, memberId ->
-                                Log.d("GroupsService", "  - Member[$index] ID: ${memberId} (length: ${memberId.toString().length})")
-                            }
-                        }
-                        Log.d("GroupsService", "  - Group createdBy: ${group.createdBy} (length: ${group.createdBy?.toString()?.length})")
-                    } else {
-                        Log.d("GroupsService", "❌ User is NOT member of group: ${group._id} (${group.name})")
-                        Log.d("GroupsService", "  - User ID: $userIdStr (length: ${userIdStr.length})")
-                        Log.d("GroupsService", "  - In joinedGroupIds cache: $isInCache")
-                        Log.d("GroupsService", "  - Group members count: ${group.members.size}")
-                        if (group.members.isNotEmpty()) {
-                            group.members.forEachIndexed { index, memberId ->
-                                val memberIdStr = memberId.toString()
-                                Log.d("GroupsService", "  - Member[$index] ID: $memberIdStr (length: ${memberIdStr.length})")
-                                Log.d("GroupsService", "    Comparison: '${memberIdStr.lowercase()}' vs '${userIdStr.lowercase()}' = ${memberIdStr.lowercase() == userIdStr.lowercase()}")
-                            }
-                        }
-                        Log.d("GroupsService", "  - Group createdBy: ${group.createdBy} (length: ${group.createdBy?.toString()?.length})")
-                    }
-
-                    group.copy(
-                        memberCount = group.members.size,
+                    // ✅ CORRECTION : Assigner les propriétés avec apply
+                    group.apply {
+                        memberCount = members.size
                         isUserMember = isMember
-                    )
+                    }
                 }
 
                 _allGroups.value = groupsWithStatus
-
-                // Mettre à jour myGroups (groupes où l'utilisateur est membre mais pas créateur)
                 _myGroups.value = groupsWithStatus.filter { it.isUserMember && !isCreator(it, userId) }
-
-                // Mettre à jour myCreatedGroups (groupes créés par l'utilisateur)
                 _myCreatedGroups.value = groupsWithStatus.filter { isCreator(it, userId) }
 
                 Log.d("GroupsService", "✅ Loaded ${groupsWithStatus.size} groups")
-                Log.d("GroupsService", "✅ User is member of ${_myGroups.value.size} groups")
-                Log.d("GroupsService", "✅ User created ${_myCreatedGroups.value.size} groups")
-
                 Result.success(groupsWithStatus)
             } else {
                 val errorMsg = "Erreur lors du chargement des groupes: ${response.code()}"
@@ -172,16 +123,28 @@ class GroupsService @Inject constructor(
         }
     }
 
-    suspend fun getMyGroups(): Result<List<Group>> {
+    suspend fun getGroupById(groupId: String): Result<Group> {
         return try {
-            val allGroupsResult = getAllGroups()
-            if (allGroupsResult.isSuccess) {
-                Result.success(_myGroups.value)
+            _isLoading.value = true
+            _error.value = null
+
+            val response = groupsApi.getGroupById(groupId, getAuthToken())
+
+            if (response.isSuccessful && response.body() != null) {
+                val group = response.body()!!
+                _currentGroup.value = group
+                Result.success(group)
             } else {
-                allGroupsResult
+                val errorMsg = "Erreur lors du chargement du groupe: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error loading group", e)
+            _error.value = e.message
             Result.failure(e)
+        } finally {
+            _isLoading.value = false
         }
     }
 
@@ -190,54 +153,83 @@ class GroupsService @Inject constructor(
             _isLoading.value = true
             _error.value = null
 
-            Log.d("GroupsService", "=== CREATE GROUP ===")
-            Log.d("GroupsService", "Request: $request")
-            Log.d("GroupsService", "Auth Token: ${getAuthToken().take(20)}...")
-
-            // Backend DTO only accepts: name, description, image (optional)
-            // Note: destination existe dans le schema Group mais pas dans CreateGroupDto
             val createRequest = CreateGroupRequest(
                 name = request["name"]?.trim() ?: "",
                 description = request["description"]?.trim() ?: "",
+                destination = request["destination"]?.trim(),
                 image = request["image"]?.takeIf { it.isNotBlank() }
             )
 
-            Log.d("GroupsService", "CreateRequest: name=${createRequest.name}, description=${createRequest.description}")
-
             val response = groupsApi.createGroup(getAuthToken(), createRequest)
-
-            Log.d("GroupsService", "Response code: ${response.code()}")
-            Log.d("GroupsService", "Response isSuccessful: ${response.isSuccessful}")
 
             if (response.isSuccessful && response.body() != null) {
                 val group = response.body()!!
-                Log.d("GroupsService", "✅ Group created: ${group._id}")
-                Log.d("GroupsService", "Group members: ${group.members}")
-                Log.d("GroupsService", "Group createdBy: ${group.createdBy}")
-                Log.d("GroupsService", "Current user ID: ${getUserId()}")
-
-                // ✅ Ajouter le groupe aux groupes rejoints (créateur = automatiquement membre)
                 _joinedGroupIds.value = _joinedGroupIds.value + group._id
-                Log.d("GroupsService", "Added to joinedGroupIds: ${_joinedGroupIds.value}")
-
-                // Refresh groups to update UI
                 getAllGroups()
                 Result.success(group)
             } else {
-                val errorBody = try {
-                    response.errorBody()?.string() ?: "No error body"
-                } catch (e: Exception) {
-                    "Error reading error body: ${e.message}"
-                }
-                val errorMsg = "Erreur lors de la création: ${response.code()} - $errorBody"
-                Log.e("GroupsService", errorMsg)
+                val errorMsg = "Erreur: ${response.code()}"
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Log.e("GroupsService", "❌ Error creating group", e)
-            e.printStackTrace()
-            _error.value = e.message ?: "Erreur inconnue lors de la création du groupe"
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    suspend fun updateGroup(groupId: String, name: String?, destination: String?, description: String?, imageUrl: String?): Result<Group> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+
+            val updateRequest = UpdateGroupRequest(
+                name = name,
+                description = description,
+                image = imageUrl
+            )
+
+            val response = groupsApi.updateGroup(groupId, getAuthToken(), updateRequest)
+
+            if (response.isSuccessful && response.body() != null) {
+                getAllGroups()
+                Result.success(response.body()!!)
+            } else {
+                val errorMsg = "Erreur: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error updating group", e)
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    suspend fun deleteGroup(groupId: String): Result<Unit> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+
+            val response = groupsApi.deleteGroup(groupId, getAuthToken())
+
+            if (response.isSuccessful) {
+                _joinedGroupIds.value = _joinedGroupIds.value - groupId
+                getAllGroups()
+                Result.success(Unit)
+            } else {
+                val errorMsg = "Erreur: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error deleting group", e)
+            _error.value = e.message
             Result.failure(e)
         } finally {
             _isLoading.value = false
@@ -249,53 +241,36 @@ class GroupsService @Inject constructor(
             _isLoading.value = true
             _error.value = null
 
-            Log.d("GroupsService", "=== JOIN GROUP ===")
-            Log.d("GroupsService", "Group ID: $groupId")
-            Log.d("GroupsService", "User ID: ${getUserId()}")
-
             val response = groupsApi.joinGroup(groupId, getAuthToken())
-
-            Log.d("GroupsService", "Join response code: ${response.code()}")
-            Log.d("GroupsService", "Join response isSuccessful: ${response.isSuccessful}")
 
             if (response.isSuccessful && response.body() != null) {
                 val member = response.body()!!
-                Log.d("GroupsService", "✅ Joined group successfully")
-                Log.d("GroupsService", "Member: ${member.userId ?: "null"}, Group: ${member.groupId ?: "null"}")
 
-                // ✅ Ajouter aux groupes rejoints
-                _joinedGroupIds.value = _joinedGroupIds.value + groupId
-                Log.d("GroupsService", "Updated joinedGroupIds: ${_joinedGroupIds.value}")
+                // ✅ Afficher un message si la demande est en attente
+                if (member.status == "pending") {
+                    _error.value = "Demande envoyée ! En attente d'approbation."
+                } else if (member.status == "active") {
+                    _joinedGroupIds.value = _joinedGroupIds.value + groupId
+                }
 
-                // Refresh groups to update UI with new membership status
-                // Attendre un peu pour que le backend mette à jour
                 kotlinx.coroutines.delay(500)
                 getAllGroups()
                 Result.success(member)
             } else {
-                val errorBody = try {
-                    response.errorBody()?.string() ?: "No error body"
-                } catch (e: Exception) {
-                    "Error reading error body: ${e.message}"
+                // ✅ Gérer les erreurs 400
+                val errorBody = response.errorBody()?.string() ?: ""
+                val errorMsg = when {
+                    errorBody.contains("en attente") -> "Demande déjà envoyée, en attente d'approbation"
+                    errorBody.contains("déjà membre") -> "Vous êtes déjà membre de ce groupe"
+                    errorBody.contains("banni") -> "Vous avez été banni de ce groupe"
+                    else -> "Erreur: ${response.code()}"
                 }
-                
-                // Si l'erreur indique qu'on est déjà membre, mettre à jour le cache
-                if (response.code() == 400 && errorBody.contains("déjà membre")) {
-                    Log.d("GroupsService", "⚠️ User is already member (backend confirmed), updating cache")
-                    _joinedGroupIds.value = _joinedGroupIds.value + groupId
-                    // Refresh groups to update UI
-                    getAllGroups()
-                }
-                
-                val errorMsg = "Erreur lors de l'inscription: ${response.code()} - $errorBody"
-                Log.e("GroupsService", errorMsg)
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Log.e("GroupsService", "❌ Error joining group", e)
-            e.printStackTrace()
-            _error.value = e.message ?: "Erreur inconnue lors de l'inscription au groupe"
+            _error.value = e.message
             Result.failure(e)
         } finally {
             _isLoading.value = false
@@ -307,42 +282,20 @@ class GroupsService @Inject constructor(
             _isLoading.value = true
             _error.value = null
 
-            Log.d("GroupsService", "=== LEAVE GROUP ===")
-            Log.d("GroupsService", "Group ID: $groupId")
-            Log.d("GroupsService", "User ID: ${getUserId()}")
-
             val response = groupsApi.leaveGroup(groupId, getAuthToken())
 
-            Log.d("GroupsService", "Leave response code: ${response.code()}")
-            Log.d("GroupsService", "Leave response isSuccessful: ${response.isSuccessful}")
-
             if (response.isSuccessful) {
-                val leaveResponse = response.body()
-                Log.d("GroupsService", "✅ Left group successfully")
-                Log.d("GroupsService", "Response message: ${leaveResponse?.message}")
-
-                // ✅ Retirer des groupes rejoints
                 _joinedGroupIds.value = _joinedGroupIds.value - groupId
-                Log.d("GroupsService", "Updated joinedGroupIds: ${_joinedGroupIds.value}")
-
-                // Refresh groups to update UI with new membership status
                 getAllGroups()
                 Result.success(Unit)
             } else {
-                val errorBody = try {
-                    response.errorBody()?.string() ?: "No error body"
-                } catch (e: Exception) {
-                    "Error reading error body: ${e.message}"
-                }
-                val errorMsg = "Erreur lors de la sortie: ${response.code()} - $errorBody"
-                Log.e("GroupsService", errorMsg)
+                val errorMsg = "Erreur: ${response.code()}"
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Log.e("GroupsService", "❌ Error leaving group", e)
-            e.printStackTrace()
-            _error.value = e.message ?: "Erreur inconnue lors de la sortie du groupe"
+            _error.value = e.message
             Result.failure(e)
         } finally {
             _isLoading.value = false
@@ -356,81 +309,207 @@ class GroupsService @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Erreur lors du chargement des membres"))
+                Result.failure(Exception("Erreur"))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    // Helper method to check if user is member of a specific group by querying members
-    suspend fun checkUserMembership(groupId: String): Boolean {
+    // ✅ NOUVEAU : Fonctions pour gérer les demandes
+    suspend fun getPendingRequests(groupId: String): Result<List<GroupMember>> {
         return try {
-            val membersResult = getGroupMembers(groupId)
-            if (membersResult.isSuccess) {
-                val userId = getUserId()
-                val members = membersResult.getOrNull() ?: emptyList()
-                val isMember = members.any { member ->
-                    val memberUserId = member.userId?.toString()?.trim() ?: ""
-                    val currentUserId = userId.trim()
-                    memberUserId.isNotEmpty() && currentUserId.isNotEmpty() && (
-                        memberUserId.equals(currentUserId, ignoreCase = true) ||
-                        memberUserId == currentUserId ||
-                        (member.status.equals("active", ignoreCase = true) && 
-                        (memberUserId.contains(currentUserId) || currentUserId.contains(memberUserId)))
-                    )
-                }
-                Log.d("GroupsService", "Membership check for group $groupId: $isMember")
-                isMember
+            val response = groupsApi.getPendingRequests(groupId, getAuthToken())
+            if (response.isSuccessful && response.body() != null) {
+                _pendingRequests.value = response.body()!!
+                Result.success(response.body()!!)
             } else {
-                false
+                Result.failure(Exception("Erreur"))
             }
         } catch (e: Exception) {
-            Log.e("GroupsService", "Error checking membership", e)
-            false
+            Log.e("GroupsService", "❌ Error getting pending requests", e)
+            Result.failure(e)
         }
     }
 
-    suspend fun deleteGroup(groupId: String): Result<Unit> {
+    suspend fun approveMember(groupId: String, userId: String): Result<GroupMember> {
         return try {
             _isLoading.value = true
-            _error.value = null
+            val response = groupsApi.approveMember(groupId, userId, getAuthToken())
 
-            Log.d("GroupsService", "=== DELETE GROUP ===")
-            Log.d("GroupsService", "Group ID: $groupId")
-            Log.d("GroupsService", "User ID: ${getUserId()}")
-
-            val response = groupsApi.deleteGroup(groupId, getAuthToken())
-
-            Log.d("GroupsService", "Delete response code: ${response.code()}")
-            Log.d("GroupsService", "Delete response isSuccessful: ${response.isSuccessful}")
-
-            if (response.isSuccessful) {
-                val deleteResponse = response.body()
-                Log.d("GroupsService", "✅ Group deleted successfully")
-                Log.d("GroupsService", "Response message: ${deleteResponse?.message}")
-
-                // Retirer des groupes rejoints
-                _joinedGroupIds.value = _joinedGroupIds.value - groupId
-
-                // Refresh groups to update UI
+            if (response.isSuccessful && response.body() != null) {
+                getPendingRequests(groupId)
                 getAllGroups()
-                Result.success(Unit)
+                Result.success(response.body()!!)
             } else {
-                val errorBody = try {
-                    response.errorBody()?.string() ?: "No error body"
-                } catch (e: Exception) {
-                    "Error reading error body: ${e.message}"
-                }
-                val errorMsg = "Erreur lors de la suppression: ${response.code()} - $errorBody"
-                Log.e("GroupsService", errorMsg)
+                val errorMsg = "Erreur: ${response.code()}"
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
-            Log.e("GroupsService", "❌ Error deleting group", e)
-            e.printStackTrace()
-            _error.value = e.message ?: "Erreur inconnue lors de la suppression du groupe"
+            Log.e("GroupsService", "❌ Error approving member", e)
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    suspend fun rejectMember(groupId: String, userId: String): Result<Unit> {
+        return try {
+            _isLoading.value = true
+            val response = groupsApi.rejectMember(groupId, userId, getAuthToken())
+
+            if (response.isSuccessful) {
+                getPendingRequests(groupId)
+                Result.success(Unit)
+            } else {
+                val errorMsg = "Erreur: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error rejecting member", e)
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    // ========== MESSAGES ==========
+
+    suspend fun getGroupMessages(groupId: String): Result<List<MessageGroupe>> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+
+            val response = groupsApi.getGroupMessages(groupId, getAuthToken())
+
+            if (response.isSuccessful && response.body() != null) {
+                _groupMessages.value = response.body()!!
+                Result.success(response.body()!!)
+            } else {
+                val errorMsg = "Erreur: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error loading messages", e)
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    suspend fun createMessage(groupId: String, content: String, images: List<String> = emptyList()): Result<MessageGroupe> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+
+            val request = CreateMessageRequest(
+                content = content.trim(),
+                images = images
+            )
+
+            val response = groupsApi.createMessage(groupId, getAuthToken(), request)
+
+            if (response.isSuccessful && response.body() != null) {
+                getGroupMessages(groupId)
+                Result.success(response.body()!!)
+            } else {
+                val errorMsg = "Erreur: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error creating message", e)
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    suspend fun deleteMessage(groupId: String, messageId: String): Result<Unit> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+
+            val response = groupsApi.deleteMessage(groupId, messageId, getAuthToken())
+
+            if (response.isSuccessful) {
+                getGroupMessages(groupId)
+                Result.success(Unit)
+            } else {
+                val errorMsg = "Erreur: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error deleting message", e)
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    suspend fun updateMessage(groupId: String, messageId: String, newContent: String): Result<MessageGroupe> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+
+            val request = UpdateMessageRequest(content = newContent)
+            val response = groupsApi.updateMessage(groupId, messageId, getAuthToken(), request)
+
+            if (response.isSuccessful && response.body() != null) {
+                getGroupMessages(groupId)
+                Result.success(response.body()!!)
+            } else {
+                val errorMsg = "Erreur: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error updating message", e)
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    suspend fun uploadGroupImage(imageUri: Uri): Result<String> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+
+            val file = File(context.cacheDir, "group_image_${System.currentTimeMillis()}.jpg")
+            context.contentResolver.openInputStream(imageUri)?.use { input ->
+                file.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("image", file.name, requestFile)
+
+            val response = groupsApi.uploadGroupImage(body)
+
+            if (response.isSuccessful && response.body() != null) {
+                val imageUrl = response.body()!!.imageUrl
+                file.delete()
+                Result.success(imageUrl)
+            } else {
+                val errorMsg = "Erreur upload: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error uploading image", e)
+            _error.value = e.message
             Result.failure(e)
         } finally {
             _isLoading.value = false

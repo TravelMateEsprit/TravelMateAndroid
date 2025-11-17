@@ -6,6 +6,6 @@ import kotlinx.serialization.Serializable
 data class CreateGroupRequest(
     val name: String,
     val description: String,
+    val destination: String? = null,  // ✅ AJOUTÉ
     val image: String? = null
-    // Note: destination n'est pas dans le DTO backend, même si présent dans le schema
 )

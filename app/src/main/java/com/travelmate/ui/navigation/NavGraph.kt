@@ -11,12 +11,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.travelmate.data.socket.SocketService
 import com.travelmate.ui.screens.agency.AgencyMainDashboard
 import com.travelmate.ui.screens.agency.InsuranceFormScreen
 import com.travelmate.ui.screens.agency.InsuranceSubscribersScreen
+import com.travelmate.ui.screens.groups.GroupDetailsScreen  // ✅ AJOUTÉ
+import com.travelmate.ui.screens.groups.GroupsListScreen    // ✅ AJOUTÉ
 import com.travelmate.ui.screens.login.LoginScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
@@ -38,7 +42,7 @@ fun NavGraph(
         userPreferences.isAgency() -> Constants.Routes.AGENCY_DASHBOARD
         else -> Constants.Routes.USER_HOME
     }
-    
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -59,7 +63,7 @@ fun NavGraph(
                 socketService = socketService
             )
         }
-        
+
         // Inscription utilisateur
         composable(Constants.Routes.USER_REGISTRATION) {
             UserRegistrationScreen(
@@ -73,7 +77,7 @@ fun NavGraph(
                 }
             )
         }
-        
+
         // Inscription agence
         composable(Constants.Routes.AGENCY_REGISTRATION) {
             AgencyRegistrationScreen(
@@ -87,7 +91,7 @@ fun NavGraph(
                 }
             )
         }
-        
+
         // Connexion
         composable(Constants.Routes.LOGIN) {
             LoginScreen(
@@ -106,16 +110,16 @@ fun NavGraph(
                         }
                         else -> Constants.Routes.USER_HOME
                     }
-                    
+
                     android.util.Log.d("NavGraph", "Login success, userType: $userType, navigating to: $destination")
-                    
+
                     navController.navigate(destination) {
                         popUpTo(Constants.Routes.WELCOME) { inclusive = true }
                     }
                 }
             )
         }
-        
+
         // User Home screen with bottom navigation
         composable(Constants.Routes.USER_HOME) {
             UserHomeScreen(
@@ -126,7 +130,7 @@ fun NavGraph(
                 }
             )
         }
-        
+
         // Agency Dashboard
         composable(Constants.Routes.AGENCY_DASHBOARD) {
             AgencyMainDashboard(
@@ -147,7 +151,7 @@ fun NavGraph(
                 }
             )
         }
-        
+
         // Insurance Form - Create
         composable("insurance_form") {
             InsuranceFormScreen(
@@ -157,7 +161,7 @@ fun NavGraph(
                 }
             )
         }
-        
+
         // Insurance Form - Edit
         composable("insurance_form/{insuranceId}") { backStackEntry ->
             InsuranceFormScreen(
@@ -167,7 +171,7 @@ fun NavGraph(
                 }
             )
         }
-        
+
         // Insurance Subscribers
         composable("insurance_subscribers/{insuranceId}/{insuranceName}") { backStackEntry ->
             InsuranceSubscribersScreen(
@@ -178,7 +182,36 @@ fun NavGraph(
                 }
             )
         }
-        
+
+        // ✅ ========== ROUTES GROUPES (NOUVEAU) ==========
+
+        // Liste des groupes
+        composable("groups") {
+            GroupsListScreen(
+                onNavigateToGroupDetails = { groupId ->
+                    navController.navigate("groupDetails/$groupId")
+                }
+            )
+        }
+
+        // Détails d'un groupe avec messages
+        composable(
+            route = "groupDetails/{groupId}",
+            arguments = listOf(
+                navArgument("groupId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getString("groupId") ?: return@composable
+            GroupDetailsScreen(
+                groupId = groupId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // ✅ ========== FIN ROUTES GROUPES ==========
+
         // Home screen (placeholder for now)
         composable(Constants.Routes.HOME) {
             HomeScreenPlaceholder(
@@ -206,16 +239,16 @@ fun HomeScreenPlaceholder(onLogout: () -> Unit) {
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = "Vous êtes connecté avec succès.",
             fontSize = 16.sp
         )
-        
+
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         Button(onClick = onLogout) {
             Text("Se déconnecter")
         }
