@@ -3,6 +3,7 @@ package com.travelmate.di
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.travelmate.data.api.AuthApi
 import com.travelmate.data.api.InsuranceApi
+import com.travelmate.data.api.OffersApi
 import com.travelmate.data.api.UserApi
 import com.travelmate.data.socket.SocketConfig
 import dagger.Module
@@ -76,5 +77,11 @@ object NetworkModule {
     @Singleton
     fun provideUserApi(retrofit: Retrofit): UserApi {
         return retrofit.create(UserApi::class.java)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideOffersApi(retrofit: Retrofit): OffersApi {
+        return retrofit.create(OffersApi::class.java)
     }
 }
