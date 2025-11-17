@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -20,10 +22,12 @@ import com.travelmate.ui.screens.agency.InsuranceSubscribersScreen
 import com.travelmate.ui.screens.login.LoginScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
+import com.travelmate.ui.screens.user.FlightDetailsScreen
 import com.travelmate.ui.screens.user.UserHomeScreen
 import com.travelmate.ui.screens.welcome.WelcomeScreen
 import com.travelmate.utils.Constants
 import com.travelmate.utils.UserPreferences
+import com.travelmate.viewmodel.OffersViewModel
 
 @Composable
 fun NavGraph(
@@ -119,12 +123,55 @@ fun NavGraph(
         // User Home screen with bottom navigation
         composable(Constants.Routes.USER_HOME) {
             UserHomeScreen(
+                navController = navController,
                 onLogout = {
                     navController.navigate(Constants.Routes.WELCOME) {
                         popUpTo(0) { inclusive = true }
                     }
                 }
             )
+        }
+        
+        // Flight Details Screen
+        composable("${Constants.Routes.FLIGHT_DETAILS}/{flightId}") { backStackEntry ->
+            val viewModel: OffersViewModel = hiltViewModel()
+            val flightId = backStackEntry.arguments?.getString("flightId") ?: ""
+            val offers by viewModel.offers.collectAsState()
+            
+            val selectedOffer = offers.find { it.id == flightId }
+            
+            if (selectedOffer != null) {
+                FlightDetailsScreen(
+                    flightOffer = selectedOffer,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onBookFlight = { offer ->
+                        // TODO: Navigate to booking screen
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                // Show error or loading state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "Vol introuvable",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Button(onClick = { navController.popBackStack() }) {
+                            Text("Retour")
+                        }
+                    }
+                }
+            }
         }
         
         // Agency Dashboard

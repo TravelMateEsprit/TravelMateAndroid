@@ -11,6 +11,7 @@ object Constants {
         const val HOME = "home"
         const val USER_HOME = "user_home"
         const val AGENCY_DASHBOARD = "agency_dashboard"
+        const val FLIGHT_DETAILS = "flight_details"
     }
     
     // SharedPreferences Keys
