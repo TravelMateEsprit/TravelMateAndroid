@@ -12,6 +12,13 @@ object Constants {
         const val HOME = "home"
         const val USER_HOME = "user_home"
         const val AGENCY_DASHBOARD = "agency_dashboard"
+        
+        // Insurance Requests Routes
+        const val CREATE_INSURANCE_REQUEST = "create_insurance_request"
+        const val MY_INSURANCE_REQUESTS = "my_insurance_requests"
+        const val REQUEST_DETAILS = "request_details"
+        const val AGENCY_INSURANCE_REQUESTS = "agency_insurance_requests"
+        const val REVIEW_REQUEST = "review_request"
     }
     
     // SharedPreferences Keys

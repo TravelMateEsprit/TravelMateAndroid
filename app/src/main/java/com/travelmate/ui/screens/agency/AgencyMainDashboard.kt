@@ -45,6 +45,7 @@ enum class DashboardSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgencyMainDashboard(
+    navController: androidx.navigation.NavController,
     onNavigateToInsuranceForm: () -> Unit,
     onEditInsurance: (String) -> Unit,
     onViewSubscribers: (String, String) -> Unit,
@@ -170,20 +171,22 @@ fun AgencyMainDashboard(
                         titleContentColor = Color.White
                     ),
                     actions = {
-                        IconButton(onClick = { /* Notifications */ }) {
+                        IconButton(onClick = { 
+                            navController.navigate(com.travelmate.utils.Constants.Routes.AGENCY_INSURANCE_REQUESTS)
+                        }) {
                             BadgedBox(
                                 badge = {
                                     Badge(
                                         containerColor = ColorError,
                                         contentColor = Color.White
                                     ) {
-                                        Text("3", fontSize = 10.sp)
+                                        Text("!", fontSize = 10.sp)
                                     }
                                 }
                             ) {
                                 Icon(
-                                    Icons.Default.Notifications,
-                                    contentDescription = "Notifications",
+                                    Icons.Default.Assignment,
+                                    contentDescription = "Demandes",
                                     tint = Color.White
                                 )
                             }

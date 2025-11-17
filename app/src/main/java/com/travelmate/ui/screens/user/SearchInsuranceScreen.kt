@@ -21,6 +21,7 @@ import com.travelmate.viewmodel.SearchInsuranceViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchInsuranceScreen(
+    navController: androidx.navigation.NavController,
     viewModel: SearchInsuranceViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit
 ) {
@@ -166,7 +167,9 @@ fun SearchInsuranceScreen(
                             items(searchResults) { insurance ->
                                 InsuranceUserCard(
                                     insurance = insurance,
-                                    onSubscribe = { /* TODO: Implémenter la souscription */ },
+                                    onCreateRequest = { 
+                                        navController.navigate("${com.travelmate.utils.Constants.Routes.CREATE_INSURANCE_REQUEST}/${insurance._id}")
+                                    },
                                     onUnsubscribe = { /* TODO: Implémenter la désinscription */ },
                                     isInMySubscriptionsTab = false
                                 )

@@ -79,4 +79,69 @@ interface InsuranceApi {
         @Path("id") insuranceId: String,
         @Header("Authorization") token: String
     ): Response<InsuranceSubscribersResponse>
+    
+    // ========== Endpoints Demandes d'Assurance ==========
+    
+    // Créer une demande (Utilisateur)
+    @POST("insurance-requests")
+    suspend fun createInsuranceRequest(
+        @Header("Authorization") token: String,
+        @Body request: CreateInsuranceRequestRequest
+    ): Response<InsuranceRequest>
+    
+    // Obtenir mes demandes (Utilisateur)
+    @GET("insurance-requests/my-requests")
+    suspend fun getMyRequests(
+        @Header("Authorization") token: String
+    ): Response<List<InsuranceRequest>>
+    
+    // Obtenir les demandes de l'agence (Agence)
+    @GET("insurance-requests/agency-requests")
+    suspend fun getAgencyRequests(
+        @Header("Authorization") token: String,
+        @Query("status") status: String? = null
+    ): Response<List<InsuranceRequest>>
+    
+    // Obtenir les statistiques (Agence)
+    @GET("insurance-requests/agency-stats")
+    suspend fun getAgencyRequestStats(
+        @Header("Authorization") token: String
+    ): Response<InsuranceRequestStats>
+    
+    // Obtenir une demande spécifique
+    @GET("insurance-requests/{id}")
+    suspend fun getRequestById(
+        @Path("id") requestId: String,
+        @Header("Authorization") token: String
+    ): Response<InsuranceRequest>
+    
+    // Marquer comme lue (Agence)
+    @PUT("insurance-requests/{id}/mark-read")
+    suspend fun markRequestAsRead(
+        @Path("id") requestId: String,
+        @Header("Authorization") token: String
+    ): Response<InsuranceRequest>
+    
+    // Modifier une demande (Utilisateur)
+    @PUT("insurance-requests/{id}")
+    suspend fun updateRequest(
+        @Path("id") requestId: String,
+        @Header("Authorization") token: String,
+        @Body request: CreateInsuranceRequestRequest
+    ): Response<InsuranceRequest>
+    
+    // Annuler une demande (Utilisateur)
+    @DELETE("insurance-requests/{id}")
+    suspend fun cancelRequest(
+        @Path("id") requestId: String,
+        @Header("Authorization") token: String
+    ): Response<InsuranceRequest>
+    
+    // Approuver/Rejeter une demande (Agence)
+    @PUT("insurance-requests/{id}/review")
+    suspend fun reviewRequest(
+        @Path("id") requestId: String,
+        @Header("Authorization") token: String,
+        @Body request: ReviewInsuranceRequestRequest
+    ): Response<InsuranceRequest>
 }

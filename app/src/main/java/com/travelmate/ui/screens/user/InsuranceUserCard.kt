@@ -20,7 +20,7 @@ import com.travelmate.ui.theme.*
 @Composable
 fun InsuranceUserCard(
     insurance: Insurance,
-    onSubscribe: (String) -> Unit,
+    onCreateRequest: (String) -> Unit,
     onUnsubscribe: (String) -> Unit,
     isInMySubscriptionsTab: Boolean = false,
     modifier: Modifier = Modifier
@@ -205,8 +205,8 @@ fun InsuranceUserCard(
             }
             else -> {
                 ModernButton(
-                    text = "S'inscrire",
-                    onClick = { onSubscribe(insurance._id) },
+                    text = "Faire une demande",
+                    onClick = { onCreateRequest(insurance._id) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

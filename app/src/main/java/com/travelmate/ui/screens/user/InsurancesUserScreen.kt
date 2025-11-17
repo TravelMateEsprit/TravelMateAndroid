@@ -21,13 +21,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.travelmate.ui.components.ModernCard
 import com.travelmate.ui.theme.*
+import com.travelmate.utils.Constants
 import com.travelmate.viewmodel.InsurancesUserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsurancesUserScreen(
+    navController: NavController,
     viewModel: InsurancesUserViewModel = hiltViewModel()
 ) {
     val insurances by viewModel.insurances.collectAsState()
@@ -125,14 +128,18 @@ fun InsurancesUserScreen(
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
-                IconButton(onClick = { 
-                    viewModel.loadAllInsurances()
-                    viewModel.loadMySubscriptions()
-                }) {
-                    Icon(Icons.Default.Refresh, "Actualiser", tint = Color.White)
-                }
-                IconButton(onClick = { /* Notifications */ }) {
-                    Icon(Icons.Default.Notifications, "Notifications", tint = Color.White)
+                Row {
+                    IconButton(onClick = { 
+                        navController.navigate(Constants.Routes.MY_INSURANCE_REQUESTS)
+                    }) {
+                        Icon(Icons.Default.Assignment, "Mes demandes", tint = Color.White)
+                    }
+                    IconButton(onClick = { 
+                        viewModel.loadAllInsurances()
+                        viewModel.loadMySubscriptions()
+                    }) {
+                        Icon(Icons.Default.Refresh, "Actualiser", tint = Color.White)
+                    }
                 }
             }
         }
@@ -541,7 +548,9 @@ fun InsurancesUserScreen(
                     items(displayList) { insurance ->
                         InsuranceUserCard(
                             insurance = insurance,
-                            onSubscribe = { viewModel.subscribeToInsurance(it) },
+                            onCreateRequest = { insuranceId ->
+                                navController.navigate("${Constants.Routes.CREATE_INSURANCE_REQUEST}/$insuranceId")
+                            },
                             onUnsubscribe = { viewModel.unsubscribeFromInsurance(it) },
                             isInMySubscriptionsTab = selectedTabIndex == 1,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
