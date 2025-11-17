@@ -166,7 +166,9 @@ fun SearchInsuranceScreen(
                             items(searchResults) { insurance ->
                                 InsuranceUserCard(
                                     insurance = insurance,
-                                    onClick = { /* Navigation vers détails */ }
+                                    onSubscribe = { /* TODO: Implement subscription */ },
+                                    onUnsubscribe = { /* TODO: Implement unsubscription */ },
+                                    isInMySubscriptionsTab = false
                                 )
                             }
                             
