@@ -144,4 +144,21 @@ interface InsuranceApi {
         @Header("Authorization") token: String,
         @Body request: ReviewInsuranceRequestRequest
     ): Response<InsuranceRequest>
+    
+    // ========== Endpoints Paiement Stripe ==========
+    
+    // Créer un paiement (Utilisateur)
+    @POST("insurance-requests/{id}/create-payment")
+    suspend fun createPayment(
+        @Path("id") requestId: String,
+        @Header("Authorization") token: String
+    ): Response<CreatePaymentResponse>
+    
+    // Confirmer un paiement (Utilisateur)
+    @POST("insurance-requests/{id}/confirm-payment")
+    suspend fun confirmPayment(
+        @Path("id") requestId: String,
+        @Header("Authorization") token: String,
+        @Body request: ConfirmPaymentRequest
+    ): Response<InsuranceRequest>
 }

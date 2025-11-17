@@ -87,6 +87,19 @@ data class InsuranceRequest(
     @SerialName("isRead")
     val isRead: Boolean = false,
     
+    // Informations de paiement
+    @SerialName("paymentIntentId")
+    val paymentIntentId: String? = null,
+    
+    @SerialName("paymentStatus")
+    val paymentStatus: String? = null, // pending, succeeded, failed, refunded
+    
+    @SerialName("paymentAmount")
+    val paymentAmount: Double? = null,
+    
+    @SerialName("paymentDate")
+    val paymentDate: String? = null,
+    
     @SerialName("createdAt")
     val createdAt: String,
     
@@ -166,3 +179,28 @@ data class InsuranceRequestStats(
     val rejected: Int
         get() = stats["REJETEE"] ?: 0
 }
+
+// DTOs pour le paiement
+@Serializable
+data class CreatePaymentResponse(
+    @SerialName("clientSecret")
+    val clientSecret: String,
+    
+    @SerialName("paymentIntentId")
+    val paymentIntentId: String,
+    
+    @SerialName("amount")
+    val amount: Double,
+    
+    @SerialName("currency")
+    val currency: String? = null,
+    
+    @SerialName("insuranceName")
+    val insuranceName: String? = null
+)
+
+@Serializable
+data class ConfirmPaymentRequest(
+    @SerialName("paymentIntentId")
+    val paymentIntentId: String
+)

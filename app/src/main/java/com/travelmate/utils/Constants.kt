@@ -19,6 +19,7 @@ object Constants {
         const val REQUEST_DETAILS = "request_details"
         const val AGENCY_INSURANCE_REQUESTS = "agency_insurance_requests"
         const val REVIEW_REQUEST = "review_request"
+        const val PAYMENT = "payment"
     }
     
     // SharedPreferences Keys

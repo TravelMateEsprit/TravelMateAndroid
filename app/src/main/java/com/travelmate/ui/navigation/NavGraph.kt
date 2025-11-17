@@ -28,6 +28,7 @@ import com.travelmate.ui.user.requests.MyInsuranceRequestsScreen
 import com.travelmate.ui.requests.RequestDetailsScreen
 import com.travelmate.ui.agency.requests.AgencyInsuranceRequestsScreen
 import com.travelmate.ui.agency.requests.ReviewRequestScreen
+import com.travelmate.ui.screens.payment.PaymentScreen
 import com.travelmate.utils.Constants
 import com.travelmate.utils.UserPreferences
 
@@ -242,6 +243,23 @@ fun NavGraph(
             ReviewRequestScreen(
                 navController = navController,
                 requestId = requestId
+            )
+        }
+        
+        // Payment Route
+        composable("${Constants.Routes.PAYMENT}/{requestId}") { backStackEntry ->
+            val requestId = backStackEntry.arguments?.getString("requestId") ?: return@composable
+            PaymentScreen(
+                requestId = requestId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onPaymentSuccess = {
+                    // Retour à la liste des demandes après paiement réussi
+                    navController.navigate(Constants.Routes.MY_INSURANCE_REQUESTS) {
+                        popUpTo(Constants.Routes.MY_INSURANCE_REQUESTS) { inclusive = true }
+                    }
+                }
             )
         }
     }
