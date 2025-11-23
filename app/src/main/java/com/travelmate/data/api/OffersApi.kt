@@ -1,8 +1,12 @@
 package com.travelmate.data.api
 
 import com.travelmate.data.models.FlightOffer
+import com.travelmate.data.models.RecommendationsRequest
+import kotlinx.serialization.json.JsonElement
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface OffersApi {
@@ -30,5 +34,14 @@ interface OffersApi {
         @Query("date_return") date_return: String? = null,
         @Query("sort") sort: String? = null
     ): Response<List<FlightOffer>>
+    
+    /**
+     * Get AI-powered flight recommendations based on user preferences
+     * Returns JsonElement to handle both array and object responses
+     */
+    @POST("offers/recommendations")
+    suspend fun getRecommendations(
+        @Body request: RecommendationsRequest
+    ): Response<JsonElement>
 }
 
