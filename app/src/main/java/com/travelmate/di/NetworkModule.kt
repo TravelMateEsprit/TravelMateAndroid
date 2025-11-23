@@ -41,7 +41,7 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(90, TimeUnit.SECONDS) // Increased for Gemini API calls
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }

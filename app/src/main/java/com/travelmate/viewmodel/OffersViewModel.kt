@@ -3,6 +3,8 @@ package com.travelmate.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.travelmate.data.models.FlightOffer
+import com.travelmate.data.models.Preferences
+import com.travelmate.data.models.RecommendedOffer
 import com.travelmate.data.service.OffersService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +21,9 @@ class OffersViewModel @Inject constructor(
     val offers: StateFlow<List<FlightOffer>> = offersService.offers
     val isLoading: StateFlow<Boolean> = offersService.isLoading
     val error: StateFlow<String?> = offersService.error
+    
+    val recommendations: StateFlow<List<RecommendedOffer>> = offersService.recommendations
+    val isLoadingRecommendations: StateFlow<Boolean> = offersService.isLoadingRecommendations
     
     // Search and filter state
     private val _searchQuery = MutableStateFlow("")
@@ -147,6 +152,19 @@ class OffersViewModel @Inject constructor(
     
     fun clearError() {
         offersService.clearError()
+    }
+    
+    /**
+     * Get AI-powered recommendations based on user preferences
+     */
+    fun getRecommendations(preferences: Preferences) {
+        viewModelScope.launch {
+            offersService.getRecommendations(preferences)
+        }
+    }
+    
+    fun clearRecommendations() {
+        offersService.clearRecommendations()
     }
 }
 

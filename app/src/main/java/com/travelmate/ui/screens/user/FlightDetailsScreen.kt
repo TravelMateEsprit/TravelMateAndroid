@@ -68,19 +68,7 @@ fun FlightDetailsScreen(
                         text = "Votre vol a été réservé avec succès !",
                         textAlign = TextAlign.Center
                     )
-                    Text(
-                        text = "Vol: ${flightOffer.flightNumber ?: "N/A"}",
-                        fontSize = 14.sp,
-                        color = ColorTextSecondary,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = "${flightOffer.getFromAirport().code} → ${flightOffer.getToAirport().code}",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = ColorPrimary,
-                        textAlign = TextAlign.Center
-                    )
+
                 }
             },
             confirmButton = {
