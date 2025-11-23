@@ -4,19 +4,29 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.travelmate.data.models.InsuranceRequest
 import com.travelmate.data.models.RequestStatus
 import com.travelmate.ui.user.requests.StatusChip
+import com.travelmate.ui.user.requests.EnhancedStatusChip
+import com.travelmate.ui.theme.ColorPrimary
+import com.travelmate.ui.theme.ColorSuccess
+import com.travelmate.ui.theme.ColorError
+import com.travelmate.ui.theme.ColorTextPrimary
+import com.travelmate.ui.theme.ColorTextSecondary
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -37,7 +47,12 @@ fun AgencyInsuranceRequestsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Demandes d'inscription") },
+                title = { 
+                    Text(
+                        "Demandes d'inscription",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, "Retour")
@@ -81,7 +96,13 @@ fun AgencyInsuranceRequestsScreen(
                             }
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = ColorPrimary,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                )
             )
         }
     ) { paddingValues ->
@@ -168,51 +189,167 @@ fun StatsCard(stats: com.travelmate.data.models.InsuranceRequestStats) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
-            Text(
-                text = "Statistiques",
-                style = MaterialTheme.typography.titleMedium
-            )
-            
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                StatItem(
-                    label = "Total",
-                    value = stats.total.toString(),
-                    color = MaterialTheme.colorScheme.primary
+                Text(
+                    text = "Tableau de bord",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
-                StatItem(
-                    label = "En attente",
-                    value = stats.pending.toString(),
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                StatItem(
-                    label = "Approuvées",
-                    value = stats.approved.toString(),
-                    color = MaterialTheme.colorScheme.tertiary
-                )
-                StatItem(
-                    label = "Rejetées",
-                    value = stats.rejected.toString(),
-                    color = MaterialTheme.colorScheme.error
-                )
+                if (stats.unreadCount > 0) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.error,
+                        shape = CircleShape
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stats.unreadCount.toString(),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // Modern stats grid
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    EnhancedStatCard(
+                        title = "Total",
+                        value = stats.total.toString(),
+                        icon = Icons.Default.List,
+                        color = ColorTextPrimary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    EnhancedStatCard(
+                        title = "En attente",
+                        value = stats.pending.toString(),
+                        icon = Icons.Default.Pending,
+                        color = ColorPrimary,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    EnhancedStatCard(
+                        title = "Approuvées",
+                        value = stats.approved.toString(),
+                        icon = Icons.Default.CheckCircle,
+                        color = ColorSuccess,
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    EnhancedStatCard(
+                        title = "Rejetées",
+                        value = stats.rejected.toString(),
+                        icon = Icons.Default.Cancel,
+                        color = ColorError,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
             
             if (stats.unreadCount > 0) {
-                Divider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(
-                    text = "${stats.unreadCount} nouvelle(s) demande(s)",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.error,
+                            shape = CircleShape
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "${stats.unreadCount} nouvelle(s) demande(s) non lue(s)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun EnhancedStatCard(
+    title: String,
+    value: String,
+    icon: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        color = color.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodySmall,
+                color = ColorTextSecondary
+            )
         }
     }
 }
@@ -241,66 +378,131 @@ fun AgencyRequestCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = request.travelerName,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    if (!request.isRead) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
-                            contentColor = MaterialTheme.colorScheme.error,
-                            shape = MaterialTheme.shapes.small,
-                            modifier = Modifier.padding(top = 4.dp)
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Avatar with first letter
+                    Surface(
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        color = ColorPrimary.copy(alpha = 0.2f)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Nouveau",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelSmall
+                                text = request.travelerName.firstOrNull()?.toString()?.uppercase() ?: "?",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = ColorPrimary,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
+                    
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = request.travelerName,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (!request.isRead) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.error,
+                                    shape = CircleShape
+                                ) {
+                                    Box(
+                                        modifier = Modifier.size(8.dp)
+                                    )
+                                }
+                            }
+                        }
+                        
+                        Text(
+                            text = "Soumise le ${formatDate(request.createdAt)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = ColorTextSecondary
+                        )
+                    }
                 }
                 
-                StatusChip(status = request.status)
+                EnhancedStatusChip(status = request.status)
             }
             
-            Text(
-                text = "Destination: ${request.destination}",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
             
-            Text(
-                text = "Du ${formatDate(request.departureDate)} au ${formatDate(request.returnDate)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            request.travelPurpose?.let {
-                Text(
-                    text = "Motif: $it",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            // Trip details with icons
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                InfoRow(
+                    icon = Icons.Default.LocationOn,
+                    label = "Destination",
+                    value = request.destination
                 )
+                
+                InfoRow(
+                    icon = Icons.Default.DateRange,
+                    label = "Période",
+                    value = "${formatDate(request.departureDate)} → ${formatDate(request.returnDate)}"
+                )
+                
+                request.travelPurpose?.let {
+                    InfoRow(
+                        icon = Icons.Default.Info,
+                        label = "Motif",
+                        value = it
+                    )
+                }
             }
-            
-            Text(
-                text = "Soumise le ${formatDate(request.createdAt)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
+    }
+}
+
+@Composable
+fun InfoRow(
+    icon: ImageVector,
+    label: String,
+    value: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = ColorPrimary,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = "$label: ",
+            style = MaterialTheme.typography.bodyMedium,
+            color = ColorTextSecondary,
+            fontWeight = FontWeight.Medium
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = ColorTextPrimary
+        )
     }
 }
 

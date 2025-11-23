@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.travelmate.data.models.CreateInsuranceRequestRequest
 import com.travelmate.data.models.InsuranceRequest
+import com.travelmate.data.models.User
 import com.travelmate.data.repository.InsuranceRequestRepository
 import com.travelmate.utils.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,6 +29,45 @@ class CreateInsuranceRequestViewModel @Inject constructor(
     
     private val _state = MutableStateFlow<CreateRequestState>(CreateRequestState.Idle)
     val state: StateFlow<CreateRequestState> = _state.asStateFlow()
+    
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
+    
+    init {
+        loadCurrentUser()
+    }
+    
+    private fun loadCurrentUser() {
+        viewModelScope.launch {
+            try {
+                val userJson = userPreferences.getUserData()
+                if (userJson != null) {
+                    val user = kotlinx.serialization.json.Json { 
+                        ignoreUnknownKeys = true 
+                    }.decodeFromString<User>(userJson)
+                    _currentUser.value = user
+                } else {
+                    val email = userPreferences.getUserEmail()
+                    val name = userPreferences.getUserName()
+                    val userId = userPreferences.getUserId()
+                    val userType = userPreferences.getUserType()
+                    val phone = userPreferences.getUserPhone()
+                    
+                    if (email != null && userId != null && userType != null) {
+                        _currentUser.value = User(
+                            _id = userId,
+                            email = email,
+                            name = name,
+                            userType = userType,
+                            phone = phone
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("CreateInsuranceRequestViewModel", "Error loading user", e)
+            }
+        }
+    }
     
     fun createRequest(
         insuranceId: String,
