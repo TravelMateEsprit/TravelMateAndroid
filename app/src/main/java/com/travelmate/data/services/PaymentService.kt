@@ -6,6 +6,7 @@ import com.stripe.android.paymentsheet.PaymentSheet
 import com.stripe.android.paymentsheet.PaymentSheetResult
 import com.travelmate.data.api.InsuranceApi
 import com.travelmate.data.models.ConfirmPaymentRequest
+import com.travelmate.data.models.ConfirmPaymentResponse
 import com.travelmate.data.models.CreatePaymentResponse
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -57,10 +58,11 @@ class PaymentService @Inject constructor(
                 val request = ConfirmPaymentRequest(paymentIntentId = paymentIntentId)
                 val response = insuranceApi.confirmPayment(requestId, "Bearer $token", request)
                 
-                if (response.isSuccessful) {
+                if (response.isSuccessful && response.body()?.success == true) {
                     Result.success(Unit)
                 } else {
-                    Result.failure(Exception("Erreur lors de la confirmation: ${response.message()}"))
+                    val errorMsg = response.body()?.message ?: response.message()
+                    Result.failure(Exception("Erreur lors de la confirmation: $errorMsg"))
                 }
             } catch (e: Exception) {
                 Result.failure(e)

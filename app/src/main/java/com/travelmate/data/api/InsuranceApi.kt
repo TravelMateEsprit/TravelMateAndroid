@@ -160,5 +160,5 @@ interface InsuranceApi {
         @Path("id") requestId: String,
         @Header("Authorization") token: String,
         @Body request: ConfirmPaymentRequest
-    ): Response<InsuranceRequest>
+    ): Response<ConfirmPaymentResponse>
 }

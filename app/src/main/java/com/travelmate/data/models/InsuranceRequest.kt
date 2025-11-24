@@ -204,3 +204,15 @@ data class ConfirmPaymentRequest(
     @SerialName("paymentIntentId")
     val paymentIntentId: String
 )
+
+@Serializable
+data class ConfirmPaymentResponse(
+    @SerialName("success")
+    val success: Boolean,
+    @SerialName("message")
+    val message: String,
+    @SerialName("paymentStatus")
+    val paymentStatus: String? = null,
+    @SerialName("paymentDate")
+    val paymentDate: String? = null
+)

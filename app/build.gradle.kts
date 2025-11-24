@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.gms.google-services")
     kotlin("kapt")
 }
 
@@ -79,6 +80,10 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.48")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
+    // Firebase (Push Notifications) - using explicit versions for now
+    implementation("com.google.firebase:firebase-messaging-ktx:24.1.0")
+    implementation("com.google.firebase:firebase-analytics-ktx:22.1.2")
+
     // Socket.IO Client (IMPORTANT - comme l'exemple du prof)
     implementation("io.socket:socket.io-client:2.1.0")
 
@@ -94,6 +99,9 @@ dependencies {
 
     // Coil (Image Loading)
     implementation("io.coil-kt:coil-compose:2.5.0")
+    
+    // SwipeRefresh (pour pull-to-refresh)
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.32.0")
 
     // Encrypted SharedPreferences
     implementation("androidx.security:security-crypto:1.1.0-alpha06")

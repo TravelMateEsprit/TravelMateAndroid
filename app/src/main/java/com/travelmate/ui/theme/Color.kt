@@ -14,6 +14,7 @@ val ColorTextSecondary = Color(0xFF6B7280)
 val ColorError = Color(0xFFDC2626)
 val ColorSuccess = Color(0xFF10B981)
 val ColorWarning = Color(0xFFF59E0B)
+val ColorInfo = Color(0xFF3B82F6)
 
 // Dark theme colors
 val ColorPrimaryDark = Color(0xFF60A5FA)

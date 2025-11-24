@@ -3,6 +3,7 @@ package com.travelmate.ui.screens.user
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,8 +18,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.travelmate.ui.theme.*
+import com.travelmate.viewmodel.NotificationsViewModel
 
 sealed class BottomNavItem(
     val route: String,
@@ -29,6 +32,7 @@ sealed class BottomNavItem(
     object Groups : BottomNavItem("groups", Icons.Default.Group, "Groupes")
     object Offers : BottomNavItem("offers", Icons.Default.LocalOffer, "Offres")
     object Insurances : BottomNavItem("insurances", Icons.Default.Security, "Assurances")
+    object Notifications : BottomNavItem("notifications", Icons.Default.Notifications, "Notifications")
     object Profile : BottomNavItem("profile", Icons.Default.Person, "Profil")
 }
 
@@ -36,15 +40,19 @@ sealed class BottomNavItem(
 @Composable
 fun UserHomeScreen(
     navController: NavController,
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    notificationsViewModel: NotificationsViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableStateOf(3) } // Default to Insurances tab
+    
+    val unreadCount by notificationsViewModel.unreadCount.collectAsState()
     
     val navItems = listOf(
         BottomNavItem.Home,
         BottomNavItem.Groups,
         BottomNavItem.Offers,
         BottomNavItem.Insurances,
+        BottomNavItem.Notifications,
         BottomNavItem.Profile
     )
     
@@ -89,12 +97,34 @@ fun UserHomeScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                Icon(
-                                    imageVector = item.icon,
-                                    contentDescription = item.label,
-                                    modifier = Modifier.size(if (selectedTab == index) 24.dp else 22.dp),
-                                    tint = if (selectedTab == index) ColorPrimary else ColorTextSecondary.copy(alpha = 0.5f)
-                                )
+                                // Badge pour les notifications non lues
+                                BadgedBox(
+                                    badge = {
+                                        if (item is BottomNavItem.Notifications && unreadCount > 0) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(16.dp)
+                                                    .clip(CircleShape)
+                                                    .background(ColorError),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = if (unreadCount > 9) "9+" else "$unreadCount",
+                                                    color = Color.White,
+                                                    fontSize = 8.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = item.icon,
+                                        contentDescription = item.label,
+                                        modifier = Modifier.size(if (selectedTab == index) 24.dp else 22.dp),
+                                        tint = if (selectedTab == index) ColorPrimary else ColorTextSecondary.copy(alpha = 0.5f)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = item.label,
@@ -115,7 +145,12 @@ fun UserHomeScreen(
                 1 -> PlaceholderScreen("Groupes")
                 2 -> PlaceholderScreen("Offres")
                 3 -> InsurancesUserScreen(navController = navController)
-                4 -> ProfileScreen(onLogout = onLogout)
+                4 -> com.travelmate.ui.notifications.NotificationsScreen(
+                    viewModel = notificationsViewModel,
+                    onNavigateToRequestDetails = { /* TODO */ },
+                    onNavigateToPaymentDetails = { /* TODO */ }
+                )
+                5 -> ProfileScreen(onLogout = onLogout)
             }
         }
     }
