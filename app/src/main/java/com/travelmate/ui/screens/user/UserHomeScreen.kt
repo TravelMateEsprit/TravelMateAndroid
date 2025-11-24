@@ -150,7 +150,10 @@ fun UserHomeScreen(
                     onNavigateToRequestDetails = { /* TODO */ },
                     onNavigateToPaymentDetails = { /* TODO */ }
                 )
-                5 -> ProfileScreen(onLogout = onLogout)
+                5 -> ProfileScreen(
+                    navController = navController,
+                    onLogout = onLogout
+                )
             }
         }
     }

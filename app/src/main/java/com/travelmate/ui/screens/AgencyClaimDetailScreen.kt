@@ -1,0 +1,384 @@
+package com.travelmate.ui.screens
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.travelmate.viewmodel.ClaimViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AgencyClaimDetailScreen(
+    navController: NavController,
+    claimId: String,
+    viewModel: ClaimViewModel = hiltViewModel()
+) {
+    val selectedClaim by viewModel.selectedClaim.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val updateSuccess by viewModel.updateClaimSuccess.collectAsState()
+    
+    var showResponseDialog by remember { mutableStateOf(false) }
+    var response by remember { mutableStateOf("") }
+    var selectedStatus by remember { mutableStateOf("EN_COURS") }
+    var selectedPriority by remember { mutableStateOf("MOYENNE") }
+    
+    LaunchedEffect(claimId) {
+        viewModel.loadClaimById(claimId)
+    }
+    
+    LaunchedEffect(updateSuccess) {
+        if (updateSuccess) {
+            showResponseDialog = false
+            response = ""
+            viewModel.resetUpdateClaimSuccess()
+        }
+    }
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Détails réclamation") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
+            )
+        },
+        floatingActionButton = {
+            if (selectedClaim != null && selectedClaim!!.status != "FERMEE") {
+                FloatingActionButton(
+                    onClick = { showResponseDialog = true },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(Icons.Default.Send, contentDescription = "Répondre")
+                }
+            }
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when {
+                isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                error != null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = error ?: "Erreur inconnue",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+                selectedClaim != null -> {
+                    AgencyClaimDetailContent(claim = selectedClaim!!)
+                }
+            }
+        }
+        
+        // Dialog de réponse
+        if (showResponseDialog) {
+            AlertDialog(
+                onDismissRequest = { showResponseDialog = false },
+                title = { Text("Répondre à la réclamation") },
+                text = {
+                    Column {
+                        Text("Statut", style = MaterialTheme.typography.labelMedium)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            FilterChip(
+                                selected = selectedStatus == "EN_COURS",
+                                onClick = { selectedStatus = "EN_COURS" },
+                                label = { Text("En cours") }
+                            )
+                            FilterChip(
+                                selected = selectedStatus == "RESOLUE",
+                                onClick = { selectedStatus = "RESOLUE" },
+                                label = { Text("Résolue") }
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Text("Priorité", style = MaterialTheme.typography.labelMedium)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            FilterChip(
+                                selected = selectedPriority == "BASSE",
+                                onClick = { selectedPriority = "BASSE" },
+                                label = { Text("Basse") }
+                            )
+                            FilterChip(
+                                selected = selectedPriority == "MOYENNE",
+                                onClick = { selectedPriority = "MOYENNE" },
+                                label = { Text("Moyenne") }
+                            )
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            FilterChip(
+                                selected = selectedPriority == "HAUTE",
+                                onClick = { selectedPriority = "HAUTE" },
+                                label = { Text("Haute") }
+                            )
+                            FilterChip(
+                                selected = selectedPriority == "URGENTE",
+                                onClick = { selectedPriority = "URGENTE" },
+                                label = { Text("Urgente") }
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        OutlinedTextField(
+                            value = response,
+                            onValueChange = { if (it.length <= 2000) response = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            placeholder = { Text("Votre réponse...") },
+                            supportingText = { Text("${response.length}/2000") },
+                            maxLines = 10
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.updateClaimStatus(
+                                claimId = claimId,
+                                status = selectedStatus,
+                                agencyResponse = response,
+                                priority = selectedPriority
+                            )
+                        },
+                        enabled = response.isNotBlank() && !isLoading
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.White
+                            )
+                        } else {
+                            Text("Envoyer")
+                        }
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showResponseDialog = false }) {
+                        Text("Annuler")
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun AgencyClaimDetailContent(claim: com.travelmate.data.models.Claim) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        // En-tête
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = claim.subject,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    ClaimStatusChip(status = claim.status)
+                    ClaimPriorityChip(priority = claim.priority)
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Info client
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "Informations client",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                InfoRow(
+                    icon = Icons.Default.Person,
+                    label = "Nom",
+                    value = claim.userId?.name ?: "N/A"
+                )
+                InfoRow(
+                    icon = Icons.Default.Email,
+                    label = "Email",
+                    value = claim.userId?.email ?: "N/A"
+                )
+                InfoRow(
+                    icon = Icons.Default.LocationOn,
+                    label = "Destination",
+                    value = claim.insuranceRequestId.destination
+                )
+                InfoRow(
+                    icon = Icons.Default.DateRange,
+                    label = "Date réclamation",
+                    value = formatDate(claim.createdAt)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Réclamation
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Réclamation du client",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = claim.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        
+        // Réponse
+        if (claim.agencyResponse != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Votre réponse",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                    }
+                    
+                    if (claim.respondedAt != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Envoyée le ${formatDate(claim.respondedAt)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = claim.agencyResponse,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}

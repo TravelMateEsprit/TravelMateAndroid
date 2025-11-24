@@ -3,6 +3,7 @@ package com.travelmate.di
 import android.content.Context
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.travelmate.data.api.AuthApi
+import com.travelmate.data.api.ClaimApi
 import com.travelmate.data.api.InsuranceApi
 import com.travelmate.data.api.NotificationApiService
 import com.travelmate.data.api.UserApi
@@ -108,5 +109,11 @@ object NetworkModule {
     @Singleton
     fun provideNotificationApi(retrofit: Retrofit): NotificationApiService {
         return retrofit.create(NotificationApiService::class.java)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideClaimApi(retrofit: Retrofit): ClaimApi {
+        return retrofit.create(ClaimApi::class.java)
     }
 }

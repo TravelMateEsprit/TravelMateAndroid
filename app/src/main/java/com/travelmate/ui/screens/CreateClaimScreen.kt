@@ -1,0 +1,288 @@
+package com.travelmate.ui.screens
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.travelmate.data.models.InsuranceRequest
+import com.travelmate.data.models.RequestStatus
+import com.travelmate.ui.user.requests.MyInsuranceRequestsViewModel
+import com.travelmate.ui.user.requests.MyRequestsState
+import com.travelmate.viewmodel.ClaimViewModel
+import com.travelmate.viewmodel.InsurancesUserViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CreateClaimScreen(
+    navController: NavController,
+    insuranceId: String? = null,
+    viewModel: ClaimViewModel = hiltViewModel(),
+    requestViewModel: MyInsuranceRequestsViewModel = hiltViewModel(),
+    insuranceViewModel: InsurancesUserViewModel = hiltViewModel()
+) {
+    var subject by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var selectedInsuranceRequestId by remember { mutableStateOf<String?>(null) }
+    var showInsuranceSelector by remember { mutableStateOf(false) }
+    
+    val createSuccess by viewModel.createClaimSuccess.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val requestState by requestViewModel.state.collectAsState()
+    val mySubscriptions by insuranceViewModel.mySubscriptions.collectAsState()
+    
+    // Get ALL insurance requests from state
+    val allRequests = remember(requestState) {
+        if (requestState is MyRequestsState.Success) {
+            (requestState as MyRequestsState.Success).requests
+        } else {
+            emptyList()
+        }
+    }
+    
+    // Filter: only approved requests that match current subscriptions
+    val activeInsuranceRequests = remember(allRequests, mySubscriptions) {
+        val subscribedInsuranceIds = mySubscriptions.map { it._id }.toSet()
+        allRequests.filter { 
+            it.status == RequestStatus.APPROVED && 
+            subscribedInsuranceIds.contains(it.insuranceId)
+        }
+    }
+    
+    // Pre-select insurance request if insuranceId is provided
+    // Find the approved request for this insurance
+    LaunchedEffect(insuranceId, activeInsuranceRequests) {
+        if (insuranceId != null && selectedInsuranceRequestId == null && activeInsuranceRequests.isNotEmpty()) {
+            activeInsuranceRequests.find { it.insuranceId == insuranceId }?.let { request ->
+                selectedInsuranceRequestId = request.id
+            }
+        }
+    }
+    
+    LaunchedEffect(Unit) {
+        requestViewModel.loadRequests()
+        insuranceViewModel.loadMySubscriptions()
+    }
+    
+    LaunchedEffect(createSuccess) {
+        if (createSuccess) {
+            navController.popBackStack()
+            viewModel.resetCreateClaimSuccess()
+        }
+    }
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Nouvelle réclamation") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Sélection de l'assurance
+            Text(
+                text = "Assurance concernée",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            if (activeInsuranceRequests.isEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = "Vous devez avoir une assurance active pour créer une réclamation",
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            } else {
+                OutlinedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Sélectionnez votre assurance",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        activeInsuranceRequests.forEach { request ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = selectedInsuranceRequestId == request.id,
+                                    onClick = { selectedInsuranceRequestId = request.id }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        text = "${request.travelerName} - ${request.destination}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Text(
+                                        text = "Départ: ${request.departureDate}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Sujet
+            Text(
+                text = "Sujet de la réclamation",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            OutlinedTextField(
+                value = subject,
+                onValueChange = { if (it.length <= 200) subject = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Ex: Problème avec le remboursement") },
+                supportingText = { Text("${subject.length}/200") },
+                singleLine = true
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Description
+            Text(
+                text = "Description détaillée",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            OutlinedTextField(
+                value = description,
+                onValueChange = { if (it.length <= 2000) description = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                placeholder = { Text("Décrivez votre problème en détail...") },
+                supportingText = { Text("${description.length}/2000") },
+                maxLines = 10
+            )
+            
+            if (error != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = error ?: "",
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // Bouton soumettre
+            Button(
+                onClick = {
+                    if (selectedInsuranceRequestId != null && subject.isNotBlank() && description.isNotBlank()) {
+                        viewModel.createClaim(
+                            insuranceRequestId = selectedInsuranceRequestId!!,
+                            subject = subject,
+                            description = description
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                enabled = !isLoading && selectedInsuranceRequestId != null && 
+                         subject.isNotBlank() && description.isNotBlank(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White
+                    )
+                } else {
+                    Icon(Icons.Default.Send, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Envoyer la réclamation")
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Information",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Vous recevrez un email de confirmation une fois votre réclamation envoyée. L'agence répondra sous 48 à 72 heures.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+        }
+    }
+}

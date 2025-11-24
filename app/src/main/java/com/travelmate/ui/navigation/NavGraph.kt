@@ -29,6 +29,11 @@ import com.travelmate.ui.requests.RequestDetailsScreen
 import com.travelmate.ui.agency.requests.AgencyInsuranceRequestsScreen
 import com.travelmate.ui.agency.requests.ReviewRequestScreen
 import com.travelmate.ui.screens.payment.PaymentScreen
+import com.travelmate.ui.screens.MyClaimsScreen
+import com.travelmate.ui.screens.CreateClaimScreen
+import com.travelmate.ui.screens.ClaimDetailScreen
+import com.travelmate.ui.screens.AgencyClaimsScreen
+import com.travelmate.ui.screens.AgencyClaimDetailScreen
 import com.travelmate.utils.Constants
 import com.travelmate.utils.UserPreferences
 
@@ -260,6 +265,40 @@ fun NavGraph(
                         popUpTo(Constants.Routes.MY_INSURANCE_REQUESTS) { inclusive = true }
                     }
                 }
+            )
+        }
+        
+        // Claims Routes - User
+        composable("my_claims") {
+            MyClaimsScreen(navController = navController)
+        }
+        
+        composable("create_claim") { backStackEntry ->
+            val insuranceId = backStackEntry.arguments?.getString("insuranceId")
+            CreateClaimScreen(
+                navController = navController,
+                insuranceId = insuranceId
+            )
+        }
+        
+        composable("claim_detail/{claimId}") { backStackEntry ->
+            val claimId = backStackEntry.arguments?.getString("claimId") ?: return@composable
+            ClaimDetailScreen(
+                navController = navController,
+                claimId = claimId
+            )
+        }
+        
+        // Claims Routes - Agency
+        composable("agency_claims") {
+            AgencyClaimsScreen(navController = navController)
+        }
+        
+        composable("agency_claim_detail/{claimId}") { backStackEntry ->
+            val claimId = backStackEntry.arguments?.getString("claimId") ?: return@composable
+            AgencyClaimDetailScreen(
+                navController = navController,
+                claimId = claimId
             )
         }
     }

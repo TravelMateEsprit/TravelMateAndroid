@@ -797,6 +797,11 @@ fun InsurancesUserScreen(
                                 navController.navigate("${Constants.Routes.CREATE_INSURANCE_REQUEST}/$insuranceId")
                             },
                             onUnsubscribe = { viewModel.unsubscribeFromInsurance(it) },
+                            onCreateClaim = if (selectedTabIndex == 1) {
+                                { insuranceId ->
+                                    navController.navigate("create_claim?insuranceId=$insuranceId")
+                                }
+                            } else null,
                             isInMySubscriptionsTab = selectedTabIndex == 1,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                         )

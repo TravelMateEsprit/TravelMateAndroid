@@ -35,6 +35,7 @@ enum class DashboardSection(
 ) {
     OVERVIEW("Vue d'ensemble", Icons.Default.Dashboard, ColorPrimary),
     INSURANCES("Assurances", Icons.Default.Shield, Color(0xFF2196F3)),
+    CLAIMS("Réclamations", Icons.Default.Report, Color(0xFFFF9800)),
     BOOKINGS("Réservations", Icons.Default.CalendarMonth, Color(0xFF4CAF50)),
     DESTINATIONS("Destinations", Icons.Default.Flight, Color(0xFFFF9800)),
     CLIENTS("Clients", Icons.Default.People, Color(0xFF9C27B0)),
@@ -171,6 +172,29 @@ fun AgencyMainDashboard(
                         titleContentColor = Color.White
                     ),
                     actions = {
+                        // Réclamations
+                        IconButton(onClick = { 
+                            navController.navigate("agency_claims")
+                        }) {
+                            BadgedBox(
+                                badge = {
+                                    Badge(
+                                        containerColor = Color(0xFFFF9800),
+                                        contentColor = Color.White
+                                    ) {
+                                        Text("", fontSize = 10.sp)
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Report,
+                                    contentDescription = "Réclamations",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                        
+                        // Demandes d'assurance
                         IconButton(onClick = { 
                             navController.navigate(com.travelmate.utils.Constants.Routes.AGENCY_INSURANCE_REQUESTS)
                         }) {
@@ -247,7 +271,8 @@ fun AgencyMainDashboard(
                         insurances = insurances,
                         onNavigateToInsurances = { selectedSection = DashboardSection.INSURANCES },
                         onNavigateToInsuranceForm = onNavigateToInsuranceForm,
-                        onSectionClick = { selectedSection = it }
+                        onSectionClick = { selectedSection = it },
+                        navController = navController
                     )
                     DashboardSection.INSURANCES -> InsurancesSection(
                         insurances = insurances,
@@ -257,6 +282,14 @@ fun AgencyMainDashboard(
                         onViewSubscribers = onViewSubscribers,
                         viewModel = viewModel
                     )
+                    DashboardSection.CLAIMS -> {
+                        // Navigate to claims screen
+                        LaunchedEffect(Unit) {
+                            navController.navigate("agency_claims")
+                            selectedSection = DashboardSection.OVERVIEW
+                        }
+                        Box(modifier = Modifier.fillMaxSize())
+                    }
                     else -> ComingSoonSection(section)
                 }
             }
@@ -270,7 +303,8 @@ fun OverviewSection(
     insurances: List<com.travelmate.data.models.Insurance>,
     onNavigateToInsurances: () -> Unit,
     onNavigateToInsuranceForm: () -> Unit,
-    onSectionClick: (DashboardSection) -> Unit
+    onSectionClick: (DashboardSection) -> Unit,
+    navController: androidx.navigation.NavController
 ) {
     LazyColumn(
         modifier = Modifier
@@ -361,10 +395,33 @@ fun OverviewSection(
                     modifier = Modifier.weight(1f)
                 )
                 QuickStatCard(
+                    icon = Icons.Default.Report,
+                    value = "0",
+                    label = "Réclamations",
+                    color = Color(0xFFFF9800),
+                    modifier = Modifier.weight(1f),
+                    onClick = { navController.navigate("agency_claims") }
+                )
+            }
+        }
+        
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickStatCard(
                     icon = Icons.Default.AttachMoney,
                     value = "${stats.estimatedRevenue.toInt()}€",
                     label = "Revenu",
-                    color = Color(0xFFFF9800),
+                    color = Color(0xFF9C27B0),
+                    modifier = Modifier.weight(1f)
+                )
+                QuickStatCard(
+                    icon = Icons.Default.TrendingUp,
+                    value = "+12%",
+                    label = "Croissance",
+                    color = Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -401,6 +458,31 @@ fun OverviewSection(
                     color = Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f),
                     onClick = { onSectionClick(DashboardSection.BOOKINGS) }
+                )
+            }
+        }
+        
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickActionCard(
+                    icon = Icons.Default.Report,
+                    title = "Réclamations",
+                    subtitle = "Gérer les demandes",
+                    color = Color(0xFFFF9800),
+                    modifier = Modifier.weight(1f),
+                    onClick = { navController.navigate("agency_claims") }
+                )
+                QuickActionCard(
+                    icon = Icons.Default.People,
+                    title = "Clients",
+                    subtitle = "Voir les clients",
+                    color = Color(0xFF9C27B0),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onSectionClick(DashboardSection.CLIENTS) }
                 )
             }
         }

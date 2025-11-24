@@ -22,6 +22,7 @@ fun InsuranceUserCard(
     insurance: Insurance,
     onCreateRequest: (String) -> Unit,
     onUnsubscribe: (String) -> Unit,
+    onCreateClaim: ((String) -> Unit)? = null,
     isInMySubscriptionsTab: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -183,16 +184,47 @@ fun InsuranceUserCard(
         
         Spacer(modifier = Modifier.height(12.dp))
         
-        // Action Button
+        // Action Buttons
         when {
-            // Dans l'onglet "Mes inscriptions", toujours afficher "Se désinscrire"
+            // Dans l'onglet "Mes inscriptions", afficher les boutons de réclamation et désinscription
             isInMySubscriptionsTab -> {
-                ModernButton(
-                    text = "Se désinscrire",
-                    onClick = { onUnsubscribe(insurance._id) },
-                    backgroundColor = ColorTextSecondary,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Bouton Faire une réclamation
+                    onCreateClaim?.let { callback ->
+                        ModernButton(
+                            text = "Faire une réclamation",
+                            onClick = { callback(insurance._id) },
+                            backgroundColor = ColorPrimary,
+                            modifier = Modifier.fillMaxWidth(),
+                            icon = Icons.Default.Report
+                        )
+                    }
+                    
+                    // Bouton Se désinscrire
+                    OutlinedButton(
+                        onClick = { onUnsubscribe(insurance._id) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = ColorTextSecondary
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.ExitToApp,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Se désinscrire",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
             }
             // Dans l'onglet "Toutes les assurances", afficher selon le statut d'inscription
             insurance.isSubscribed -> {
