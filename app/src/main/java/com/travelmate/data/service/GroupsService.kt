@@ -45,7 +45,6 @@ class GroupsService @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    // ✅ AJOUT : État pour les demandes en attente
     private val _pendingRequests = MutableStateFlow<List<GroupMember>>(emptyList())
     val pendingRequests: StateFlow<List<GroupMember>> = _pendingRequests.asStateFlow()
 
@@ -77,12 +76,28 @@ class GroupsService @Inject constructor(
             _isLoading.value = true
             _error.value = null
 
-            Log.d("GroupsService", "=== GET ALL GROUPS ===")
+            Log.d("GroupsService", "=====================================")
+            Log.d("GroupsService", "=== GET ALL GROUPS (FRONTEND) ===")
+            Log.d("GroupsService", "=====================================")
+
             val response = groupsApi.getAllGroups(getAuthToken())
 
             if (response.isSuccessful && response.body() != null) {
                 val groups = response.body()!!
                 val userId = getUserId()
+
+                Log.d("GroupsService", "✅ Received ${groups.size} groups from backend")
+                Log.d("GroupsService", "Current user ID: $userId")
+
+                // ✅ LOG : Afficher CHAQUE groupe avec son membershipStatus
+                groups.forEachIndexed { index, group ->
+                    Log.d("GroupsService", "  [$index] ${group.name}:")
+                    Log.d("GroupsService", "      - _id: ${group._id}")
+                    Log.d("GroupsService", "      - membershipStatus: ${group.membershipStatus ?: "NULL ⚠️"}")
+                    Log.d("GroupsService", "      - memberCount: ${group.memberCount}")
+                    Log.d("GroupsService", "      - createdBy: ${group.createdBy}")
+                    Log.d("GroupsService", "      - members: ${group.members}")
+                }
 
                 val groupsWithStatus = groups.map { group ->
                     val isInCache = _joinedGroupIds.value.contains(group._id)
@@ -95,7 +110,11 @@ class GroupsService @Inject constructor(
 
                     val isMember = isInCache || isMemberInArray || isCreator
 
-                    // ✅ CORRECTION : Assigner les propriétés avec apply
+                    Log.d("GroupsService", "Processing group: ${group.name}")
+                    Log.d("GroupsService", "  - isCreator: $isCreator")
+                    Log.d("GroupsService", "  - isMember: $isMember")
+                    Log.d("GroupsService", "  - membershipStatus from API: ${group.membershipStatus}")
+
                     group.apply {
                         memberCount = members.size
                         isUserMember = isMember
@@ -106,22 +125,98 @@ class GroupsService @Inject constructor(
                 _myGroups.value = groupsWithStatus.filter { it.isUserMember && !isCreator(it, userId) }
                 _myCreatedGroups.value = groupsWithStatus.filter { isCreator(it, userId) }
 
-                Log.d("GroupsService", "✅ Loaded ${groupsWithStatus.size} groups")
+                Log.d("GroupsService", "✅ Processed groups:")
+                Log.d("GroupsService", "  - Total: ${groupsWithStatus.size}")
+                Log.d("GroupsService", "  - My groups: ${_myGroups.value.size}")
+                Log.d("GroupsService", "  - Created by me: ${_myCreatedGroups.value.size}")
+                Log.d("GroupsService", "=====================================")
+
                 Result.success(groupsWithStatus)
             } else {
-                val errorMsg = "Erreur lors du chargement des groupes: ${response.code()}"
-                Log.e("GroupsService", errorMsg)
+                val errorMsg = "Erreur: ${response.code()}"
+                Log.e("GroupsService", "❌ HTTP Error: $errorMsg")
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
-            Log.e("GroupsService", "❌ Error loading groups", e)
+            Log.e("GroupsService", "❌ Exception loading groups", e)
             _error.value = e.message
             Result.failure(e)
         } finally {
             _isLoading.value = false
         }
     }
+
+    suspend fun joinGroup(groupId: String): Result<GroupMember> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+
+            Log.d("GroupsService", "=== JOIN GROUP ===")
+            val response = groupsApi.joinGroup(groupId, getAuthToken())
+
+            if (response.isSuccessful && response.body() != null) {
+                val member = response.body()!!
+
+                Log.d("GroupsService", "✅ Status: ${member.status}")
+
+                kotlinx.coroutines.delay(1000)
+                getAllGroups()
+
+                if (member.status == "pending") {
+                    _error.value = "Demande envoyée ! En attente d'approbation."
+                }
+
+                Result.success(member)
+            } else {
+                val errorBody = response.errorBody()?.string() ?: ""
+                Log.e("GroupsService", "❌ Error: $errorBody")
+
+                // ✅ NOUVEAU : Gérer l'erreur "en attente" comme un succès
+                when {
+                    errorBody.contains("en attente") || errorBody.contains("Votre demande") -> {
+                        Log.d("GroupsService", "⏳ Request already pending - refreshing list")
+
+                        // ✅ Rafraîchir quand même la liste
+                        kotlinx.coroutines.delay(500)
+                        getAllGroups()
+
+                        _error.value = "Demande déjà envoyée, en attente d'approbation"
+
+                        // ✅ Retourner un succès fictif pour ne pas bloquer l'UI
+                        Result.success(GroupMember(
+                            id = "",
+                            groupId = groupId,
+                            userId = getUserId(),
+                            status = "pending",
+                            role = "member"
+                        ))
+                    }
+                    errorBody.contains("déjà membre") -> {
+                        getAllGroups()
+                        _error.value = "Vous êtes déjà membre"
+                        Result.failure(Exception("Déjà membre"))
+                    }
+                    errorBody.contains("banni") -> {
+                        _error.value = "Vous avez été banni"
+                        Result.failure(Exception("Banni"))
+                    }
+                    else -> {
+                        _error.value = "Erreur: ${response.code()}"
+                        Result.failure(Exception("Erreur ${response.code()}"))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Exception", e)
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    // Les autres fonctions restent identiques...
 
     suspend fun getGroupById(groupId: String): Result<Group> {
         return try {
@@ -135,7 +230,7 @@ class GroupsService @Inject constructor(
                 _currentGroup.value = group
                 Result.success(group)
             } else {
-                val errorMsg = "Erreur lors du chargement du groupe: ${response.code()}"
+                val errorMsg = "Erreur: ${response.code()}"
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
@@ -236,47 +331,6 @@ class GroupsService @Inject constructor(
         }
     }
 
-    suspend fun joinGroup(groupId: String): Result<GroupMember> {
-        return try {
-            _isLoading.value = true
-            _error.value = null
-
-            val response = groupsApi.joinGroup(groupId, getAuthToken())
-
-            if (response.isSuccessful && response.body() != null) {
-                val member = response.body()!!
-
-                // ✅ Afficher un message si la demande est en attente
-                if (member.status == "pending") {
-                    _error.value = "Demande envoyée ! En attente d'approbation."
-                } else if (member.status == "active") {
-                    _joinedGroupIds.value = _joinedGroupIds.value + groupId
-                }
-
-                kotlinx.coroutines.delay(500)
-                getAllGroups()
-                Result.success(member)
-            } else {
-                // ✅ Gérer les erreurs 400
-                val errorBody = response.errorBody()?.string() ?: ""
-                val errorMsg = when {
-                    errorBody.contains("en attente") -> "Demande déjà envoyée, en attente d'approbation"
-                    errorBody.contains("déjà membre") -> "Vous êtes déjà membre de ce groupe"
-                    errorBody.contains("banni") -> "Vous avez été banni de ce groupe"
-                    else -> "Erreur: ${response.code()}"
-                }
-                _error.value = errorMsg
-                Result.failure(Exception(errorMsg))
-            }
-        } catch (e: Exception) {
-            Log.e("GroupsService", "❌ Error joining group", e)
-            _error.value = e.message
-            Result.failure(e)
-        } finally {
-            _isLoading.value = false
-        }
-    }
-
     suspend fun leaveGroup(groupId: String): Result<Unit> {
         return try {
             _isLoading.value = true
@@ -316,69 +370,52 @@ class GroupsService @Inject constructor(
         }
     }
 
-    // ✅ NOUVEAU : Fonctions pour gérer les demandes
-    suspend fun getPendingRequests(groupId: String): Result<List<GroupMember>> {
+    suspend fun getPendingRequests(groupId: String): List<PendingRequest> {
         return try {
             val response = groupsApi.getPendingRequests(groupId, getAuthToken())
+
             if (response.isSuccessful && response.body() != null) {
-                _pendingRequests.value = response.body()!!
-                Result.success(response.body()!!)
+                response.body()!!
             } else {
-                Result.failure(Exception("Erreur"))
+                emptyList()
             }
         } catch (e: Exception) {
-            Log.e("GroupsService", "❌ Error getting pending requests", e)
-            Result.failure(e)
+            Log.e("GroupsService", "Error getting pending requests", e)
+            emptyList()
         }
     }
 
-    suspend fun approveMember(groupId: String, userId: String): Result<GroupMember> {
-        return try {
-            _isLoading.value = true
+    suspend fun approveMember(groupId: String, userId: String) {
+        try {
             val response = groupsApi.approveMember(groupId, userId, getAuthToken())
 
-            if (response.isSuccessful && response.body() != null) {
-                getPendingRequests(groupId)
-                getAllGroups()
-                Result.success(response.body()!!)
+            if (response.isSuccessful) {
+                Log.d("GroupsService", "✅ Member approved")
             } else {
-                val errorMsg = "Erreur: ${response.code()}"
-                _error.value = errorMsg
-                Result.failure(Exception(errorMsg))
+                Log.e("GroupsService", "❌ Error approving member: ${response.code()}")
             }
         } catch (e: Exception) {
-            Log.e("GroupsService", "❌ Error approving member", e)
-            _error.value = e.message
-            Result.failure(e)
-        } finally {
-            _isLoading.value = false
+            Log.e("GroupsService", "❌ Exception approving member", e)
+            throw e
         }
     }
 
-    suspend fun rejectMember(groupId: String, userId: String): Result<Unit> {
-        return try {
-            _isLoading.value = true
+    suspend fun rejectMember(groupId: String, userId: String) {
+        try {
             val response = groupsApi.rejectMember(groupId, userId, getAuthToken())
 
             if (response.isSuccessful) {
-                getPendingRequests(groupId)
-                Result.success(Unit)
+                Log.d("GroupsService", "✅ Member rejected")
             } else {
-                val errorMsg = "Erreur: ${response.code()}"
-                _error.value = errorMsg
-                Result.failure(Exception(errorMsg))
+                Log.e("GroupsService", "❌ Error rejecting member: ${response.code()}")
             }
         } catch (e: Exception) {
-            Log.e("GroupsService", "❌ Error rejecting member", e)
-            _error.value = e.message
-            Result.failure(e)
-        } finally {
-            _isLoading.value = false
+            Log.e("GroupsService", "❌ Exception rejecting member", e)
+            throw e
         }
     }
 
-    // ========== MESSAGES ==========
-
+    // Messages functions...
     suspend fun getGroupMessages(groupId: String): Result<List<MessageGroupe>> {
         return try {
             _isLoading.value = true
@@ -519,4 +556,11 @@ class GroupsService @Inject constructor(
     fun clearError() {
         _error.value = null
     }
+
+    fun setError(message: String) {
+        _error.value = message
+    }
+
+
+
 }

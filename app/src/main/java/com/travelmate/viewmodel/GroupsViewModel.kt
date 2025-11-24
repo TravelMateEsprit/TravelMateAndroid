@@ -26,8 +26,9 @@ class GroupsViewModel @Inject constructor(
     val isLoading = groupsService.isLoading
     val error = groupsService.error
 
-    // ✅ AJOUT : Demandes en attente
-    val pendingRequests = groupsService.pendingRequests
+    // ✅ AJOUTÉ : StateFlow pour les demandes en attente
+    private val _pendingRequests = MutableStateFlow<List<PendingRequest>>(emptyList())
+    val pendingRequests: StateFlow<List<PendingRequest>> = _pendingRequests.asStateFlow()
 
     private val _filterQuery = MutableStateFlow("")
     val filterQuery: StateFlow<String> = _filterQuery.asStateFlow()
@@ -114,23 +115,42 @@ class GroupsViewModel @Inject constructor(
     // ✅ NOUVEAU : Fonctions pour gérer les demandes
     fun loadPendingRequests(groupId: String) {
         viewModelScope.launch {
-            groupsService.getPendingRequests(groupId)
+            try {
+                val requests = groupsService.getPendingRequests(groupId)
+                _pendingRequests.value = requests
+                Log.d("GroupsViewModel", "✅ Loaded ${requests.size} pending requests")
+            } catch (e: Exception) {
+                Log.e("GroupsViewModel", "❌ Error loading pending requests", e)
+            }
         }
     }
 
     fun approveMember(groupId: String, userId: String) {
         viewModelScope.launch {
-            groupsService.approveMember(groupId, userId).onSuccess {
+            try {
+                groupsService.approveMember(groupId, userId)
+                // Recharger les demandes et les groupes
                 loadPendingRequests(groupId)
+                loadGroupById(groupId)
                 loadAllGroups()
+                Log.d("GroupsViewModel", "✅ Member approved")
+            } catch (e: Exception) {
+                Log.e("GroupsViewModel", "❌ Error approving member", e)
+                groupsService.setError("Erreur lors de l'approbation")
             }
         }
     }
 
     fun rejectMember(groupId: String, userId: String) {
         viewModelScope.launch {
-            groupsService.rejectMember(groupId, userId).onSuccess {
+            try {
+                groupsService.rejectMember(groupId, userId)
+                // Recharger les demandes
                 loadPendingRequests(groupId)
+                Log.d("GroupsViewModel", "✅ Member rejected")
+            } catch (e: Exception) {
+                Log.e("GroupsViewModel", "❌ Error rejecting member", e)
+                groupsService.setError("Erreur lors du rejet")
             }
         }
     }

@@ -34,6 +34,12 @@ fun GroupCard(
     onClick: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+
+    Log.d("GroupCard", "Rendering card for: ${group.name}")
+    Log.d("GroupCard", "  - membershipStatus: ${group.membershipStatus}")
+    Log.d("GroupCard", "  - isMyGroup: $isMyGroup")
+    Log.d("GroupCard", "  - isCreatedByUser: $isCreatedByUser")
+
     Card(
         modifier = modifier
             .fillMaxWidth()

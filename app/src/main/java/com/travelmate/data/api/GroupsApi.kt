@@ -85,21 +85,21 @@ interface GroupsApi {
     suspend fun getPendingRequests(
         @Path("id") groupId: String,
         @Header("Authorization") token: String
-    ): Response<List<GroupMember>>
+    ): Response<List<PendingRequest>>
 
     @POST("groups/{id}/members/{userId}/approve")
     suspend fun approveMember(
         @Path("id") groupId: String,
         @Path("userId") userId: String,
         @Header("Authorization") token: String
-    ): Response<GroupMember>
+    ): Response<Unit>
 
     @POST("groups/{id}/members/{userId}/reject")
     suspend fun rejectMember(
         @Path("id") groupId: String,
         @Path("userId") userId: String,
         @Header("Authorization") token: String
-    ): Response<MessageResponse>
+    ): Response<Unit>
 
     // ========== MESSAGES ==========
 

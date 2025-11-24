@@ -1,9 +1,12 @@
 package com.travelmate.ui.screens.groups
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -13,10 +16,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -27,6 +33,7 @@ import com.travelmate.ui.components.EditGroupDialog
 import com.travelmate.ui.components.PendingRequestsSheet
 import com.travelmate.ui.theme.*
 import com.travelmate.viewmodel.GroupsViewModel
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -39,7 +46,7 @@ fun GroupDetailsScreen(
 ) {
     val currentGroup by viewModel.currentGroup.collectAsState()
     val messages by viewModel.groupMessages.collectAsState()
-    val pendingRequests by viewModel.pendingRequests.collectAsState() // ✅ AJOUT
+    val pendingRequests by viewModel.pendingRequests.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
@@ -52,9 +59,19 @@ fun GroupDetailsScreen(
     var messageToDelete by remember { mutableStateOf<String?>(null) }
     var messageToEdit by remember { mutableStateOf<MessageGroupe?>(null) }
     var showEditMessageDialog by remember { mutableStateOf(false) }
-    var showPendingRequestsSheet by remember { mutableStateOf(false) } // ✅ AJOUT
+    var showPendingRequestsSheet by remember { mutableStateOf(false) }
+    var showGroupInfo by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val listState = rememberLazyListState()
+
+    // Auto-scroll aux nouveaux messages
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty() && !listState.isScrollInProgress) {
+            delay(100)
+            listState.animateScrollToItem(messages.size - 1)
+        }
+    }
 
     LaunchedEffect(error) {
         error?.let {
@@ -66,7 +83,7 @@ fun GroupDetailsScreen(
     LaunchedEffect(groupId) {
         viewModel.loadGroupById(groupId)
         viewModel.loadGroupMessages(groupId)
-        viewModel.loadPendingRequests(groupId) // ✅ AJOUT : Charger les demandes
+        viewModel.loadPendingRequests(groupId)
     }
 
     val isCreator = currentGroup?.createdBy == currentUserId
@@ -74,98 +91,231 @@ fun GroupDetailsScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        currentGroup?.name ?: "Groupe",
-                        maxLines = 1
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Retour")
-                    }
-                },
-                actions = {
-                    // ✅ AJOUT : Bouton pour voir les demandes en attente (seulement si créateur)
-                    if (isCreator && pendingRequests.isNotEmpty()) {
-                        BadgedBox(
-                            badge = {
-                                Badge(containerColor = ColorError) {
+            // TopBar améliorée avec plus d'infos
+            Surface(
+                shadowElevation = 4.dp,
+                color = ColorPrimary
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            IconButton(onClick = onBack) {
+                                Icon(
+                                    Icons.Default.ArrowBack,
+                                    "Retour",
+                                    tint = Color.White
+                                )
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 4.dp)
+                            ) {
+                                Text(
+                                    currentGroup?.name ?: "Groupe",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp
+                                )
+
+                                // Affichage du nombre de membres
+                                currentGroup?.let { group ->
                                     Text(
-                                        pendingRequests.size.toString(),
-                                        fontSize = 10.sp,
-                                        color = Color.White
+                                        "${group.memberCount} membres · ${group.destination ?: "Destination"}",
+                                        fontSize = 12.sp,
+                                        color = Color.White.copy(alpha = 0.9f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
-                        ) {
-                            IconButton(onClick = { showPendingRequestsSheet = true }) {
-                                Icon(Icons.Default.PersonAdd, "Demandes en attente")
+                        }
+
+                        Row {
+                            // Badge de demandes en attente
+                            if (isCreator && pendingRequests.isNotEmpty()) {
+                                BadgedBox(
+                                    badge = {
+                                        Badge(
+                                            containerColor = ColorError,
+                                            modifier = Modifier.offset(x = (-4).dp, y = 4.dp)
+                                        ) {
+                                            Text(
+                                                pendingRequests.size.toString(),
+                                                fontSize = 10.sp,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                ) {
+                                    IconButton(onClick = { showPendingRequestsSheet = true }) {
+                                        Icon(
+                                            Icons.Default.PersonAdd,
+                                            "Demandes en attente",
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Info du groupe
+                            IconButton(onClick = { showGroupInfo = !showGroupInfo }) {
+                                Icon(
+                                    Icons.Default.Info,
+                                    "Informations",
+                                    tint = Color.White
+                                )
+                            }
+
+                            // Menu actions
+                            var showMenu by remember { mutableStateOf(false) }
+                            Box {
+                                IconButton(onClick = { showMenu = true }) {
+                                    Icon(
+                                        Icons.Default.MoreVert,
+                                        "Options",
+                                        tint = Color.White
+                                    )
+                                }
+
+                                DropdownMenu(
+                                    expanded = showMenu,
+                                    onDismissRequest = { showMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.People,
+                                                    null,
+                                                    tint = ColorPrimary
+                                                )
+                                                Text("Voir les membres")
+                                            }
+                                        },
+                                        onClick = {
+                                            showMenu = false
+                                            // TODO: Ouvrir la liste des membres
+                                        }
+                                    )
+
+                                    if (isCreator) {
+                                        DropdownMenuItem(
+                                            text = {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.Edit,
+                                                        null,
+                                                        tint = ColorPrimary
+                                                    )
+                                                    Text("Modifier le groupe")
+                                                }
+                                            },
+                                            onClick = {
+                                                showMenu = false
+                                                showEditDialog = true
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
 
-                    IconButton(onClick = { /* TODO: Members */ }) {
-                        Icon(Icons.Default.People, "Membres")
+                    // Barre de progression lors du chargement
+                    if (isLoading) {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White,
+                            trackColor = ColorPrimary
+                        )
                     }
-
-                    if (isCreator) {
-                        IconButton(onClick = { showEditDialog = true }) {
-                            Icon(Icons.Default.Edit, "Modifier")
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ColorPrimary,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
-                )
-            )
+                }
+            }
         },
         bottomBar = {
+            // Zone de saisie améliorée
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shadowElevation = 8.dp,
                 color = Color.White
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = messageContent,
-                        onValueChange = { messageContent = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("Écrivez un message...") },
-                        shape = RoundedCornerShape(24.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = ColorPrimary,
-                            unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
-                        ),
-                        maxLines = 3
-                    )
+                Column {
+                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
 
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    FloatingActionButton(
-                        onClick = {
-                            if (messageContent.isNotBlank()) {
-                                viewModel.createMessage(groupId, messageContent)
-                                messageContent = ""
-                            }
-                        },
-                        containerColor = ColorPrimary,
-                        modifier = Modifier.size(48.dp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.Bottom
                     ) {
-                        Icon(
-                            Icons.Default.Send,
-                            contentDescription = "Envoyer",
-                            tint = Color.White
+                        OutlinedTextField(
+                            value = messageContent,
+                            onValueChange = { messageContent = it },
+                            modifier = Modifier.weight(1f),
+                            placeholder = {
+                                Text(
+                                    "Écrivez votre message...",
+                                    color = ColorTextSecondary.copy(alpha = 0.6f)
+                                )
+                            },
+                            shape = RoundedCornerShape(24.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = ColorPrimary,
+                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.2f),
+                                focusedContainerColor = ColorPrimary.copy(alpha = 0.03f)
+                            ),
+                            maxLines = 4,
+                            leadingIcon = {
+                                IconButton(onClick = { /* TODO: Ajouter pièce jointe */ }) {
+                                    Icon(
+                                        Icons.Default.AttachFile,
+                                        "Joindre un fichier",
+                                        tint = ColorTextSecondary
+                                    )
+                                }
+                            }
                         )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // Bouton d'envoi animé
+                        val isEnabled = messageContent.isNotBlank()
+                        FloatingActionButton(
+                            onClick = {
+                                if (isEnabled) {
+                                    viewModel.createMessage(groupId, messageContent)
+                                    messageContent = ""
+                                }
+                            },
+                            containerColor = if (isEnabled) ColorPrimary else ColorTextSecondary.copy(alpha = 0.3f),
+                            modifier = Modifier.size(56.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "Envoyer",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -175,62 +325,40 @@ fun GroupDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .background(Color(0xFFF5F5F5))
         ) {
-            if (isLoading && currentGroup == null) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = ColorPrimary
-                )
-            } else {
-                Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Info du groupe (dépliable)
+                AnimatedVisibility(
+                    visible = showGroupInfo,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
                     currentGroup?.let { group ->
-                        GroupHeader(group)
-                        Divider()
+                        EnhancedGroupHeader(group)
                     }
+                }
 
-                    if (messages.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    Icons.Default.ChatBubbleOutline,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(64.dp),
-                                    tint = ColorTextSecondary
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    "Aucun message pour le moment",
-                                    color = ColorTextSecondary,
-                                    fontSize = 16.sp
-                                )
-                                Text(
-                                    "Soyez le premier à poster!",
-                                    color = ColorTextSecondary,
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            reverseLayout = false,
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(messages) { message ->
-                                MessageCard(
-                                    message = message,
-                                    currentUserId = currentUserId,
-                                    onDelete = { messageToDelete = it },
-                                    onEdit = {
-                                        messageToEdit = message
-                                        showEditMessageDialog = true
-                                    }
-                                )
-                            }
+                // Zone de messages
+                if (messages.isEmpty()) {
+                    EmptyMessagesState()
+                } else {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(messages) { message ->
+                            EnhancedMessageCard(
+                                message = message,
+                                currentUserId = currentUserId,
+                                onDelete = { messageToDelete = it },
+                                onEdit = {
+                                    messageToEdit = message
+                                    showEditMessageDialog = true
+                                }
+                            )
                         }
                     }
                 }
@@ -238,7 +366,7 @@ fun GroupDetailsScreen(
         }
     }
 
-    // ✅ AJOUT : Bottom Sheet pour les demandes en attente
+    // Bottom Sheets et Dialogs
     if (showPendingRequestsSheet) {
         ModalBottomSheet(
             onDismissRequest = { showPendingRequestsSheet = false },
@@ -273,8 +401,16 @@ fun GroupDetailsScreen(
     messageToDelete?.let { messageId ->
         AlertDialog(
             onDismissRequest = { messageToDelete = null },
+            icon = {
+                Icon(
+                    Icons.Default.Delete,
+                    null,
+                    tint = ColorError,
+                    modifier = Modifier.size(32.dp)
+                )
+            },
             title = { Text("Supprimer le message") },
-            text = { Text("Êtes-vous sûr de vouloir supprimer ce message?") },
+            text = { Text("Cette action est irréversible. Voulez-vous vraiment supprimer ce message?") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -288,7 +424,7 @@ fun GroupDetailsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { messageToDelete = null }) {
-                    Text("Annuler")
+                    Text("Annuler", color = ColorTextSecondary)
                 }
             }
         )
@@ -310,7 +446,357 @@ fun GroupDetailsScreen(
     }
 }
 
-// Reste du code identique (EditMessageDialog, GroupHeader, MessageCard, formatMessageDate)
+// En-tête amélioré du groupe
+@Composable
+fun EnhancedGroupHeader(group: com.travelmate.data.models.Group) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Image avec gradient overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) {
+                val imageUrl = if (!group.image.isNullOrBlank()) {
+                    group.image
+                } else {
+                    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
+                }
+
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                // Gradient overlay pour améliorer la lisibilité
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.3f)
+                                )
+                            )
+                        )
+                )
+            }
+
+            // Contenu
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Description
+                if (!group.description.isNullOrBlank()) {
+                    Text(
+                        group.description,
+                        fontSize = 14.sp,
+                        color = ColorTextSecondary,
+                        lineHeight = 20.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                // Infos du groupe
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    if (!group.destination.isNullOrBlank()) {
+                        InfoChip(
+                            icon = Icons.Default.LocationOn,
+                            text = group.destination,
+                            tint = ColorPrimary
+                        )
+                    }
+
+                    InfoChip(
+                        icon = Icons.Default.People,
+                        text = "${group.memberCount} membres",
+                        tint = ColorTextSecondary
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun InfoChip(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+    tint: Color
+) {
+    Surface(
+        color = tint.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text,
+                fontSize = 13.sp,
+                color = tint,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+// État vide amélioré
+@Composable
+fun EmptyMessagesState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Surface(
+                modifier = Modifier.size(100.dp),
+                shape = CircleShape,
+                color = ColorPrimary.copy(alpha = 0.1f)
+            ) {
+                Icon(
+                    Icons.Default.ChatBubbleOutline,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    tint = ColorPrimary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                "Commencez la conversation",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = ColorTextPrimary
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                "Soyez le premier à poster un message dans ce groupe",
+                fontSize = 14.sp,
+                color = ColorTextSecondary,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
+    }
+}
+
+// Carte de message améliorée
+@Composable
+fun EnhancedMessageCard(
+    message: MessageGroupe,
+    currentUserId: String,
+    onDelete: (String) -> Unit,
+    onEdit: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    val authorName = message.authorId?.let { author ->
+        "${author.prenom ?: ""} ${author.nom ?: ""}".trim().ifEmpty { "Utilisateur" }
+    } ?: "Utilisateur"
+
+    val authorInitial = message.authorId?.nom?.firstOrNull()?.uppercase()
+        ?: message.authorId?.prenom?.firstOrNull()?.uppercase()
+        ?: "U"
+
+    val isMyMessage = message.authorId?.id == currentUserId
+
+    // Alignement différent selon l'auteur
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = if (isMyMessage) Alignment.End else Alignment.Start
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(if (isMyMessage) 0.85f else 0.85f),
+            horizontalArrangement = if (isMyMessage) Arrangement.End else Arrangement.Start
+        ) {
+            if (!isMyMessage) {
+                // Avatar à gauche pour les autres
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(ColorPrimary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        authorInitial,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
+            Card(
+                modifier = Modifier.weight(1f),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isMyMessage) ColorPrimary else Color.White
+                ),
+                shape = RoundedCornerShape(
+                    topStart = if (isMyMessage) 16.dp else 4.dp,
+                    topEnd = if (isMyMessage) 4.dp else 16.dp,
+                    bottomStart = 16.dp,
+                    bottomEnd = 16.dp
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (!isMyMessage) {
+                            Text(
+                                authorName,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp,
+                                color = ColorTextPrimary
+                            )
+                        }
+
+                        if (isMyMessage) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            Box {
+                                IconButton(
+                                    onClick = { showMenu = true },
+                                    modifier = Modifier.size(20.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.MoreVert,
+                                        contentDescription = "Options",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+
+                                DropdownMenu(
+                                    expanded = showMenu,
+                                    onDismissRequest = { showMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.Edit,
+                                                    null,
+                                                    tint = ColorPrimary,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Text("Modifier")
+                                            }
+                                        },
+                                        onClick = {
+                                            onEdit()
+                                            showMenu = false
+                                        }
+                                    )
+
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.Delete,
+                                                    null,
+                                                    tint = ColorError,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Text("Supprimer", color = ColorError)
+                                            }
+                                        },
+                                        onClick = {
+                                            onDelete(message.id)
+                                            showMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        message.content,
+                        fontSize = 14.sp,
+                        color = if (isMyMessage) Color.White else ColorTextPrimary,
+                        lineHeight = 20.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        formatMessageDate(message.createdAt),
+                        fontSize = 11.sp,
+                        color = if (isMyMessage) Color.White.copy(alpha = 0.8f) else ColorTextSecondary
+                    )
+                }
+            }
+
+            if (isMyMessage) {
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Avatar à droite pour mes messages
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(ColorPrimary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        authorInitial,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+// Dialog d'édition de message (inchangé mais avec style amélioré)
 @Composable
 fun EditMessageDialog(
     message: MessageGroupe,
@@ -325,7 +811,8 @@ fun EditMessageDialog(
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -400,220 +887,6 @@ fun EditMessageDialog(
     }
 }
 
-@Composable
-fun GroupHeader(group: com.travelmate.data.models.Group) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(16.dp)
-    ) {
-        val imageUrl = if (!group.image.isNullOrBlank()) {
-            group.image
-        } else {
-            "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
-        }
-
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            group.description,
-            fontSize = 14.sp,
-            color = ColorTextSecondary,
-            lineHeight = 20.sp
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            if (!group.destination.isNullOrBlank()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = null,
-                        tint = ColorPrimary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        group.destination,
-                        fontSize = 14.sp,
-                        color = ColorTextSecondary
-                    )
-                }
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.People,
-                    contentDescription = null,
-                    tint = ColorTextSecondary,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    "${group.memberCount} membres",
-                    fontSize = 14.sp,
-                    color = ColorTextSecondary
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MessageCard(
-    message: MessageGroupe,
-    currentUserId: String,
-    onDelete: (String) -> Unit,
-    onEdit: () -> Unit
-) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    val authorName = message.authorId?.let { author ->
-        "${author.prenom ?: ""} ${author.nom ?: ""}".trim().ifEmpty { "Utilisateur" }
-    } ?: "Utilisateur"
-
-    val authorInitial = message.authorId?.nom?.firstOrNull()?.uppercase()
-        ?: message.authorId?.prenom?.firstOrNull()?.uppercase()
-        ?: "U"
-
-    val isMyMessage = message.authorId?.id == currentUserId
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(ColorPrimary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            authorInitial,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Column {
-                        Text(
-                            authorName,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            color = ColorTextPrimary
-                        )
-                        Text(
-                            formatMessageDate(message.createdAt),
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary
-                        )
-                    }
-                }
-
-                if (isMyMessage) {
-                    Box {
-                        IconButton(onClick = { showMenu = true }) {
-                            Icon(
-                                Icons.Default.MoreVert,
-                                contentDescription = "Options",
-                                tint = ColorTextSecondary
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Edit,
-                                            contentDescription = null,
-                                            tint = ColorPrimary,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Text("Modifier")
-                                    }
-                                },
-                                onClick = {
-                                    onEdit()
-                                    showMenu = false
-                                }
-                            )
-
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Delete,
-                                            contentDescription = null,
-                                            tint = ColorError,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Text("Supprimer", color = ColorError)
-                                    }
-                                },
-                                onClick = {
-                                    onDelete(message.id)
-                                    showMenu = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                message.content,
-                fontSize = 14.sp,
-                color = ColorTextPrimary,
-                lineHeight = 20.sp
-            )
-        }
-    }
-}
-
 fun formatMessageDate(dateString: String?): String {
     if (dateString == null) return ""
 
@@ -629,15 +902,15 @@ fun formatMessageDate(dateString: String?): String {
             now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) &&
                     now.get(Calendar.DAY_OF_YEAR) == messageTime.get(Calendar.DAY_OF_YEAR) -> {
                 val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-                "Aujourd'hui à ${timeFormat.format(date)}"
+                timeFormat.format(date)
             }
             now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) &&
                     now.get(Calendar.DAY_OF_YEAR) - messageTime.get(Calendar.DAY_OF_YEAR) == 1 -> {
                 val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-                "Hier à ${timeFormat.format(date)}"
+                "Hier ${timeFormat.format(date)}"
             }
             else -> {
-                val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                val dateFormat = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
                 dateFormat.format(date)
             }
         }
