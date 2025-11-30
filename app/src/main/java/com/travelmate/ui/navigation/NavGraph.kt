@@ -6,6 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -134,44 +135,31 @@ fun NavGraph(
         
         // Flight Details Screen
         composable("${Constants.Routes.FLIGHT_DETAILS}/{flightId}") { backStackEntry ->
-            val viewModel: OffersViewModel = hiltViewModel()
-            val flightId = backStackEntry.arguments?.getString("flightId") ?: ""
-            val offers by viewModel.offers.collectAsState()
-            
-            val selectedOffer = offers.find { it.id == flightId }
-            
-            if (selectedOffer != null) {
-                FlightDetailsScreen(
-                    flightOffer = selectedOffer,
-                    onNavigateBack = {
-                        navController.popBackStack()
-                    },
-                    onBookFlight = { offer ->
-                        // TODO: Navigate to booking screen
-                        navController.popBackStack()
-                    }
-                )
-            } else {
-                // Show error or loading state
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            text = "Vol introuvable",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Button(onClick = { navController.popBackStack() }) {
-                            Text("Retour")
-                        }
-                    }
+            // Get ViewModel from parent route (USER_HOME) to share the same instance
+            // This ensures both OffresScreen and FlightDetailsScreen use the same ViewModel
+            // OffresScreen is called from UserHomeScreen (USER_HOME route), so we use that ViewModelStoreOwner
+            val parentEntry = remember(backStackEntry) {
+                try {
+                    navController.getBackStackEntry(Constants.Routes.USER_HOME)
+                } catch (e: Exception) {
+                    // Fallback to current entry if parent route not found (shouldn't happen in normal flow)
+                    backStackEntry
                 }
             }
+            val viewModel: OffersViewModel = hiltViewModel(parentEntry)
+            
+            FlightDetailsScreen(
+                viewModel = viewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                    viewModel.clearSelectedOffer()
+                },
+                onBookFlight = { offer ->
+                    // TODO: Navigate to booking screen
+                    navController.popBackStack()
+                    viewModel.clearSelectedOffer()
+                }
+            )
         }
         
         // Agency Dashboard
