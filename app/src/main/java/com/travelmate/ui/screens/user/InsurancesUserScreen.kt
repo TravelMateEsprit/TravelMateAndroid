@@ -392,13 +392,13 @@ fun InsurancesUserScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    "${selectedPriceRange.start.toInt()}€",
+                                    "${selectedPriceRange.start.toInt()} TND",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = ColorPrimary
                                 )
                                 Text(
-                                    "${selectedPriceRange.endInclusive.toInt()}€",
+                                    "${selectedPriceRange.endInclusive.toInt()} TND",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = ColorPrimary
@@ -799,7 +799,7 @@ fun InsurancesUserScreen(
                             onUnsubscribe = { viewModel.unsubscribeFromInsurance(it) },
                             onCreateClaim = if (selectedTabIndex == 1) {
                                 { insuranceId ->
-                                    navController.navigate("create_claim?insuranceId=$insuranceId")
+                                    navController.navigate("${Constants.Routes.CREATE_CLAIM}?insuranceId=$insuranceId")
                                 }
                             } else null,
                             isInMySubscriptionsTab = selectedTabIndex == 1,

@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import com.travelmate.ui.components.ModernButton
 import com.travelmate.ui.components.ModernCard
 import com.travelmate.ui.theme.*
+import com.travelmate.utils.Constants
 import com.travelmate.viewmodel.AgencyDashboardViewModel
 
 enum class DashboardSection(
@@ -174,7 +175,7 @@ fun AgencyMainDashboard(
                     actions = {
                         // Réclamations
                         IconButton(onClick = { 
-                            navController.navigate("agency_claims")
+                            navController.navigate(Constants.Routes.AGENCY_CLAIMS)
                         }) {
                             BadgedBox(
                                 badge = {
@@ -285,7 +286,7 @@ fun AgencyMainDashboard(
                     DashboardSection.CLAIMS -> {
                         // Navigate to claims screen
                         LaunchedEffect(Unit) {
-                            navController.navigate("agency_claims")
+                            navController.navigate(Constants.Routes.AGENCY_CLAIMS)
                             selectedSection = DashboardSection.OVERVIEW
                         }
                         Box(modifier = Modifier.fillMaxSize())
@@ -400,7 +401,7 @@ fun OverviewSection(
                     label = "Réclamations",
                     color = Color(0xFFFF9800),
                     modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate("agency_claims") }
+                    onClick = { navController.navigate(Constants.Routes.AGENCY_CLAIMS) }
                 )
             }
         }
@@ -412,7 +413,7 @@ fun OverviewSection(
             ) {
                 QuickStatCard(
                     icon = Icons.Default.AttachMoney,
-                    value = "${stats.estimatedRevenue.toInt()}€",
+                    value = "${stats.estimatedRevenue.toInt()} TND",
                     label = "Revenu",
                     color = Color(0xFF9C27B0),
                     modifier = Modifier.weight(1f)
@@ -474,7 +475,7 @@ fun OverviewSection(
                     subtitle = "Gérer les demandes",
                     color = Color(0xFFFF9800),
                     modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate("agency_claims") }
+                    onClick = { navController.navigate(Constants.Routes.AGENCY_CLAIMS) }
                 )
                 QuickActionCard(
                     icon = Icons.Default.People,
@@ -657,7 +658,7 @@ fun InsurancesSection(
                     
                     // Filtre de prix
                     Text(
-                        "Fourchette de prix: ${selectedPriceRange.start.toInt()}€ - ${selectedPriceRange.endInclusive.toInt()}€",
+                        "Fourchette de prix: ${selectedPriceRange.start.toInt()} TND - ${selectedPriceRange.endInclusive.toInt()} TND",
                         fontSize = 14.sp,
                         color = ColorTextSecondary
                     )
@@ -768,7 +769,7 @@ fun InsurancesSection(
                 )
                 QuickStatCard(
                     icon = Icons.Default.AttachMoney,
-                    value = "${stats.estimatedRevenue.toInt()}€",
+                    value = "${stats.estimatedRevenue.toInt()} TND",
                     label = "Revenu",
                     color = Color(0xFFFF9800),
                     modifier = Modifier.weight(1f)
@@ -1138,7 +1139,7 @@ fun CompactInsuranceCard(insurance: com.travelmate.data.models.Insurance) {
                     fontSize = 14.sp
                 )
                 Text(
-                    "${insurance.price.toInt()}€ • ${insurance.subscribers.size} inscrits",
+                    "${insurance.price.toInt()} TND • ${insurance.subscribers.size} inscrits",
                     fontSize = 12.sp,
                     color = ColorTextSecondary
                 )

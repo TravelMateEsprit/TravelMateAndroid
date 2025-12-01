@@ -143,7 +143,7 @@ fun AgencyInsuranceCard(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            "${insurance.price.toInt()}€",
+                            "${insurance.price.toInt()} TND",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (insurance.isActive) ColorPrimary else ColorTextSecondary,

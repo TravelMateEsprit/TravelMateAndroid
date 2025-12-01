@@ -169,12 +169,38 @@ class ClaimService @Inject constructor(
                 val updatedClaim = response.body()!!
                 Log.d("ClaimService", "Réclamation mise à jour: ${updatedClaim._id}")
                 
-                // Rafraîchir la liste des réclamations
                 loadAgencyClaims()
                 
                 Result.success(updatedClaim)
             } else {
                 val errorMsg = "Erreur lors de la mise à jour: ${response.code()}"
+                _error.value = errorMsg
+                Log.e("ClaimService", errorMsg)
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            val errorMsg = "Erreur réseau: ${e.message}"
+            _error.value = errorMsg
+            Log.e("ClaimService", errorMsg, e)
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
+    suspend fun addMessage(claimId: String, request: AddMessageRequest): Result<Claim> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+            
+            val response = claimApi.addMessage(claimId, getAuthToken(), request)
+            
+            if (response.isSuccessful && response.body() != null) {
+                val updatedClaim = response.body()!!
+                Log.d("ClaimService", "Message ajouté au ticket: ${updatedClaim.ticketNumber}")
+                Result.success(updatedClaim)
+            } else {
+                val errorMsg = "Erreur lors de l'ajout du message: ${response.code()}"
                 _error.value = errorMsg
                 Log.e("ClaimService", errorMsg)
                 Result.failure(Exception(errorMsg))

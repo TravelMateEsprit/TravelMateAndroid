@@ -33,6 +33,13 @@ interface ClaimApi {
         @Header("Authorization") token: String
     ): Response<Claim>
     
+    @POST("claims/{id}/messages")
+    suspend fun addMessage(
+        @Path("id") claimId: String,
+        @Header("Authorization") token: String,
+        @Body request: AddMessageRequest
+    ): Response<Claim>
+    
     @PATCH("claims/{id}/status")
     suspend fun updateClaimStatus(
         @Path("id") claimId: String,

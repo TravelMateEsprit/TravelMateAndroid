@@ -18,6 +18,8 @@
     import androidx.hilt.navigation.compose.hiltViewModel
     import androidx.navigation.NavController
     import com.travelmate.data.models.Claim
+    import com.travelmate.ui.components.*
+    import com.travelmate.utils.Constants
     import com.travelmate.viewmodel.ClaimViewModel
 
     @Composable
@@ -39,9 +41,9 @@
         }
 
         val filteredClaims = when (selectedTab) {
-            1 -> claims.filter { it.status == "EN_ATTENTE" }
+            1 -> claims.filter { it.status == "OUVERT" }
             2 -> claims.filter { it.status == "EN_COURS" }
-            3 -> claims.filter { it.status == "RESOLUE" || it.status == "FERMEE" }
+            3 -> claims.filter { it.status == "RESOLU" || it.status == "FERME" }
             else -> claims
         }
 
@@ -66,7 +68,7 @@
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
+                            containerColor = Color(0xFFFF9800),
                             titleContentColor = Color.White,
                             navigationIconContentColor = Color.White
                         )
@@ -75,7 +77,7 @@
                     // Tabs
                     TabRow(
                         selectedTabIndex = selectedTab,
-                        containerColor = MaterialTheme.colorScheme.primary,
+                        containerColor = Color(0xFFFF9800),
                         contentColor = Color.White
                     ) {
                         tabs.forEachIndexed { index, title ->
@@ -155,7 +157,7 @@
                             items(filteredClaims) { claim ->
                                 AgencyClaimCard(
                                     claim = claim,
-                                    onClick = { navController.navigate("agency_claim_detail/${claim._id}") }
+                                    onClick = { navController.navigate("${Constants.Routes.AGENCY_CLAIM_DETAIL}/${claim._id}") }
                                 )
                             }
                         }

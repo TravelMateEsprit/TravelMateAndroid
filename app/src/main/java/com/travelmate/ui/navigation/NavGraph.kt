@@ -269,11 +269,11 @@ fun NavGraph(
         }
         
         // Claims Routes - User
-        composable("my_claims") {
+        composable(Constants.Routes.MY_CLAIMS) {
             MyClaimsScreen(navController = navController)
         }
         
-        composable("create_claim") { backStackEntry ->
+        composable("${Constants.Routes.CREATE_CLAIM}?insuranceId={insuranceId}") { backStackEntry ->
             val insuranceId = backStackEntry.arguments?.getString("insuranceId")
             CreateClaimScreen(
                 navController = navController,
@@ -281,7 +281,7 @@ fun NavGraph(
             )
         }
         
-        composable("claim_detail/{claimId}") { backStackEntry ->
+        composable("${Constants.Routes.CLAIM_DETAIL}/{claimId}") { backStackEntry ->
             val claimId = backStackEntry.arguments?.getString("claimId") ?: return@composable
             ClaimDetailScreen(
                 navController = navController,
@@ -290,11 +290,11 @@ fun NavGraph(
         }
         
         // Claims Routes - Agency
-        composable("agency_claims") {
+        composable(Constants.Routes.AGENCY_CLAIMS) {
             AgencyClaimsScreen(navController = navController)
         }
         
-        composable("agency_claim_detail/{claimId}") { backStackEntry ->
+        composable("${Constants.Routes.AGENCY_CLAIM_DETAIL}/{claimId}") { backStackEntry ->
             val claimId = backStackEntry.arguments?.getString("claimId") ?: return@composable
             AgencyClaimDetailScreen(
                 navController = navController,

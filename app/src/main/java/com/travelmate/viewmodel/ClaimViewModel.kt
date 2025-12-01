@@ -28,6 +28,9 @@ class ClaimViewModel @Inject constructor(
     private val _updateClaimSuccess = MutableStateFlow(false)
     val updateClaimSuccess: StateFlow<Boolean> = _updateClaimSuccess.asStateFlow()
     
+    private val _addMessageSuccess = MutableStateFlow(false)
+    val addMessageSuccess: StateFlow<Boolean> = _addMessageSuccess.asStateFlow()
+    
     private val _selectedClaim = MutableStateFlow<Claim?>(null)
     val selectedClaim: StateFlow<Claim?> = _selectedClaim.asStateFlow()
     
@@ -53,6 +56,8 @@ class ClaimViewModel @Inject constructor(
         insuranceRequestId: String,
         subject: String,
         description: String,
+        category: String,
+        priority: String = "MOYENNE",
         attachments: List<String> = emptyList()
     ) {
         viewModelScope.launch {
@@ -62,6 +67,8 @@ class ClaimViewModel @Inject constructor(
                 insuranceRequestId = insuranceRequestId,
                 subject = subject,
                 description = description,
+                category = category,
+                priority = priority,
                 attachments = attachments
             )
             
@@ -79,10 +86,31 @@ class ClaimViewModel @Inject constructor(
         }
     }
     
+    fun addMessage(
+        claimId: String,
+        message: String,
+        attachments: List<String> = emptyList()
+    ) {
+        viewModelScope.launch {
+            _addMessageSuccess.value = false
+            
+            val request = AddMessageRequest(
+                message = message,
+                attachments = attachments
+            )
+            
+            val result = claimService.addMessage(claimId, request)
+            if (result.isSuccess) {
+                _selectedClaim.value = result.getOrNull()
+                _addMessageSuccess.value = true
+            }
+        }
+    }
+    
     fun updateClaimStatus(
         claimId: String,
         status: String,
-        agencyResponse: String? = null,
+        comment: String? = null,
         priority: String? = null
     ) {
         viewModelScope.launch {
@@ -90,15 +118,14 @@ class ClaimViewModel @Inject constructor(
             
             val request = UpdateClaimStatusRequest(
                 status = status,
-                agencyResponse = agencyResponse,
+                comment = comment,
                 priority = priority
             )
             
             val result = claimService.updateClaimStatus(claimId, request)
-            _updateClaimSuccess.value = result.isSuccess
-            
             if (result.isSuccess) {
                 _selectedClaim.value = result.getOrNull()
+                _updateClaimSuccess.value = true
             }
         }
     }
@@ -109,6 +136,10 @@ class ClaimViewModel @Inject constructor(
     
     fun resetUpdateClaimSuccess() {
         _updateClaimSuccess.value = false
+    }
+    
+    fun resetAddMessageSuccess() {
+        _addMessageSuccess.value = false
     }
     
     fun clearError() {

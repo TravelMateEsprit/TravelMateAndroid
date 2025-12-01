@@ -20,6 +20,15 @@ object Constants {
         const val AGENCY_INSURANCE_REQUESTS = "agency_insurance_requests"
         const val REVIEW_REQUEST = "review_request"
         const val PAYMENT = "payment"
+        
+        // Claims Routes - User
+        const val MY_CLAIMS = "my_claims"
+        const val CREATE_CLAIM = "create_claim"
+        const val CLAIM_DETAIL = "claim_detail"
+        
+        // Claims Routes - Agency
+        const val AGENCY_CLAIMS = "agency_claims"
+        const val AGENCY_CLAIM_DETAIL = "agency_claim_detail"
     }
     
     // SharedPreferences Keys

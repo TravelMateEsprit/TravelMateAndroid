@@ -86,7 +86,7 @@ fun InsuranceUserCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "${insurance.price.toInt()}€",
+                        "${insurance.price.toInt()} TND",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = ColorPrimary
