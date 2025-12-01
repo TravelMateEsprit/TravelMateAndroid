@@ -72,21 +72,52 @@ fun ClaimDetailScreen(
             )
         },
         bottomBar = {
-            if (selectedClaim != null && selectedClaim?.status != "FERME") {
-                MessageInputBar(
-                    messageText = messageText,
-                    onMessageChange = { messageText = it },
-                    onSendClick = {
-                        if (messageText.isNotBlank()) {
-                            isSending = true
-                            viewModel.addMessage(claimId, messageText)
-                            messageText = ""
-                            isSending = false
+            if (selectedClaim != null) {
+                if (selectedClaim?.status == "FERME") {
+                    // Barre d'information pour ticket fermé
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color(0xFFF8F9FA),
+                        shadowElevation = 8.dp
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 16.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = Color(0xFF64748B),
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Ce ticket a été clôturé",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF64748B)
+                            )
                         }
-                    },
-                    isSending = isSending,
-                    enabled = !isSending
-                )
+                    }
+                } else {
+                    MessageInputBar(
+                        messageText = messageText,
+                        onMessageChange = { messageText = it },
+                        onSendClick = {
+                            if (messageText.isNotBlank()) {
+                                isSending = true
+                                viewModel.addMessage(claimId, messageText)
+                                messageText = ""
+                                isSending = false
+                            }
+                        },
+                        isSending = isSending,
+                        enabled = !isSending
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -160,7 +191,7 @@ fun ModernChatTopBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
@@ -176,11 +207,11 @@ fun ModernChatTopBar(
             ) {
                 Text(
                     text = claim?.ticketNumber ?: "...",
-                    fontSize = 16.sp,
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -206,13 +237,13 @@ fun ClaimInfoPanel(claim: Claim) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Text(
                 text = "Détails du ticket",
@@ -221,7 +252,7 @@ fun ClaimInfoPanel(claim: Claim) {
                 color = Color(0xFF1E293B)
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             
             // Subject
             InfoDetailRow(
@@ -358,7 +389,8 @@ fun ChatMessagesView(
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 16.dp, horizontal = 12.dp)
+                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 18.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Initial message (claim description)
                 item {
@@ -368,7 +400,6 @@ fun ChatMessagesView(
                         timestamp = claim.createdAt,
                         isUser = true
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
                 
                 // All subsequent messages
@@ -379,7 +410,6 @@ fun ChatMessagesView(
                         timestamp = message.createdAt,
                         isUser = message.senderRole == "user"
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }
@@ -426,30 +456,39 @@ fun MessageBubble(
     isUser: Boolean
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
     ) {
         if (!isUser) {
             // Agency avatar
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFFF9800)),
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF2196F3),
+                                Color(0xFF1976D2)
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.Business,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
         }
         
         Column(
-            modifier = Modifier.widthIn(max = 280.dp),
+            modifier = Modifier.widthIn(max = 300.dp),
             horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
         ) {
             // Sender name for agency messages
@@ -457,59 +496,69 @@ fun MessageBubble(
                 Text(
                     text = senderName,
                     fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
                     color = Color(0xFF64748B),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
                 )
             }
             
             Card(
                 shape = RoundedCornerShape(
-                    topStart = if (isUser) 16.dp else 4.dp,
-                    topEnd = if (isUser) 4.dp else 16.dp,
-                    bottomStart = 16.dp,
-                    bottomEnd = 16.dp
+                    topStart = if (isUser) 20.dp else 4.dp,
+                    topEnd = if (isUser) 4.dp else 20.dp,
+                    bottomStart = 20.dp,
+                    bottomEnd = 20.dp
                 ),
                 colors = CardDefaults.cardColors(
                     containerColor = if (isUser) Color(0xFF1976D2) else Color.White
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(12.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     Text(
                         text = messageText,
                         fontSize = 15.sp,
+                        fontWeight = FontWeight.Normal,
                         color = if (isUser) Color.White else Color(0xFF1E293B),
-                        lineHeight = 20.sp
+                        lineHeight = 22.sp
                     )
                     
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     
                     Text(
                         text = formatRelativeTime(timestamp),
                         fontSize = 11.sp,
-                        color = if (isUser) Color.White.copy(alpha = 0.7f) else Color(0xFF94A3B8)
+                        fontWeight = FontWeight.Normal,
+                        color = if (isUser) Color.White.copy(alpha = 0.8f) else Color(0xFF94A3B8)
                     )
                 }
             }
         }
         
         if (isUser) {
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             // User avatar
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1976D2)),
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF1E88E5),
+                                Color(0xFF1976D2)
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.Person,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -527,50 +576,63 @@ fun MessageInputBar(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color.White,
-        shadowElevation = 8.dp
+        shadowElevation = 12.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.Bottom
         ) {
             OutlinedTextField(
                 value = messageText,
                 onValueChange = onMessageChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Votre message...") },
+                placeholder = { 
+                    Text(
+                        "Écrivez votre message...",
+                        color = Color(0xFF94A3B8)
+                    ) 
+                },
                 enabled = enabled,
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF1976D2),
-                    unfocusedBorderColor = Color(0xFFE2E8F0)
+                    unfocusedBorderColor = Color(0xFFCBD5E1),
+                    focusedContainerColor = Color(0xFFF8FAFC),
+                    unfocusedContainerColor = Color(0xFFF8FAFC)
                 ),
-                maxLines = 4
+                maxLines = 5,
+                textStyle = LocalTextStyle.current.copy(
+                    fontSize = 15.sp,
+                    lineHeight = 20.sp
+                )
             )
             
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             
             FloatingActionButton(
                 onClick = onSendClick,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(52.dp),
                 containerColor = if (messageText.isBlank()) Color(0xFFE2E8F0) else Color(0xFF1976D2),
                 contentColor = if (messageText.isBlank()) Color(0xFF94A3B8) else Color.White,
                 elevation = FloatingActionButtonDefaults.elevation(
-                    defaultElevation = if (messageText.isBlank()) 0.dp else 4.dp
-                )
+                    defaultElevation = if (messageText.isBlank()) 0.dp else 6.dp,
+                    pressedElevation = 12.dp
+                ),
+                shape = CircleShape
             ) {
                 if (isSending) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         color = Color.White,
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.5.dp
                     )
                 } else {
                     Icon(
                         Icons.Default.Send,
                         contentDescription = "Envoyer",
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }

@@ -122,9 +122,14 @@ fun MyClaimsScreen(
                 containerColor = Color(0xFF1976D2),
                 contentColor = Color.White,
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Nouveau Ticket", fontWeight = FontWeight.SemiBold) }
+                text = { Text("Nouveau Ticket", fontWeight = FontWeight.SemiBold) },
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 6.dp,
+                    pressedElevation = 12.dp
+                )
             )
-        }
+        },
+        floatingActionButtonPosition = FabPosition.End
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -141,7 +146,7 @@ fun MyClaimsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     FilterChipModern(
@@ -221,7 +226,7 @@ fun MyClaimsScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(filteredClaims) { claim ->
                             ModernTicketCard(

@@ -68,7 +68,7 @@
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color(0xFFFF9800),
+                            containerColor = Color(0xFF2196F3),
                             titleContentColor = Color.White,
                             navigationIconContentColor = Color.White
                         )
@@ -77,7 +77,7 @@
                     // Tabs
                     TabRow(
                         selectedTabIndex = selectedTab,
-                        containerColor = Color(0xFFFF9800),
+                        containerColor = Color(0xFF2196F3),
                         contentColor = Color.White
                     ) {
                         tabs.forEachIndexed { index, title ->
@@ -151,8 +151,8 @@
                     else -> {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             items(filteredClaims) { claim ->
                                 AgencyClaimCard(
@@ -172,14 +172,14 @@
         Card(
             modifier = Modifier
                 .fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             onClick = onClick
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(20.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

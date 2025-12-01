@@ -174,7 +174,7 @@ fun CreateClaimScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(horizontal = 16.dp, vertical = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
@@ -207,7 +207,7 @@ fun CreateClaimScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                            .padding(horizontal = 24.dp, vertical = 20.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         StepIndicator(
@@ -393,7 +393,7 @@ fun CategorySelectionStep(
         categories.chunked(2).forEach { rowCategories ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 rowCategories.forEach { category ->
                     CategoryCard(
@@ -407,7 +407,7 @@ fun CategorySelectionStep(
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -437,7 +437,7 @@ fun CategoryCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
