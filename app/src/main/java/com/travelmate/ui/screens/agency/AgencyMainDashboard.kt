@@ -18,10 +18,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
 import kotlinx.coroutines.launch
 import com.travelmate.ui.components.ModernButton
 import com.travelmate.ui.components.ModernCard
@@ -231,12 +235,18 @@ fun AgencyMainDashboard(
                         ) {
                             DropdownMenuItem(
                                 text = { Text("Profil") },
-                                onClick = { showMenu = false },
+                                onClick = { 
+                                    showMenu = false
+                                    navController.navigate(Constants.Routes.AGENCY_PROFILE)
+                                },
                                 leadingIcon = { Icon(Icons.Default.Person, null) }
                             )
                             DropdownMenuItem(
                                 text = { Text("Paramètres") },
-                                onClick = { showMenu = false },
+                                onClick = { 
+                                    showMenu = false
+                                    selectedSection = DashboardSection.SETTINGS
+                                },
                                 leadingIcon = { Icon(Icons.Default.Settings, null) }
                             )
                             Divider()
@@ -291,6 +301,10 @@ fun AgencyMainDashboard(
                         }
                         Box(modifier = Modifier.fillMaxSize())
                     }
+                    DashboardSection.SETTINGS -> SettingsSection(
+                        viewModel = viewModel,
+                        onBack = { selectedSection = DashboardSection.OVERVIEW }
+                    )
                     else -> ComingSoonSection(section)
                 }
             }
@@ -1156,6 +1170,279 @@ fun CompactInsuranceCard(insurance: com.travelmate.data.models.Insurance) {
                     fontWeight = FontWeight.Medium,
                     color = if (insurance.isActive) ColorSuccess else ColorTextSecondary
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun SettingsSection(
+    viewModel: AgencyDashboardViewModel,
+    onBack: () -> Unit
+) {
+    val context = LocalContext.current
+    var signatureName by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                // Header
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = null,
+                        tint = ColorPrimary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        "Paramètres de l'agence",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorTextPrimary
+                    )
+                }
+            }
+
+            item {
+                Divider(color = ColorDivider)
+            }
+
+            // Signature Section
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Draw,
+                                contentDescription = null,
+                                tint = ColorPrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "Signature pour contrats",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = ColorTextPrimary
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            "Cette signature apparaîtra sur tous les contrats d'assurance envoyés aux clients.",
+                            fontSize = 14.sp,
+                            color = ColorTextSecondary
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Signature Name
+                        OutlinedTextField(
+                            value = signatureName,
+                            onValueChange = { signatureName = it },
+                            label = { Text("Nom du signataire") },
+                            placeholder = { Text("Ex: Le Directeur Général") },
+                            leadingIcon = {
+                                Icon(Icons.Default.Person, contentDescription = null)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = ColorPrimary,
+                                focusedLabelColor = ColorPrimary
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Image Upload
+                        OutlinedButton(
+                            onClick = { imagePickerLauncher.launch("image/*") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = ColorPrimary
+                            )
+                        ) {
+                            Icon(Icons.Default.Image, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                if (selectedImageUri != null) "Image sélectionnée"
+                                else "Sélectionner une image de signature"
+                            )
+                        }
+
+                        if (selectedImageUri != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "Image: ${selectedImageUri?.lastPathSegment ?: ""}",
+                                fontSize = 12.sp,
+                                color = ColorSuccess
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Save Buttons
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            if (signatureName.isNotEmpty()) {
+                                Button(
+                                    onClick = {
+                                        scope.launch {
+                                            isUploading = true
+                                            val result = viewModel.updateSignatureName(signatureName)
+                                            isUploading = false
+                                            if (result) {
+                                                snackbarHostState.showSnackbar(
+                                                    "Nom du signataire enregistré avec succès"
+                                                )
+                                                signatureName = ""
+                                            } else {
+                                                snackbarHostState.showSnackbar(
+                                                    "Erreur lors de l'enregistrement"
+                                                )
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    enabled = !isUploading,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = ColorPrimary
+                                    )
+                                ) {
+                                    if (isUploading) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(20.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                    } else {
+                                        Icon(Icons.Default.Save, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Enregistrer le nom")
+                                    }
+                                }
+                            }
+
+                            if (selectedImageUri != null) {
+                                Button(
+                                    onClick = {
+                                        scope.launch {
+                                            isUploading = true
+                                            val result = viewModel.uploadSignature(context, selectedImageUri!!)
+                                            isUploading = false
+                                            if (result) {
+                                                snackbarHostState.showSnackbar(
+                                                    "Signature uploadée avec succès"
+                                                )
+                                                selectedImageUri = null
+                                            } else {
+                                                snackbarHostState.showSnackbar(
+                                                    "Erreur lors de l'upload"
+                                                )
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    enabled = !isUploading,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = ColorSuccess
+                                    )
+                                ) {
+                                    if (isUploading) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(20.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                    } else {
+                                        Icon(Icons.Default.Upload, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Upload signature")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Info Card
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = ColorPrimary.copy(alpha = 0.1f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = ColorPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                "Information",
+                                fontWeight = FontWeight.SemiBold,
+                                color = ColorPrimary,
+                                fontSize = 14.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "Formats acceptés: JPG, PNG, GIF. Taille maximale: 2MB. " +
+                                "Pour un meilleur résultat, utilisez une image avec fond transparent (PNG).",
+                                fontSize = 12.sp,
+                                color = ColorTextSecondary,
+                                lineHeight = 18.sp
+                            )
+                        }
+                    }
+                }
             }
         }
     }

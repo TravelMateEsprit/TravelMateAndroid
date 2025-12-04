@@ -60,7 +60,7 @@ fun CreateInsuranceRequestScreen(
     LaunchedEffect(currentUser) {
         currentUser?.let { user ->
             if (travelerName.isEmpty()) {
-                travelerName = user.name ?: "${user.firstName.orEmpty()} ${user.lastName.orEmpty()}".trim()
+                travelerName = user.name ?: ""
             }
             if (travelerEmail.isEmpty()) {
                 travelerEmail = user.email

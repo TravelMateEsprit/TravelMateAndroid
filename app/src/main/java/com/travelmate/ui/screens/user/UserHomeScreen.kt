@@ -23,6 +23,8 @@ import androidx.navigation.NavController
 import com.travelmate.ui.theme.*
 import com.travelmate.viewmodel.NotificationsViewModel
 
+import com.travelmate.ui.profile.UserProfileScreen
+
 sealed class BottomNavItem(
     val route: String,
     val icon: ImageVector,
@@ -150,8 +152,7 @@ fun UserHomeScreen(
                     onNavigateToRequestDetails = { /* TODO */ },
                     onNavigateToPaymentDetails = { /* TODO */ }
                 )
-                5 -> ProfileScreen(
-                    navController = navController,
+                5 -> UserProfileScreen(
                     onLogout = onLogout
                 )
             }

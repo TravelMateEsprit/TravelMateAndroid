@@ -57,8 +57,6 @@ data class InsuranceSubscribersResponse(
                                 _id = obj["_id"]?.jsonPrimitive?.content ?: "",
                                 email = email,
                                 name = name,
-                                firstName = firstName,
-                                lastName = lastName,
                                 userType = obj["userType"]?.jsonPrimitive?.content ?: "user",
                                 status = obj["status"]?.jsonPrimitive?.content ?: "active",
                                 phone = phone,

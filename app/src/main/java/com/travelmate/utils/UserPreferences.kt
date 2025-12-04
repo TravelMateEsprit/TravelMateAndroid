@@ -33,7 +33,7 @@ class UserPreferences @Inject constructor(
                 putString(KEY_USER_ID, it._id)
                 putString(KEY_USER_TYPE, it.userType)
                 putString(KEY_USER_EMAIL, it.email)
-                putString(KEY_USER_NAME, it.name ?: "${it.firstName} ${it.lastName}")
+                putString(KEY_USER_NAME, it.name ?: "")
                 putString(KEY_USER_STATUS, it.status)
                 putString(KEY_USER_PHONE, it.phone)
                 // Save full user object as JSON

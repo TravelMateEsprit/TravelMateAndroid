@@ -362,7 +362,7 @@ class InsuranceService @Inject constructor(
                 } else {
                     Log.d("InsuranceService", "Received ${users.size} subscribers with full details")
                     users.forEachIndexed { index, user ->
-                        Log.d("InsuranceService", "[$index] ${user.email} - ${user.firstName ?: "N/A"} ${user.lastName ?: "N/A"} - Phone: ${user.phone ?: "N/A"}")
+                        Log.d("InsuranceService", "[$index] ${user.email} - ${user.name ?: "N/A"} - Phone: ${user.phone ?: "N/A"}")
                     }
                 }
                 

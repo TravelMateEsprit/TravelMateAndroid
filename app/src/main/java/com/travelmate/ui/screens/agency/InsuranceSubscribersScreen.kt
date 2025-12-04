@@ -241,8 +241,9 @@ fun SubscriberCard(user: User) {
                 contentAlignment = Alignment.Center
             ) {
                 val initials = buildString {
-                    user.firstName?.firstOrNull()?.uppercase()?.let { append(it) }
-                    user.lastName?.firstOrNull()?.uppercase()?.let { append(it) }
+                    user.name?.split(" ")?.take(2)?.forEach { part ->
+                        part.firstOrNull()?.uppercase()?.let { append(it) }
+                    }
                 }
                 Text(
                     text = if (initials.isNotEmpty()) initials else user.email.firstOrNull()?.uppercase()?.toString() ?: "?",
@@ -257,8 +258,6 @@ fun SubscriberCard(user: User) {
             // User Info
             Column(modifier = Modifier.weight(1f)) {
                 val displayName = when {
-                    !user.firstName.isNullOrBlank() && !user.lastName.isNullOrBlank() -> 
-                        "${user.firstName} ${user.lastName}"
                     !user.name.isNullOrBlank() -> user.name
                     else -> user.email
                 }

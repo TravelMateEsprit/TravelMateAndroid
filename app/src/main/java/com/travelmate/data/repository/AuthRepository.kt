@@ -10,11 +10,67 @@ import com.travelmate.data.models.UserRegistrationRequest
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import com.travelmate.data.models.UpdateAgencyProfileRequest
+import com.travelmate.data.models.UpdateProfileRequest
+import com.travelmate.data.models.User
+
 @Singleton
 class AuthRepository @Inject constructor(
     private val authApi: AuthApi
 ) {
     
+    suspend fun getUserProfile(token: String): Result<User> {
+        return try {
+            val response = authApi.getUserProfile("Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to fetch profile"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateUserProfile(token: String, request: UpdateProfileRequest): Result<User> {
+        return try {
+            val response = authApi.updateUserProfile("Bearer $token", request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to update profile"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getAgencyProfile(token: String): Result<User> {
+        return try {
+            val response = authApi.getAgencyProfile("Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to fetch agency profile"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateAgencyProfile(token: String, request: UpdateAgencyProfileRequest): Result<User> {
+        return try {
+            val response = authApi.updateAgencyProfile("Bearer $token", request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to update agency profile"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun registerUser(request: UserRegistrationRequest): Result<AuthResponse> {
         return try {
             val response = authApi.registerUser(request)

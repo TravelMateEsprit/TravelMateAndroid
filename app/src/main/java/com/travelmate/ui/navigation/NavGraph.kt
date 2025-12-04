@@ -34,6 +34,8 @@ import com.travelmate.ui.screens.CreateClaimScreen
 import com.travelmate.ui.screens.ClaimDetailScreen
 import com.travelmate.ui.screens.AgencyClaimsScreen
 import com.travelmate.ui.screens.AgencyClaimDetailScreen
+import com.travelmate.ui.profile.UserProfileScreen
+import com.travelmate.ui.profile.AgencyProfileScreen
 import com.travelmate.utils.Constants
 import com.travelmate.utils.UserPreferences
 
@@ -170,6 +172,20 @@ fun NavGraph(
                     navController.navigate(Constants.Routes.WELCOME) {
                         popUpTo(0) { inclusive = true }
                     }
+                }
+            )
+        }
+
+        // User Profile
+        composable(Constants.Routes.USER_PROFILE) {
+            UserProfileScreen()
+        }
+
+        // Agency Profile
+        composable(Constants.Routes.AGENCY_PROFILE) {
+            AgencyProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

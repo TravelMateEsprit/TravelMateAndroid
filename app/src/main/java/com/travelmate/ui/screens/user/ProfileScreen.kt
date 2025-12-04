@@ -66,7 +66,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = user?.name ?: user?.firstName?.let { "$it ${user?.lastName ?: ""}" }?.trim() ?: "Utilisateur",
+                    text = user?.name ?: "Utilisateur",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -108,7 +108,7 @@ fun ProfileScreen(
                     ProfileInfoItem(
                         icon = Icons.Default.Person,
                         label = "Nom",
-                        value = user?.name ?: user?.firstName?.let { "$it ${user?.lastName ?: ""}" }?.trim() ?: "Non renseigné"
+                        value = user?.name ?: "Non renseigné"
                     )
                     Divider(modifier = Modifier.padding(vertical = 12.dp))
                     ProfileInfoItem(
