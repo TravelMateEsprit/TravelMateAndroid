@@ -91,11 +91,14 @@ class MainActivity : ComponentActivity() {
         }
     }
     
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         // Gérer les deep links quand l'app est déjà ouverte
-        // Note: Vous devrez stocker navController dans une variable de classe si nécessaire
+        handleDeepLink(intent) { route ->
+            Log.d(TAG, "Deep link navigation: $route")
+            // Note: Pour naviguer ici, vous auriez besoin d'une référence au navController
+        }
     }
     
     /**
