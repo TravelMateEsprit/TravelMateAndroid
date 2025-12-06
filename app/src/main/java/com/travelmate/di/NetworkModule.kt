@@ -1,14 +1,17 @@
 package com.travelmate.di
 
+import android.content.Context
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.travelmate.data.api.AuthApi
 import com.travelmate.data.api.GroupsApi
 import com.travelmate.data.api.InsuranceApi
 import com.travelmate.data.api.UserApi
+import com.travelmate.data.socket.GroupChatSocketService
 import com.travelmate.data.socket.SocketConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -25,11 +28,11 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideJson(): Json = Json {
-        ignoreUnknownKeys = true      // Ignore les champs inconnus (comme __v de MongoDB)
-        isLenient = true                // Permet un parsing JSON plus flexible
-        encodeDefaults = false          // N'encode pas les valeurs par défaut
-        explicitNulls = false           // N'inclut pas les valeurs null explicitement
-        coerceInputValues = true        // ✅ AJOUTÉ : Convertit automatiquement les valeurs incompatibles
+        ignoreUnknownKeys = true
+        isLenient = true
+        encodeDefaults = false
+        explicitNulls = false
+        coerceInputValues = true
     }
 
     @Provides
@@ -84,5 +87,14 @@ object NetworkModule {
     @Singleton
     fun provideGroupsApi(retrofit: Retrofit): GroupsApi {
         return retrofit.create(GroupsApi::class.java)
+    }
+
+    // ✅ NOUVEAU : Provider pour le service WebSocket de messagerie de groupe
+    @Provides
+    @Singleton
+    fun provideGroupChatSocketService(
+        @ApplicationContext context: Context
+    ): GroupChatSocketService {
+        return GroupChatSocketService(context)
     }
 }

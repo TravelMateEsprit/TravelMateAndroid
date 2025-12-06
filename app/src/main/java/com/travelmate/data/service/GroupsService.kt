@@ -553,6 +553,70 @@ class GroupsService @Inject constructor(
         }
     }
 
+
+    // ✅ Upload image de message
+    suspend fun uploadMessageImage(imageUri: Uri): Result<String> {
+        return try {
+            _isLoading.value = true
+            _error.value = null
+
+            val file = File(context.cacheDir, "message_image_${System.currentTimeMillis()}.jpg")
+            context.contentResolver.openInputStream(imageUri)?.use { input ->
+                file.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("image", file.name, requestFile)
+
+            val response = groupsApi.uploadMessageImage(body)
+
+            if (response.isSuccessful && response.body() != null) {
+                val imageUrl = response.body()!!.imageUrl
+                file.delete()
+                Result.success(imageUrl)
+            } else {
+                val errorMsg = "Erreur upload: ${response.code()}"
+                _error.value = errorMsg
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error uploading message image", e)
+            _error.value = e.message
+            Result.failure(e)
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    // ✅ Réagir à un message
+    suspend fun toggleReaction(groupId: String, messageId: String, emoji: String): Result<MessageGroupe> {
+        return try {
+            val response = groupsApi.reactToMessage(
+                groupId,
+                messageId,
+                getAuthToken(),
+                mapOf("emoji" to emoji)
+            )
+
+            if (response.isSuccessful && response.body() != null) {
+                // Rafraîchir les messages
+                getGroupMessages(groupId)
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Erreur ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error toggling reaction", e)
+            Result.failure(e)
+        }
+    }
+
+
+
+
+
     fun clearError() {
         _error.value = null
     }
@@ -560,6 +624,10 @@ class GroupsService @Inject constructor(
     fun setError(message: String) {
         _error.value = message
     }
+
+
+
+
 
 
 

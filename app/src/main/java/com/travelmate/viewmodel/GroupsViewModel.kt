@@ -1,32 +1,40 @@
 package com.travelmate.viewmodel
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.travelmate.data.models.*
 import com.travelmate.data.service.GroupsService
+import com.travelmate.data.socket.GroupChatSocketService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class GroupsViewModel @Inject constructor(
-    private val groupsService: GroupsService
+    private val groupsService: GroupsService,
+    private val chatSocketService: GroupChatSocketService,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     val allGroups = groupsService.allGroups
     val myGroups = groupsService.myGroups
     val myCreatedGroups = groupsService.myCreatedGroups
     val currentGroup = groupsService.currentGroup
-    val groupMessages = groupsService.groupMessages
     val isLoading = groupsService.isLoading
     val error = groupsService.error
 
-    // ✅ AJOUTÉ : StateFlow pour les demandes en attente
+    private val _groupMessages = MutableStateFlow<List<MessageGroupe>>(emptyList())
+    val groupMessages: StateFlow<List<MessageGroupe>> = _groupMessages.asStateFlow()
+
+    val socketConnectionState = chatSocketService.connectionState
+    val socketError = chatSocketService.error
+    val typingUsers = chatSocketService.typingUsers
+
     private val _pendingRequests = MutableStateFlow<List<PendingRequest>>(emptyList())
     val pendingRequests: StateFlow<List<PendingRequest>> = _pendingRequests.asStateFlow()
 
@@ -39,12 +47,147 @@ class GroupsViewModel @Inject constructor(
     private val _filteredGroups = MutableStateFlow<List<Group>>(emptyList())
     val filteredGroups: StateFlow<List<Group>> = _filteredGroups.asStateFlow()
 
+    private var currentUserId: String = ""
+
     init {
         viewModelScope.launch {
             allGroups.collect { groups ->
                 applyFiltersAndSort(groups)
             }
         }
+
+        connectToWebSocket()
+        observeWebSocketMessages()
+        observeWebSocketDeletes()
+        observeWebSocketUpdates()
+        observeWebSocketReactions()
+        observeTypingUsers()
+    }
+
+    fun setUserId(userId: String) {
+        currentUserId = userId
+        Log.d("GroupsViewModel", "✅ UserId set: $userId")
+    }
+
+    private fun connectToWebSocket() {
+        viewModelScope.launch {
+            try {
+                chatSocketService.connect()
+                Log.d("GroupsViewModel", "✅ WebSocket connection initiated")
+            } catch (e: Exception) {
+                Log.e("GroupsViewModel", "❌ Error connecting to WebSocket", e)
+            }
+        }
+    }
+
+    private fun observeWebSocketMessages() {
+        viewModelScope.launch {
+            chatSocketService.newMessage.collect { newMessage ->
+                if (newMessage != null) {
+                    Log.d("GroupsViewModel", "📨 New message via WebSocket: ${newMessage.content}")
+
+                    val currentMessages = _groupMessages.value.toMutableList()
+                    currentMessages.removeAll { it.id.startsWith("temp_") }
+
+                    if (!currentMessages.any { it.id == newMessage.id }) {
+                        currentMessages.add(newMessage)
+                        _groupMessages.value = currentMessages
+                        Log.d("GroupsViewModel", "✅ Message ajouté à la liste (total: ${currentMessages.size})")
+                    }
+
+                    chatSocketService.resetNewMessage()
+                }
+            }
+        }
+    }
+
+    private fun observeWebSocketDeletes() {
+        viewModelScope.launch {
+            chatSocketService.messageDeleted.collect { deletedId ->
+                if (deletedId != null) {
+                    Log.d("GroupsViewModel", "🗑️ Message deleted via WebSocket: $deletedId")
+
+                    val currentMessages = _groupMessages.value.toMutableList()
+                    val sizeBefore = currentMessages.size
+                    currentMessages.removeAll { it.id == deletedId }
+                    _groupMessages.value = currentMessages
+
+                    Log.d("GroupsViewModel", "✅ Message supprimé (${sizeBefore} -> ${currentMessages.size})")
+
+                    chatSocketService.resetMessageDeleted()
+                }
+            }
+        }
+    }
+
+    private fun observeWebSocketUpdates() {
+        viewModelScope.launch {
+            chatSocketService.messageUpdated.collect { updatedMessage ->
+                if (updatedMessage != null) {
+                    Log.d("GroupsViewModel", "✏️ Message updated via WebSocket: ${updatedMessage.id}")
+
+                    val currentMessages = _groupMessages.value.toMutableList()
+                    val index = currentMessages.indexOfFirst { it.id == updatedMessage.id }
+
+                    if (index != -1) {
+                        currentMessages[index] = updatedMessage
+                        _groupMessages.value = currentMessages
+                        Log.d("GroupsViewModel", "✅ Message mis à jour à l'index $index")
+                    } else {
+                        Log.w("GroupsViewModel", "⚠️ Message ${updatedMessage.id} non trouvé pour mise à jour")
+                    }
+
+                    chatSocketService.resetMessageUpdated()
+                }
+            }
+        }
+    }
+
+    private fun observeWebSocketReactions() {
+        viewModelScope.launch {
+            chatSocketService.messageReacted.collect { reactedMessage ->
+                if (reactedMessage != null) {
+                    Log.d("GroupsViewModel", "🔄 Réaction WebSocket reçue pour message ${reactedMessage.id}")
+                    Log.d("GroupsViewModel", "   Réactions totales: ${reactedMessage.reactions.size}")
+
+                    val currentMessages = _groupMessages.value.toMutableList()
+                    val index = currentMessages.indexOfFirst { it.id == reactedMessage.id }
+
+                    if (index != -1) {
+                        currentMessages[index] = reactedMessage
+                        _groupMessages.value = currentMessages
+
+                        Log.d("GroupsViewModel", "✅ Message mis à jour à l'index $index avec ${reactedMessage.reactions.size} réactions")
+                    } else {
+                        Log.w("GroupsViewModel", "⚠️ Message ${reactedMessage.id} non trouvé dans la liste")
+                    }
+
+                    chatSocketService.resetMessageReacted()
+                }
+            }
+        }
+    }
+
+    private fun observeTypingUsers() {
+        viewModelScope.launch {
+            chatSocketService.typingUsers.collect { users ->
+                Log.d("GroupsViewModel", "⌨️ Typing users: ${users.size}")
+            }
+        }
+    }
+
+    fun joinGroupChat(groupId: String) {
+        chatSocketService.joinGroup(groupId)
+        Log.d("GroupsViewModel", "🚪 Joining group chat: $groupId")
+    }
+
+    fun leaveGroupChat(groupId: String) {
+        chatSocketService.leaveGroup(groupId)
+        Log.d("GroupsViewModel", "🚶 Leaving group chat: $groupId")
+    }
+
+    fun sendTypingIndicator(groupId: String, isTyping: Boolean) {
+        chatSocketService.sendTypingIndicator(groupId, isTyping)
     }
 
     fun loadAllGroups() {
@@ -107,12 +250,12 @@ class GroupsViewModel @Inject constructor(
         viewModelScope.launch {
             val result = groupsService.leaveGroup(groupId)
             if (result.isSuccess) {
+                leaveGroupChat(groupId)
                 loadAllGroups()
             }
         }
     }
 
-    // ✅ NOUVEAU : Fonctions pour gérer les demandes
     fun loadPendingRequests(groupId: String) {
         viewModelScope.launch {
             try {
@@ -129,7 +272,6 @@ class GroupsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 groupsService.approveMember(groupId, userId)
-                // Recharger les demandes et les groupes
                 loadPendingRequests(groupId)
                 loadGroupById(groupId)
                 loadAllGroups()
@@ -145,7 +287,6 @@ class GroupsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 groupsService.rejectMember(groupId, userId)
-                // Recharger les demandes
                 loadPendingRequests(groupId)
                 Log.d("GroupsViewModel", "✅ Member rejected")
             } catch (e: Exception) {
@@ -157,25 +298,133 @@ class GroupsViewModel @Inject constructor(
 
     fun loadGroupMessages(groupId: String) {
         viewModelScope.launch {
-            groupsService.getGroupMessages(groupId)
+            Log.d("GroupsViewModel", "📥 Loading messages for group: $groupId")
+
+            val result = groupsService.getGroupMessages(groupId)
+            if (result.isSuccess) {
+                val messages = result.getOrNull() ?: emptyList()
+                _groupMessages.value = messages
+
+                Log.d("GroupsViewModel", "✅ Loaded ${messages.size} messages")
+
+                joinGroupChat(groupId)
+            } else {
+                Log.e("GroupsViewModel", "❌ Error loading messages: ${result.exceptionOrNull()?.message}")
+            }
         }
     }
 
-    fun createMessage(groupId: String, content: String, images: List<String> = emptyList()) {
+    // ✅ CRÉER UN MESSAGE (sauvegarde via API REST)
+    fun createMessage(groupId: String, content: String) {
         viewModelScope.launch {
-            groupsService.createMessage(groupId, content, images)
+            try {
+                Log.d("GroupsViewModel", "📤 Envoi message via API REST...")
+
+                val result = groupsService.createMessage(groupId, content, emptyList())
+
+                if (result.isSuccess) {
+                    Log.d("GroupsViewModel", "✅ Message sauvegardé en BDD")
+
+                    // ✅ Recharger les messages immédiatement
+                    loadGroupMessages(groupId)
+
+                    // ✅ Broadcaster via WebSocket (le backend le fait déjà, mais on peut le faire aussi)
+                    chatSocketService.sendMessage(groupId, content, emptyList())
+                } else {
+                    val errorMsg = result.exceptionOrNull()?.message ?: "Erreur inconnue"
+                    Log.e("GroupsViewModel", "❌ Erreur API: $errorMsg")
+                    groupsService.setError("Erreur lors de l'envoi: $errorMsg")
+                }
+            } catch (e: Exception) {
+                Log.e("GroupsViewModel", "❌ Exception createMessage", e)
+                groupsService.setError("Erreur: ${e.message}")
+            }
+        }
+    }
+
+    // ✅ CRÉER UN MESSAGE AVEC IMAGE
+    fun createMessageWithImage(groupId: String, content: String, imageUri: Uri) {
+        viewModelScope.launch {
+            try {
+                Log.d("GroupsViewModel", "📤 Upload image puis envoi message...")
+
+                // ✅ 1. Upload l'image
+                val uploadResult = groupsService.uploadMessageImage(imageUri)
+
+                if (uploadResult.isFailure) {
+                    val errorMsg = uploadResult.exceptionOrNull()?.message ?: "Erreur upload"
+                    Log.e("GroupsViewModel", "❌ Erreur upload image: $errorMsg")
+                    groupsService.setError("Erreur lors de l'upload de l'image")
+                    return@launch
+                }
+
+                val imageUrl = uploadResult.getOrNull()
+                if (imageUrl == null) {
+                    Log.e("GroupsViewModel", "❌ Image URL null")
+                    groupsService.setError("Erreur lors de l'upload de l'image")
+                    return@launch
+                }
+
+                Log.d("GroupsViewModel", "✅ Image uploadée: $imageUrl")
+
+                // ✅ 2. Créer le message avec l'URL
+                val result = groupsService.createMessage(groupId, content, listOf(imageUrl))
+
+                if (result.isSuccess) {
+                    Log.d("GroupsViewModel", "✅ Message avec image sauvegardé")
+                    loadGroupMessages(groupId)
+                    chatSocketService.sendMessage(groupId, content, listOf(imageUrl))
+                } else {
+                    val errorMsg = result.exceptionOrNull()?.message ?: "Erreur inconnue"
+                    Log.e("GroupsViewModel", "❌ Erreur création message: $errorMsg")
+                    groupsService.setError("Erreur lors de l'envoi")
+                }
+            } catch (e: Exception) {
+                Log.e("GroupsViewModel", "❌ Exception createMessageWithImage", e)
+                groupsService.setError("Erreur: ${e.message}")
+            }
         }
     }
 
     fun deleteMessage(groupId: String, messageId: String) {
         viewModelScope.launch {
-            groupsService.deleteMessage(groupId, messageId)
+            // ✅ Suppression optimiste
+            val currentMessages = _groupMessages.value.toMutableList()
+            currentMessages.removeAll { it.id == messageId }
+            _groupMessages.value = currentMessages
+
+            Log.d("GroupsViewModel", "🗑️ Message supprimé localement: $messageId")
+
+            // ✅ Envoyer la suppression via WebSocket
+            chatSocketService.deleteMessage(groupId, messageId)
         }
     }
 
     fun updateMessage(groupId: String, messageId: String, newContent: String) {
         viewModelScope.launch {
-            groupsService.updateMessage(groupId, messageId, newContent)
+            // ✅ Mise à jour optimiste
+            val currentMessages = _groupMessages.value.toMutableList()
+            val index = currentMessages.indexOfFirst { it.id == messageId }
+
+            if (index != -1) {
+                val updatedMessage = currentMessages[index].copy(content = newContent)
+                currentMessages[index] = updatedMessage
+                _groupMessages.value = currentMessages
+
+                Log.d("GroupsViewModel", "✏️ Message modifié localement: $messageId")
+            }
+
+            // ✅ Envoyer la modification via WebSocket
+            chatSocketService.updateMessage(groupId, messageId, newContent)
+        }
+    }
+
+    fun toggleReaction(groupId: String, messageId: String, emoji: String) {
+        viewModelScope.launch {
+            Log.d("GroupsViewModel", "👍 Toggle réaction: $emoji sur message $messageId")
+
+            // ✅ Envoyer via WebSocket (la mise à jour viendra du listener)
+            chatSocketService.sendReaction(groupId, messageId, emoji)
         }
     }
 
@@ -184,12 +433,23 @@ class GroupsViewModel @Inject constructor(
             val result = groupsService.uploadGroupImage(imageUri)
 
             if (result.isSuccess) {
-                result.getOrNull()?.let { onSuccess(it) }
+                result.getOrNull()?.let {
+                    Log.d("GroupsViewModel", "✅ Group image uploaded: $it")
+                    onSuccess(it)
+                }
             } else {
                 val error = result.exceptionOrNull()?.message ?: "Erreur upload"
+                Log.e("GroupsViewModel", "❌ Error uploading group image: $error")
                 onError(error)
             }
         }
+    }
+
+    fun uploadMessageImage(imageUri: Uri): String? {
+        // ✅ Cette fonction est synchrone, on la rend suspend
+        // Pour l'instant, on retourne null et on loggue
+        Log.w("GroupsViewModel", "⚠️ uploadMessageImage appelée de manière synchrone - utilisez createMessageWithImage à la place")
+        return null
     }
 
     fun setFilterQuery(query: String) {
@@ -227,8 +487,38 @@ class GroupsViewModel @Inject constructor(
 
     fun clearError() {
         groupsService.clearError()
+        chatSocketService.clearError()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        chatSocketService.disconnect()
+        Log.d("GroupsViewModel", "🧹 ViewModel cleared - WebSocket disconnected")
     }
 }
+
+// ✅ Extension function pour copier MessageGroupe
+private fun MessageGroupe.copy(
+    id: String = this.id,
+    groupId: String = this.groupId,
+    authorId: AuthorInfo? = this.authorId,
+    content: String = this.content,
+    images: List<String> = this.images,
+    reactions: List<MessageReaction> = this.reactions,
+    status: String = this.status,
+    createdAt: String = this.createdAt,
+    updatedAt: String = this.updatedAt
+) = MessageGroupe(
+    id = id,
+    groupId = groupId,
+    authorId = authorId,
+    content = content,
+    images = images,
+    reactions = reactions,
+    status = status,
+    createdAt = createdAt,
+    updatedAt = updatedAt
+)
 
 enum class SortOption(val label: String) {
     RECENT("Plus récents"),

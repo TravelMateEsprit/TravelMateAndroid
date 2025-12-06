@@ -138,6 +138,25 @@ interface GroupsApi {
         @Header("Authorization") token: String,
         @Body body: Map<String, String>
     ): Response<MessageGroupe>
+
+
+    // ✅ Upload image de message
+    @Multipart
+    @POST("groups/upload-message-image")
+    suspend fun uploadMessageImage(
+        @Part image: MultipartBody.Part
+    ): Response<UploadImageResponse>
+
+    // ✅ Réagir à un message
+    @POST("groups/{id}/messages/{messageId}/react")
+    suspend fun reactToMessage(
+        @Path("id") groupId: String,
+        @Path("messageId") messageId: String,
+        @Header("Authorization") token: String,
+        @Body emoji: Map<String, String>
+    ): Response<MessageGroupe>
+
+
 }
 
 @kotlinx.serialization.Serializable
