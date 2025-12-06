@@ -1,6 +1,7 @@
 package com.travelmate.di
 
 import android.content.Context
+import com.travelmate.config.AppConfig
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.travelmate.data.api.AuthApi
 import com.travelmate.data.api.ClaimApi
@@ -82,7 +83,7 @@ object NetworkModule {
         val contentType = "application/json".toMediaType()
         
         return Retrofit.Builder()
-            .baseUrl(SocketConfig.SERVER_URL)
+            .baseUrl(AppConfig.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()

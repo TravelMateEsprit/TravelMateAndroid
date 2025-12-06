@@ -40,11 +40,7 @@ class MyInsuranceRequestsViewModel @Inject constructor(
             _state.value = MyRequestsState.Loading
             
             try {
-                val token = userPreferences.getAccessToken() ?: run {
-                    _state.value = MyRequestsState.Error("Non authentifié")
-                    return@launch
-                }
-                
+                val token = userPreferences.getAccessToken() ?: return@launch
                 val response = repository.getMyRequests(token)
                 
                 if (response.isSuccessful && response.body() != null) {
@@ -91,7 +87,6 @@ class MyInsuranceRequestsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val token = userPreferences.getAccessToken() ?: return@launch
-                
                 val response = repository.cancelRequest(token, requestId)
                 
                 if (response.isSuccessful) {

@@ -91,13 +91,6 @@ class SearchInsuranceViewModel @Inject constructor(
             _error.value = null
             
             try {
-                val token = userPreferences.getAccessToken()
-                if (token.isNullOrEmpty()) {
-                    _error.value = "User not authenticated"
-                    _isLoading.value = false
-                    return@launch
-                }
-                
                 val searchRequest = SearchInsuranceRequest(
                     searchTerm = _searchTerm.value.takeIf { it.isNotEmpty() },
                     minPrice = _minPrice.value,
@@ -111,6 +104,7 @@ class SearchInsuranceViewModel @Inject constructor(
                     limit = 20
                 )
                 
+                val token = userPreferences.getAccessToken() ?: return@launch
                 insuranceRepository.searchInsurances(token, searchRequest)
                     .onSuccess { response ->
                         if (page == 0) {

@@ -36,11 +36,6 @@ class InsuranceService @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
-    private fun getAuthToken(): String {
-        val token = prefs.getString("access_token", "") ?: ""
-        return "Bearer $token"
-    }
-    
     private fun updateInsurancesSubscriptionStatus() {
         val subscribedIds = _mySubscriptions.value.map { it._id }.toSet()
         _insurances.value = _insurances.value.map { insurance ->
@@ -55,11 +50,9 @@ class InsuranceService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val token = getAuthToken()
             Log.d("InsuranceService", "=== GET ALL INSURANCES ===")
-            Log.d("InsuranceService", "Auth token: $token")
             
-            val response = insuranceApi.getAllInsurances(token)
+            val response = insuranceApi.getAllInsurances()
             Log.d("InsuranceService", "Response code: ${response.code()}")
             Log.d("InsuranceService", "Response message: ${response.message()}")
             Log.d("InsuranceService", "Is successful: ${response.isSuccessful}")
@@ -113,7 +106,7 @@ class InsuranceService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val response = insuranceApi.getMySubscriptions(getAuthToken())
+            val response = insuranceApi.getMySubscriptions()
             if (response.isSuccessful && response.body() != null) {
                 val subscriptions = response.body()!!
                 // Marquer toutes les souscriptions comme inscrites
@@ -142,7 +135,7 @@ class InsuranceService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val response = insuranceApi.subscribeToInsurance(insuranceId, getAuthToken())
+            val response = insuranceApi.subscribeToInsurance(insuranceId)
             if (response.isSuccessful && response.body() != null) {
                 val insurance = response.body()!!
                 // Refresh lists
@@ -167,7 +160,7 @@ class InsuranceService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val response = insuranceApi.unsubscribeFromInsurance(insuranceId, getAuthToken())
+            val response = insuranceApi.unsubscribeFromInsurance(insuranceId)
             if (response.isSuccessful && response.body() != null) {
                 val insurance = response.body()!!
                 // Refresh lists
@@ -197,7 +190,7 @@ class InsuranceService @Inject constructor(
             Log.d("InsuranceService", "=== CREATE INSURANCE ===")
             Log.d("InsuranceService", "Request: name=${request.name}, price=${request.price}, duration=${request.duration}")
             
-            val response = insuranceApi.createInsurance(getAuthToken(), request)
+            val response = insuranceApi.createInsurance(request)
             Log.d("InsuranceService", "Response code: ${response.code()}")
             
             if (response.isSuccessful && response.body() != null) {
@@ -230,11 +223,9 @@ class InsuranceService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val token = getAuthToken()
             Log.d("InsuranceService", "=== GET MY AGENCY INSURANCES ===")
-            Log.d("InsuranceService", "Auth token: $token")
             
-            val response = insuranceApi.getMyInsurances(token)
+            val response = insuranceApi.getMyInsurances()
             Log.d("InsuranceService", "Response code: ${response.code()}")
             Log.d("InsuranceService", "Response message: ${response.message()}")
             Log.d("InsuranceService", "Is successful: ${response.isSuccessful}")
@@ -275,7 +266,7 @@ class InsuranceService @Inject constructor(
             Log.d("InsuranceService", "Insurance ID: $insuranceId")
             Log.d("InsuranceService", "Request: ${request}")
             
-            val response = insuranceApi.updateInsurance(insuranceId, getAuthToken(), request)
+            val response = insuranceApi.updateInsurance(insuranceId, request)
             Log.d("InsuranceService", "Response code: ${response.code()}")
             
             if (response.isSuccessful && response.body() != null) {
@@ -311,7 +302,7 @@ class InsuranceService @Inject constructor(
             Log.d("InsuranceService", "=== DELETE INSURANCE ===")
             Log.d("InsuranceService", "Insurance ID: $insuranceId")
             
-            val response = insuranceApi.deleteInsurance(insuranceId, getAuthToken())
+            val response = insuranceApi.deleteInsurance(insuranceId)
             Log.d("InsuranceService", "Response code: ${response.code()}")
             
             if (response.isSuccessful) {
@@ -346,7 +337,7 @@ class InsuranceService @Inject constructor(
             Log.d("InsuranceService", "=== GET INSURANCE SUBSCRIBERS ===")
             Log.d("InsuranceService", "Insurance ID: $insuranceId")
             
-            val response = insuranceApi.getInsuranceSubscribers(insuranceId, getAuthToken())
+            val response = insuranceApi.getInsuranceSubscribers(insuranceId)
             Log.d("InsuranceService", "Response code: ${response.code()}")
             
             if (response.isSuccessful && response.body() != null) {

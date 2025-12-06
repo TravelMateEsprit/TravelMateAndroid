@@ -21,7 +21,7 @@ class AuthRepository @Inject constructor(
     
     suspend fun getUserProfile(token: String): Result<User> {
         return try {
-            val response = authApi.getUserProfile("Bearer $token")
+            val response = authApi.getUserProfile()
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -34,7 +34,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun updateUserProfile(token: String, request: UpdateProfileRequest): Result<User> {
         return try {
-            val response = authApi.updateUserProfile("Bearer $token", request)
+            val response = authApi.updateUserProfile(request)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -47,7 +47,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun getAgencyProfile(token: String): Result<User> {
         return try {
-            val response = authApi.getAgencyProfile("Bearer $token")
+            val response = authApi.getAgencyProfile()
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -60,7 +60,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun updateAgencyProfile(token: String, request: UpdateAgencyProfileRequest): Result<User> {
         return try {
-            val response = authApi.updateAgencyProfile("Bearer $token", request)
+            val response = authApi.updateAgencyProfile(request)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -120,6 +120,24 @@ class AuthRepository @Inject constructor(
             } else {
                 val errorBody = response.errorBody()?.string()
                 Result.failure(Exception(errorBody ?: response.message() ?: "Failed to send reset email"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun resetPassword(token: String, newPassword: String): Result<MessageResponse> {
+        return try {
+            val body = mapOf(
+                "token" to token,
+                "newPassword" to newPassword
+            )
+            val response = authApi.resetPassword(body)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception(errorBody ?: response.message() ?: "Failed to reset password"))
             }
         } catch (e: Exception) {
             Result.failure(e)

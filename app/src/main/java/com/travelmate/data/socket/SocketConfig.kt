@@ -1,21 +1,25 @@
 package com.travelmate.data.socket
 
+import com.travelmate.config.AppConfig
 import io.socket.client.IO
 
+/**
+ * Configuration WebSocket
+ * Utilise automatiquement AppConfig pour gérer dev/prod
+ */
 object SocketConfig {
-    // Pour émulateur Android
-   // const val SERVER_URL = "http://10.0.2.2:3000"
-
-    // Pour device physique, décommenter et remplacer par votre IP locale :
-   const val SERVER_URL = "http://192.168.100.20:3000"
     
+    /**
+     * URL du serveur WebSocket
+     * S'adapte automatiquement selon l'environnement
+     */
+    val SERVER_URL: String
+        get() = AppConfig.Socket.SERVER_URL
+    
+    /**
+     * Options de configuration Socket.IO
+     */
     fun getSocketOptions(): IO.Options {
-        return IO.Options.builder()
-            .setTransports(arrayOf("websocket"))
-            .setReconnection(true)
-            .setReconnectionDelay(1000)
-            .setReconnectionDelayMax(5000)
-            .setReconnectionAttempts(Int.MAX_VALUE)
-            .build()
+        return AppConfig.Socket.getOptions()
     }
 }

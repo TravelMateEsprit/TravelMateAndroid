@@ -6,15 +6,13 @@ import retrofit2.http.*
 
 interface UserApi {
     
-    @GET("api/users/{id}")
+    @GET("users/{id}")
     suspend fun getUserById(
-        @Path("id") userId: String,
-        @Header("Authorization") token: String
+        @Path("id") userId: String
     ): Response<User>
     
-    @POST("api/users/batch")
+    @POST("users/batch")
     suspend fun getUsersByIds(
-        @Header("Authorization") token: String,
         @Body userIds: List<String>
     ): Response<List<User>>
 }

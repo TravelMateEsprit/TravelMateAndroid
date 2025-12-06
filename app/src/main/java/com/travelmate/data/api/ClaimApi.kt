@@ -8,42 +8,32 @@ interface ClaimApi {
     
     @POST("claims")
     suspend fun createClaim(
-        @Header("Authorization") token: String,
         @Body request: CreateClaimRequest
     ): Response<Claim>
     
     @GET("claims/my-claims")
-    suspend fun getMyClaims(
-        @Header("Authorization") token: String
-    ): Response<List<Claim>>
+    suspend fun getMyClaims(): Response<List<Claim>>
     
     @GET("claims/agency-claims")
-    suspend fun getAgencyClaims(
-        @Header("Authorization") token: String
-    ): Response<List<Claim>>
+    suspend fun getAgencyClaims(): Response<List<Claim>>
     
     @GET("claims/unread-count")
-    suspend fun getUnreadCount(
-        @Header("Authorization") token: String
-    ): Response<ClaimUnreadCountResponse>
+    suspend fun getUnreadCount(): Response<ClaimUnreadCountResponse>
     
     @GET("claims/{id}")
     suspend fun getClaimById(
-        @Path("id") claimId: String,
-        @Header("Authorization") token: String
+        @Path("id") claimId: String
     ): Response<Claim>
     
     @POST("claims/{id}/messages")
     suspend fun addMessage(
         @Path("id") claimId: String,
-        @Header("Authorization") token: String,
         @Body request: AddMessageRequest
     ): Response<Claim>
     
     @PATCH("claims/{id}/status")
     suspend fun updateClaimStatus(
         @Path("id") claimId: String,
-        @Header("Authorization") token: String,
         @Body request: UpdateClaimStatusRequest
     ): Response<Claim>
 }

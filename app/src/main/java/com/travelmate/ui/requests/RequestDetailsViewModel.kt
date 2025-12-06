@@ -42,11 +42,7 @@ class RequestDetailsViewModel @Inject constructor(
             _state.value = RequestDetailsState.Loading
             
             try {
-                val token = userPreferences.getAccessToken() ?: run {
-                    _state.value = RequestDetailsState.Error("Non authentifié")
-                    return@launch
-                }
-                
+                val token = userPreferences.getAccessToken() ?: return@launch
                 val response = repository.getRequestById(token, requestId)
                 
                 if (response.isSuccessful && response.body() != null) {
@@ -69,11 +65,7 @@ class RequestDetailsViewModel @Inject constructor(
             _cancelState.value = CancelRequestState.Loading
             
             try {
-                val token = userPreferences.getAccessToken() ?: run {
-                    _cancelState.value = CancelRequestState.Error("Non authentifié")
-                    return@launch
-                }
-                
+                val token = userPreferences.getAccessToken() ?: return@launch
                 val response = repository.cancelRequest(token, requestId)
                 
                 if (response.isSuccessful && response.body() != null) {

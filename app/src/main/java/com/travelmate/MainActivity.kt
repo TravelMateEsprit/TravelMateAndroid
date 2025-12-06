@@ -1,7 +1,9 @@
 package com.travelmate
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -20,6 +22,7 @@ import com.travelmate.data.repository.NotificationRepository
 import com.travelmate.data.socket.SocketService
 import com.travelmate.ui.navigation.NavGraph
 import com.travelmate.ui.theme.TravelMateTheme
+import com.travelmate.utils.Constants
 import com.travelmate.utils.UserPreferences
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -73,11 +76,53 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     
+                    // Gérer les deep links (reset password)
+                    handleDeepLink(intent) { route ->
+                        navController.navigate(route)
+                    }
+                    
                     NavGraph(
                         navController = navController,
                         socketService = socketService,
                         userPreferences = userPreferences
                     )
+                }
+            }
+        }
+    }
+    
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // Gérer les deep links quand l'app est déjà ouverte
+        // Note: Vous devrez stocker navController dans une variable de classe si nécessaire
+    }
+    
+    /**
+     * Gère les deep links pour reset password
+     */
+    private fun handleDeepLink(intent: Intent?, onNavigate: (String) -> Unit) {
+        intent?.data?.let { uri ->
+            Log.d(TAG, "Deep link received: $uri")
+            
+            when {
+                // URL format: http://10.0.2.2:3000/reset-password.html?token=xxx
+                uri.path?.contains("reset-password") == true -> {
+                    val token = uri.getQueryParameter("token")
+                    if (!token.isNullOrEmpty()) {
+                        val route = "reset_password/$token"
+                        Log.d(TAG, "Navigating to: $route")
+                        onNavigate(route)
+                    }
+                }
+                // Custom scheme: travelmate://reset-password?token=xxx
+                uri.scheme == "travelmate" && uri.host == "reset-password" -> {
+                    val token = uri.getQueryParameter("token")
+                    if (!token.isNullOrEmpty()) {
+                        val route = "reset_password/$token"
+                        Log.d(TAG, "Navigating to: $route")
+                        onNavigate(route)
+                    }
                 }
             }
         }

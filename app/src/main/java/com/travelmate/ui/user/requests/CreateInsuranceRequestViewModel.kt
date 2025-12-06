@@ -87,11 +87,6 @@ class CreateInsuranceRequestViewModel @Inject constructor(
             _state.value = CreateRequestState.Loading
             
             try {
-                val token = userPreferences.getAccessToken() ?: run {
-                    _state.value = CreateRequestState.Error("Non authentifié")
-                    return@launch
-                }
-                
                 val request = CreateInsuranceRequestRequest(
                     insuranceId = insuranceId,
                     travelerName = travelerName,
@@ -107,6 +102,7 @@ class CreateInsuranceRequestViewModel @Inject constructor(
                     message = message
                 )
                 
+                val token = userPreferences.getAccessToken() ?: return@launch
                 val response = repository.createRequest(token, request)
                 
                 if (response.isSuccessful && response.body() != null) {

@@ -45,6 +45,29 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="travelmate" />
             </intent-filter>
+            
+            <!-- Deep link pour reset password -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                
+                <!-- Support for http/https -->
+                <data
+                    android:scheme="http"
+                    android:host="10.0.2.2"
+                    android:port="3000"
+                    android:pathPrefix="/reset-password.html" />
+                <data
+                    android:scheme="https"
+                    android:host="backendtravelmate-2ipv.onrender.com"
+                    android:pathPrefix="/reset-password.html" />
+                    
+                <!-- Custom scheme -->
+                <data
+                    android:scheme="travelmate"
+                    android:host="reset-password" />
+            </intent-filter>
         </activity>
         
         <!-- Firebase Messaging Service -->

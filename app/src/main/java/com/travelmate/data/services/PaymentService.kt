@@ -36,7 +36,7 @@ class PaymentService @Inject constructor(
     suspend fun createPaymentIntent(requestId: String, token: String): Result<CreatePaymentResponse> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = insuranceApi.createPayment(requestId, "Bearer $token")
+                val response = insuranceApi.createPayment(requestId)
                 
                 if (response.isSuccessful && response.body() != null) {
                     Result.success(response.body()!!)
@@ -56,7 +56,7 @@ class PaymentService @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 val request = ConfirmPaymentRequest(paymentIntentId = paymentIntentId)
-                val response = insuranceApi.confirmPayment(requestId, "Bearer $token", request)
+                val response = insuranceApi.confirmPayment(requestId, request)
                 
                 if (response.isSuccessful && response.body()?.success == true) {
                     Result.success(Unit)

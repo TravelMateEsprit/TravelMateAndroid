@@ -9,13 +9,10 @@ interface InsuranceApi {
     // ========== Endpoints Utilisateurs ==========
     
     @GET("insurances")
-    suspend fun getAllInsurances(
-        @Header("Authorization") token: String
-    ): Response<List<Insurance>>
+    suspend fun getAllInsurances(): Response<List<Insurance>>
     
     @GET("insurances/search")
     suspend fun searchInsurances(
-        @Header("Authorization") token: String,
         @Query("searchTerm") searchTerm: String? = null,
         @Query("minPrice") minPrice: Double? = null,
         @Query("maxPrice") maxPrice: Double? = null,
@@ -32,52 +29,42 @@ interface InsuranceApi {
     ): Response<SearchInsuranceResponse>
     
     @GET("insurances/my-subscriptions")
-    suspend fun getMySubscriptions(
-        @Header("Authorization") token: String
-    ): Response<List<Insurance>>
+    suspend fun getMySubscriptions(): Response<List<Insurance>>
     
     @POST("insurances/{id}/subscribe")
     suspend fun subscribeToInsurance(
-        @Path("id") insuranceId: String,
-        @Header("Authorization") token: String
+        @Path("id") insuranceId: String
     ): Response<Insurance>
     
     @POST("insurances/{id}/unsubscribe")
     suspend fun unsubscribeFromInsurance(
-        @Path("id") insuranceId: String,
-        @Header("Authorization") token: String
+        @Path("id") insuranceId: String
     ): Response<Insurance>
     
     // ========== Endpoints Agences ==========
     
     @POST("insurances/agency")
     suspend fun createInsurance(
-        @Header("Authorization") token: String,
         @Body request: CreateInsuranceRequest
     ): Response<Insurance>
     
     @GET("insurances/agency/my-insurances")
-    suspend fun getMyInsurances(
-        @Header("Authorization") token: String
-    ): Response<List<Insurance>>
+    suspend fun getMyInsurances(): Response<List<Insurance>>
     
     @PATCH("insurances/agency/{id}")
     suspend fun updateInsurance(
         @Path("id") insuranceId: String,
-        @Header("Authorization") token: String,
         @Body request: UpdateInsuranceRequest
     ): Response<Insurance>
     
     @DELETE("insurances/agency/{id}")
     suspend fun deleteInsurance(
-        @Path("id") insuranceId: String,
-        @Header("Authorization") token: String
+        @Path("id") insuranceId: String
     ): Response<Unit>
     
     @GET("insurances/agency/{id}/subscribers")
     suspend fun getInsuranceSubscribers(
-        @Path("id") insuranceId: String,
-        @Header("Authorization") token: String
+        @Path("id") insuranceId: String
     ): Response<InsuranceSubscribersResponse>
     
     // ========== Endpoints Demandes d'Assurance ==========
@@ -85,63 +72,52 @@ interface InsuranceApi {
     // Créer une demande (Utilisateur)
     @POST("insurance-requests")
     suspend fun createInsuranceRequest(
-        @Header("Authorization") token: String,
         @Body request: CreateInsuranceRequestRequest
     ): Response<InsuranceRequest>
     
     // Obtenir mes demandes (Utilisateur)
     @GET("insurance-requests/my-requests")
-    suspend fun getMyRequests(
-        @Header("Authorization") token: String
-    ): Response<List<InsuranceRequest>>
+    suspend fun getMyRequests(): Response<List<InsuranceRequest>>
     
     // Obtenir les demandes de l'agence (Agence)
     @GET("insurance-requests/agency-requests")
     suspend fun getAgencyRequests(
-        @Header("Authorization") token: String,
         @Query("status") status: String? = null
     ): Response<List<InsuranceRequest>>
     
     // Obtenir les statistiques (Agence)
     @GET("insurance-requests/agency-stats")
-    suspend fun getAgencyRequestStats(
-        @Header("Authorization") token: String
-    ): Response<InsuranceRequestStats>
+    suspend fun getAgencyRequestStats(): Response<InsuranceRequestStats>
     
     // Obtenir une demande spécifique
     @GET("insurance-requests/{id}")
     suspend fun getRequestById(
-        @Path("id") requestId: String,
-        @Header("Authorization") token: String
+        @Path("id") requestId: String
     ): Response<InsuranceRequest>
     
     // Marquer comme lue (Agence)
     @PUT("insurance-requests/{id}/mark-read")
     suspend fun markRequestAsRead(
-        @Path("id") requestId: String,
-        @Header("Authorization") token: String
+        @Path("id") requestId: String
     ): Response<InsuranceRequest>
     
     // Modifier une demande (Utilisateur)
     @PUT("insurance-requests/{id}")
     suspend fun updateRequest(
         @Path("id") requestId: String,
-        @Header("Authorization") token: String,
         @Body request: CreateInsuranceRequestRequest
     ): Response<InsuranceRequest>
     
     // Annuler une demande (Utilisateur)
     @DELETE("insurance-requests/{id}")
     suspend fun cancelRequest(
-        @Path("id") requestId: String,
-        @Header("Authorization") token: String
+        @Path("id") requestId: String
     ): Response<InsuranceRequest>
     
     // Approuver/Rejeter une demande (Agence)
     @PUT("insurance-requests/{id}/review")
     suspend fun reviewRequest(
         @Path("id") requestId: String,
-        @Header("Authorization") token: String,
         @Body request: ReviewInsuranceRequestRequest
     ): Response<InsuranceRequest>
     
@@ -150,15 +126,13 @@ interface InsuranceApi {
     // Créer un paiement (Utilisateur)
     @POST("insurance-requests/{id}/create-payment")
     suspend fun createPayment(
-        @Path("id") requestId: String,
-        @Header("Authorization") token: String
+        @Path("id") requestId: String
     ): Response<CreatePaymentResponse>
     
     // Confirmer un paiement (Utilisateur)
     @POST("insurance-requests/{id}/confirm-payment")
     suspend fun confirmPayment(
         @Path("id") requestId: String,
-        @Header("Authorization") token: String,
         @Body request: ConfirmPaymentRequest
     ): Response<ConfirmPaymentResponse>
 }

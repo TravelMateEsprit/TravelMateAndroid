@@ -16,17 +16,12 @@ class UserService @Inject constructor(
 ) {
     private val prefs: SharedPreferences = context.getSharedPreferences("travelmate_prefs", Context.MODE_PRIVATE)
     
-    private fun getAuthToken(): String {
-        val token = prefs.getString("access_token", "") ?: ""
-        return "Bearer $token"
-    }
-    
     suspend fun getUserById(userId: String): Result<User> {
         return try {
             Log.d("UserService", "=== GET USER BY ID ===")
             Log.d("UserService", "User ID: $userId")
             
-            val response = userApi.getUserById(userId, getAuthToken())
+            val response = userApi.getUserById(userId)
             Log.d("UserService", "Response code: ${response.code()}")
             
             if (response.isSuccessful && response.body() != null) {
@@ -52,7 +47,7 @@ class UserService @Inject constructor(
             Log.d("UserService", "=== GET USERS BY IDS ===")
             Log.d("UserService", "Fetching ${userIds.size} users")
             
-            val response = userApi.getUsersByIds(getAuthToken(), userIds)
+            val response = userApi.getUsersByIds(userIds)
             Log.d("UserService", "Response code: ${response.code()}")
             
             if (response.isSuccessful && response.body() != null) {

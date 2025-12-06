@@ -16,16 +16,11 @@ class AuthService @Inject constructor(
 ) {
     private val prefs: SharedPreferences = context.getSharedPreferences("travelmate_prefs", Context.MODE_PRIVATE)
     
-    private fun getAuthToken(): String {
-        val token = prefs.getString("access_token", "") ?: ""
-        return "Bearer $token"
-    }
-    
     suspend fun uploadSignature(signature: MultipartBody.Part): Result<Unit> {
         return try {
             Log.d("AuthService", "=== UPLOAD SIGNATURE ===")
             
-            val response = authApi.uploadSignature(getAuthToken(), signature)
+            val response = authApi.uploadSignature(signature)
             Log.d("AuthService", "Response code: ${response.code()}")
             
             if (response.isSuccessful) {
@@ -50,7 +45,7 @@ class AuthService @Inject constructor(
             Log.d("AuthService", "=== UPDATE SIGNATURE NAME ===")
             Log.d("AuthService", "Signature name: ${body["signatureName"]}")
             
-            val response = authApi.updateSignatureName(getAuthToken(), body)
+            val response = authApi.updateSignatureName(body)
             Log.d("AuthService", "Response code: ${response.code()}")
             
             if (response.isSuccessful) {

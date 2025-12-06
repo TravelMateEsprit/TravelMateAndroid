@@ -45,11 +45,6 @@ class PaymentViewModel @Inject constructor(
     
     private val TAG = "PaymentViewModel"
     
-    private fun getAuthToken(): String {
-        val token = prefs.getString("access_token", "") ?: ""
-        return token
-    }
-    
     /**
      * Charger les détails de la demande d'assurance
      */
@@ -58,7 +53,7 @@ class PaymentViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
-                val token = getAuthToken()
+                val token = prefs.getString("access_token", null) ?: return@launch
                 val response = insuranceRequestRepository.getRequestById(token, requestId)
                 
                 if (response.isSuccessful && response.body() != null) {
@@ -97,9 +92,8 @@ class PaymentViewModel @Inject constructor(
             _uiState.update { it.copy(isProcessingPayment = true, error = null) }
             
             try {
-                val token = getAuthToken()
-                
                 // 1. Créer le PaymentIntent côté serveur
+                val token = prefs.getString("access_token", null) ?: return@launch
                 paymentRepository.createPaymentIntent(requestId, token)
                     .onSuccess { paymentResponse ->
                         Log.d(TAG, "PaymentIntent created: ${paymentResponse.paymentIntentId}")
@@ -179,7 +173,6 @@ class PaymentViewModel @Inject constructor(
             try {
                 val requestId = _uiState.value.request?.id
                 val paymentIntentId = _uiState.value.currentPaymentIntentId
-                val token = getAuthToken()
                 
                 if (requestId == null || paymentIntentId == null) {
                     _uiState.update { 
@@ -191,6 +184,7 @@ class PaymentViewModel @Inject constructor(
                     return@launch
                 }
                 
+                val token = prefs.getString("access_token", null) ?: return@launch
                 paymentRepository.confirmPayment(requestId, paymentIntentId, token)
                     .onSuccess {
                         Log.d(TAG, "Payment confirmed on server")

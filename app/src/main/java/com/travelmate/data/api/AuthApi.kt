@@ -42,38 +42,35 @@ interface AuthApi {
         @Body request: ForgotPasswordRequest
     ): Response<MessageResponse>
     
+    @PUT("auth/reset-password")
+    suspend fun resetPassword(
+        @Body request: Map<String, String>
+    ): Response<MessageResponse>
+    
     @GET("auth/profile")
-    suspend fun getUserProfile(
-        @Header("Authorization") token: String
-    ): Response<User>
+    suspend fun getUserProfile(): Response<User>
 
     @PUT("auth/profile")
     suspend fun updateUserProfile(
-        @Header("Authorization") token: String,
         @Body request: UpdateProfileRequest
     ): Response<User>
 
     @GET("agencies/profile")
-    suspend fun getAgencyProfile(
-        @Header("Authorization") token: String
-    ): Response<User>
+    suspend fun getAgencyProfile(): Response<User>
 
     @PUT("agencies/profile")
     suspend fun updateAgencyProfile(
-        @Header("Authorization") token: String,
         @Body request: UpdateAgencyProfileRequest
     ): Response<User>
 
     @Multipart
     @PUT("auth/agency/upload-signature")
     suspend fun uploadSignature(
-        @Header("Authorization") token: String,
         @Part signature: MultipartBody.Part
     ): Response<MessageResponse>
 
     @PUT("auth/agency/update-signature-name")
     suspend fun updateSignatureName(
-        @Header("Authorization") token: String,
         @Body body: Map<String, String>
     ): Response<MessageResponse>
 }

@@ -56,11 +56,7 @@ class AgencyInsuranceRequestsViewModel @Inject constructor(
             _selectedStatus.value = status
             
             try {
-                val token = userPreferences.getAccessToken() ?: run {
-                    _state.value = AgencyRequestsState.Error("Non authentifié")
-                    return@launch
-                }
-                
+                val token = userPreferences.getAccessToken() ?: return@launch
                 val response = repository.getAgencyRequests(token, status)
                 
                 if (response.isSuccessful && response.body() != null) {
@@ -92,7 +88,6 @@ class AgencyInsuranceRequestsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val token = userPreferences.getAccessToken() ?: return@launch
-                
                 val response = repository.getAgencyStats(token)
                 
                 if (response.isSuccessful && response.body() != null) {
@@ -131,11 +126,7 @@ class AgencyInsuranceRequestsViewModel @Inject constructor(
             _reviewState.value = ReviewRequestState.Loading
             
             try {
-                val token = userPreferences.getAccessToken() ?: run {
-                    _reviewState.value = ReviewRequestState.Error("Non authentifié")
-                    return@launch
-                }
-                
+                val token = userPreferences.getAccessToken() ?: return@launch
                 val apiResponse = repository.reviewRequest(token, requestId, status, response)
                 
                 if (apiResponse.isSuccessful && apiResponse.body() != null) {

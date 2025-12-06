@@ -17,11 +17,11 @@ class InsuranceRequestRepository @Inject constructor(
         token: String,
         request: CreateInsuranceRequestRequest
     ): Response<InsuranceRequest> {
-        return api.createInsuranceRequest("Bearer $token", request)
+        return api.createInsuranceRequest(request)
     }
     
     suspend fun getMyRequests(token: String): Response<List<InsuranceRequest>> {
-        return api.getMyRequests("Bearer $token")
+        return api.getMyRequests()
     }
     
     suspend fun updateRequest(
@@ -29,14 +29,14 @@ class InsuranceRequestRepository @Inject constructor(
         requestId: String,
         request: CreateInsuranceRequestRequest
     ): Response<InsuranceRequest> {
-        return api.updateRequest(requestId, "Bearer $token", request)
+        return api.updateRequest(requestId, request)
     }
     
     suspend fun cancelRequest(
         token: String,
         requestId: String
     ): Response<InsuranceRequest> {
-        return api.cancelRequest(requestId, "Bearer $token")
+        return api.cancelRequest(requestId)
     }
     
     // ========== Agence ==========
@@ -52,18 +52,18 @@ class InsuranceRequestRepository @Inject constructor(
             RequestStatus.CANCELLED -> "ANNULEE"
             null -> null
         }
-        return api.getAgencyRequests("Bearer $token", statusString)
+        return api.getAgencyRequests(statusString)
     }
     
     suspend fun getAgencyStats(token: String): Response<InsuranceRequestStats> {
-        return api.getAgencyRequestStats("Bearer $token")
+        return api.getAgencyRequestStats()
     }
     
     suspend fun markAsRead(
         token: String,
         requestId: String
     ): Response<InsuranceRequest> {
-        return api.markRequestAsRead(requestId, "Bearer $token")
+        return api.markRequestAsRead(requestId)
     }
     
     suspend fun reviewRequest(
@@ -76,7 +76,7 @@ class InsuranceRequestRepository @Inject constructor(
             status = status,
             agencyResponse = response
         )
-        return api.reviewRequest(requestId, "Bearer $token", reviewRequest)
+        return api.reviewRequest(requestId, reviewRequest)
     }
     
     // ========== Commun ==========
@@ -85,6 +85,6 @@ class InsuranceRequestRepository @Inject constructor(
         token: String,
         requestId: String
     ): Response<InsuranceRequest> {
-        return api.getRequestById(requestId, "Bearer $token")
+        return api.getRequestById(requestId)
     }
 }

@@ -34,17 +34,12 @@ class ClaimService @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
-    private fun getAuthToken(): String {
-        val token = prefs.getString("access_token", "") ?: ""
-        return "Bearer $token"
-    }
-    
     suspend fun createClaim(request: CreateClaimRequest): Result<Claim> {
         return try {
             _isLoading.value = true
             _error.value = null
             
-            val response = claimApi.createClaim(getAuthToken(), request)
+            val response = claimApi.createClaim(request)
             
             if (response.isSuccessful && response.body() != null) {
                 val claim = response.body()!!
@@ -75,7 +70,7 @@ class ClaimService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val response = claimApi.getMyClaims(getAuthToken())
+            val response = claimApi.getMyClaims()
             
             if (response.isSuccessful && response.body() != null) {
                 _myClaims.value = response.body()!!
@@ -99,7 +94,7 @@ class ClaimService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val response = claimApi.getAgencyClaims(getAuthToken())
+            val response = claimApi.getAgencyClaims()
             
             if (response.isSuccessful && response.body() != null) {
                 _agencyClaims.value = response.body()!!
@@ -120,7 +115,7 @@ class ClaimService @Inject constructor(
     
     suspend fun loadUnreadCount() {
         try {
-            val response = claimApi.getUnreadCount(getAuthToken())
+            val response = claimApi.getUnreadCount()
             
             if (response.isSuccessful && response.body() != null) {
                 _unreadCount.value = response.body()!!.count
@@ -136,7 +131,7 @@ class ClaimService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val response = claimApi.getClaimById(claimId, getAuthToken())
+            val response = claimApi.getClaimById(claimId)
             
             if (response.isSuccessful && response.body() != null) {
                 val claim = response.body()!!
@@ -163,7 +158,7 @@ class ClaimService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val response = claimApi.updateClaimStatus(claimId, getAuthToken(), request)
+            val response = claimApi.updateClaimStatus(claimId, request)
             
             if (response.isSuccessful && response.body() != null) {
                 val updatedClaim = response.body()!!
@@ -193,7 +188,7 @@ class ClaimService @Inject constructor(
             _isLoading.value = true
             _error.value = null
             
-            val response = claimApi.addMessage(claimId, getAuthToken(), request)
+            val response = claimApi.addMessage(claimId, request)
             
             if (response.isSuccessful && response.body() != null) {
                 val updatedClaim = response.body()!!

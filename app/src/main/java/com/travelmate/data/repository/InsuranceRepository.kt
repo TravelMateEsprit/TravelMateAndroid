@@ -12,7 +12,7 @@ class InsuranceRepository @Inject constructor(
     
     suspend fun getAllInsurances(token: String): Result<List<Insurance>> {
         return try {
-            val response = insuranceApi.getAllInsurances("Bearer $token")
+            val response = insuranceApi.getAllInsurances()
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -29,7 +29,6 @@ class InsuranceRepository @Inject constructor(
     ): Result<SearchInsuranceResponse> {
         return try {
             val response = insuranceApi.searchInsurances(
-                token = "Bearer $token",
                 searchTerm = searchRequest.searchTerm,
                 minPrice = searchRequest.minPrice,
                 maxPrice = searchRequest.maxPrice,
@@ -56,7 +55,7 @@ class InsuranceRepository @Inject constructor(
     
     suspend fun getMySubscriptions(token: String): Result<List<Insurance>> {
         return try {
-            val response = insuranceApi.getMySubscriptions("Bearer $token")
+            val response = insuranceApi.getMySubscriptions()
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -69,7 +68,7 @@ class InsuranceRepository @Inject constructor(
     
     suspend fun subscribeToInsurance(token: String, insuranceId: String): Result<Insurance> {
         return try {
-            val response = insuranceApi.subscribeToInsurance(insuranceId, "Bearer $token")
+            val response = insuranceApi.subscribeToInsurance(insuranceId)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -82,7 +81,7 @@ class InsuranceRepository @Inject constructor(
     
     suspend fun unsubscribeFromInsurance(token: String, insuranceId: String): Result<Insurance> {
         return try {
-            val response = insuranceApi.unsubscribeFromInsurance(insuranceId, "Bearer $token")
+            val response = insuranceApi.unsubscribeFromInsurance(insuranceId)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -97,7 +96,7 @@ class InsuranceRepository @Inject constructor(
     
     suspend fun createInsurance(token: String, request: CreateInsuranceRequest): Result<Insurance> {
         return try {
-            val response = insuranceApi.createInsurance("Bearer $token", request)
+            val response = insuranceApi.createInsurance(request)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -110,7 +109,7 @@ class InsuranceRepository @Inject constructor(
     
     suspend fun getMyInsurances(token: String): Result<List<Insurance>> {
         return try {
-            val response = insuranceApi.getMyInsurances("Bearer $token")
+            val response = insuranceApi.getMyInsurances()
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -127,7 +126,7 @@ class InsuranceRepository @Inject constructor(
         request: UpdateInsuranceRequest
     ): Result<Insurance> {
         return try {
-            val response = insuranceApi.updateInsurance(insuranceId, "Bearer $token", request)
+            val response = insuranceApi.updateInsurance(insuranceId, request)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -140,7 +139,7 @@ class InsuranceRepository @Inject constructor(
     
     suspend fun deleteInsurance(token: String, insuranceId: String): Result<Unit> {
         return try {
-            val response = insuranceApi.deleteInsurance(insuranceId, "Bearer $token")
+            val response = insuranceApi.deleteInsurance(insuranceId)
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
@@ -156,7 +155,7 @@ class InsuranceRepository @Inject constructor(
         insuranceId: String
     ): Result<InsuranceSubscribersResponse> {
         return try {
-            val response = insuranceApi.getInsuranceSubscribers(insuranceId, "Bearer $token")
+            val response = insuranceApi.getInsuranceSubscribers(insuranceId)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
