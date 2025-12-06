@@ -18,14 +18,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
 import kotlinx.coroutines.launch
 import com.travelmate.ui.components.ModernButton
 import com.travelmate.ui.components.ModernCard
 import com.travelmate.ui.theme.*
+import com.travelmate.utils.Constants
 import com.travelmate.viewmodel.AgencyDashboardViewModel
 
 enum class DashboardSection(
@@ -35,6 +40,7 @@ enum class DashboardSection(
 ) {
     OVERVIEW("Vue d'ensemble", Icons.Default.Dashboard, ColorPrimary),
     INSURANCES("Assurances", Icons.Default.Shield, Color(0xFF2196F3)),
+    CLAIMS("Réclamations", Icons.Default.Report, Color(0xFFFF9800)),
     BOOKINGS("Réservations", Icons.Default.CalendarMonth, Color(0xFF4CAF50)),
     DESTINATIONS("Destinations", Icons.Default.Flight, Color(0xFFFF9800)),
     CLIENTS("Clients", Icons.Default.People, Color(0xFF9C27B0)),
@@ -45,6 +51,7 @@ enum class DashboardSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgencyMainDashboard(
+    navController: androidx.navigation.NavController,
     onNavigateToInsuranceForm: () -> Unit,
     onEditInsurance: (String) -> Unit,
     onViewSubscribers: (String, String) -> Unit,
@@ -170,20 +177,45 @@ fun AgencyMainDashboard(
                         titleContentColor = Color.White
                     ),
                     actions = {
-                        IconButton(onClick = { /* Notifications */ }) {
+                        // Réclamations
+                        IconButton(onClick = { 
+                            navController.navigate(Constants.Routes.AGENCY_CLAIMS)
+                        }) {
+                            BadgedBox(
+                                badge = {
+                                    Badge(
+                                        containerColor = Color(0xFFFF9800),
+                                        contentColor = Color.White
+                                    ) {
+                                        Text("", fontSize = 10.sp)
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Report,
+                                    contentDescription = "Réclamations",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                        
+                        // Demandes d'assurance
+                        IconButton(onClick = { 
+                            navController.navigate(com.travelmate.utils.Constants.Routes.AGENCY_INSURANCE_REQUESTS)
+                        }) {
                             BadgedBox(
                                 badge = {
                                     Badge(
                                         containerColor = ColorError,
                                         contentColor = Color.White
                                     ) {
-                                        Text("3", fontSize = 10.sp)
+                                        Text("!", fontSize = 10.sp)
                                     }
                                 }
                             ) {
                                 Icon(
-                                    Icons.Default.Notifications,
-                                    contentDescription = "Notifications",
+                                    Icons.Default.Assignment,
+                                    contentDescription = "Demandes",
                                     tint = Color.White
                                 )
                             }
@@ -203,12 +235,18 @@ fun AgencyMainDashboard(
                         ) {
                             DropdownMenuItem(
                                 text = { Text("Profil") },
-                                onClick = { showMenu = false },
+                                onClick = { 
+                                    showMenu = false
+                                    navController.navigate(Constants.Routes.AGENCY_PROFILE)
+                                },
                                 leadingIcon = { Icon(Icons.Default.Person, null) }
                             )
                             DropdownMenuItem(
                                 text = { Text("Paramètres") },
-                                onClick = { showMenu = false },
+                                onClick = { 
+                                    showMenu = false
+                                    selectedSection = DashboardSection.SETTINGS
+                                },
                                 leadingIcon = { Icon(Icons.Default.Settings, null) }
                             )
                             Divider()
@@ -244,7 +282,8 @@ fun AgencyMainDashboard(
                         insurances = insurances,
                         onNavigateToInsurances = { selectedSection = DashboardSection.INSURANCES },
                         onNavigateToInsuranceForm = onNavigateToInsuranceForm,
-                        onSectionClick = { selectedSection = it }
+                        onSectionClick = { selectedSection = it },
+                        navController = navController
                     )
                     DashboardSection.INSURANCES -> InsurancesSection(
                         insurances = insurances,
@@ -253,6 +292,18 @@ fun AgencyMainDashboard(
                         onEditInsurance = onEditInsurance,
                         onViewSubscribers = onViewSubscribers,
                         viewModel = viewModel
+                    )
+                    DashboardSection.CLAIMS -> {
+                        // Navigate to claims screen
+                        LaunchedEffect(Unit) {
+                            navController.navigate(Constants.Routes.AGENCY_CLAIMS)
+                            selectedSection = DashboardSection.OVERVIEW
+                        }
+                        Box(modifier = Modifier.fillMaxSize())
+                    }
+                    DashboardSection.SETTINGS -> SettingsSection(
+                        viewModel = viewModel,
+                        onBack = { selectedSection = DashboardSection.OVERVIEW }
                     )
                     else -> ComingSoonSection(section)
                 }
@@ -267,7 +318,8 @@ fun OverviewSection(
     insurances: List<com.travelmate.data.models.Insurance>,
     onNavigateToInsurances: () -> Unit,
     onNavigateToInsuranceForm: () -> Unit,
-    onSectionClick: (DashboardSection) -> Unit
+    onSectionClick: (DashboardSection) -> Unit,
+    navController: androidx.navigation.NavController
 ) {
     LazyColumn(
         modifier = Modifier
@@ -358,10 +410,33 @@ fun OverviewSection(
                     modifier = Modifier.weight(1f)
                 )
                 QuickStatCard(
-                    icon = Icons.Default.AttachMoney,
-                    value = "${stats.estimatedRevenue.toInt()}€",
-                    label = "Revenu",
+                    icon = Icons.Default.Report,
+                    value = "0",
+                    label = "Réclamations",
                     color = Color(0xFFFF9800),
+                    modifier = Modifier.weight(1f),
+                    onClick = { navController.navigate(Constants.Routes.AGENCY_CLAIMS) }
+                )
+            }
+        }
+        
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickStatCard(
+                    icon = Icons.Default.AttachMoney,
+                    value = "${stats.estimatedRevenue.toInt()} TND",
+                    label = "Revenu",
+                    color = Color(0xFF9C27B0),
+                    modifier = Modifier.weight(1f)
+                )
+                QuickStatCard(
+                    icon = Icons.Default.TrendingUp,
+                    value = "+12%",
+                    label = "Croissance",
+                    color = Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -398,6 +473,31 @@ fun OverviewSection(
                     color = Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f),
                     onClick = { onSectionClick(DashboardSection.BOOKINGS) }
+                )
+            }
+        }
+        
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickActionCard(
+                    icon = Icons.Default.Report,
+                    title = "Réclamations",
+                    subtitle = "Gérer les demandes",
+                    color = Color(0xFFFF9800),
+                    modifier = Modifier.weight(1f),
+                    onClick = { navController.navigate(Constants.Routes.AGENCY_CLAIMS) }
+                )
+                QuickActionCard(
+                    icon = Icons.Default.People,
+                    title = "Clients",
+                    subtitle = "Voir les clients",
+                    color = Color(0xFF9C27B0),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onSectionClick(DashboardSection.CLIENTS) }
                 )
             }
         }
@@ -475,6 +575,7 @@ fun OverviewSection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsurancesSection(
     insurances: List<com.travelmate.data.models.Insurance>,
@@ -487,12 +588,155 @@ fun InsurancesSection(
     val stats by viewModel.stats.collectAsState()
     val error by viewModel.error.collectAsState()
     
+    // États pour la recherche et les filtres
+    var searchTerm by remember { mutableStateOf("") }
+    var showFilters by remember { mutableStateOf(false) }
+    var selectedPriceRange by remember { mutableStateOf(0f..1000f) }
+    var selectedStatus by remember { mutableStateOf<String?>(null) }
+    
+    // Filtrer les assurances
+    val filteredInsurances = remember(insurances, searchTerm, selectedPriceRange, selectedStatus) {
+        insurances.filter { insurance ->
+            val destinations = insurance.conditions?.destination?.joinToString(" ") ?: ""
+            
+            val matchesSearch = searchTerm.isEmpty() || 
+                insurance.name.contains(searchTerm, ignoreCase = true) ||
+                insurance.description.contains(searchTerm, ignoreCase = true) ||
+                destinations.contains(searchTerm, ignoreCase = true)
+            
+            val matchesPrice = insurance.price in selectedPriceRange
+            
+            val matchesStatus = selectedStatus == null || 
+                (selectedStatus == "active" && insurance.isActive) ||
+                (selectedStatus == "inactive" && !insurance.isActive)
+            
+            matchesSearch && matchesPrice && matchesStatus
+        }
+    }
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Barre de recherche
+        item {
+            OutlinedTextField(
+                value = searchTerm,
+                onValueChange = { searchTerm = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Rechercher une assurance...") },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Rechercher")
+                },
+                trailingIcon = {
+                    Row {
+                        if (searchTerm.isNotEmpty()) {
+                            IconButton(onClick = { searchTerm = "" }) {
+                                Icon(Icons.Default.Close, contentDescription = "Effacer")
+                            }
+                        }
+                        IconButton(onClick = { showFilters = !showFilters }) {
+                            Icon(
+                                Icons.Default.FilterList,
+                                contentDescription = "Filtres",
+                                tint = if (showFilters) ColorPrimary else ColorTextSecondary
+                            )
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = ColorPrimary,
+                    unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                )
+            )
+        }
+        
+        // Panneau de filtres
+        if (showFilters) {
+            item {
+                ModernCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    cornerRadius = 16.dp
+                ) {
+                    Text(
+                        "Filtres",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorTextPrimary
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Filtre de prix
+                    Text(
+                        "Fourchette de prix: ${selectedPriceRange.start.toInt()} TND - ${selectedPriceRange.endInclusive.toInt()} TND",
+                        fontSize = 14.sp,
+                        color = ColorTextSecondary
+                    )
+                    RangeSlider(
+                        value = selectedPriceRange,
+                        onValueChange = { selectedPriceRange = it },
+                        valueRange = 0f..2000f,
+                        steps = 19,
+                        colors = SliderDefaults.colors(
+                            thumbColor = ColorPrimary,
+                            activeTrackColor = ColorPrimary
+                        )
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Filtre de statut
+                    Text(
+                        "Statut",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = ColorTextPrimary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilterChip(
+                            selected = selectedStatus == null,
+                            onClick = { selectedStatus = null },
+                            label = { Text("Tous") }
+                        )
+                        FilterChip(
+                            selected = selectedStatus == "active",
+                            onClick = { selectedStatus = "active" },
+                            label = { Text("Actif") }
+                        )
+                        FilterChip(
+                            selected = selectedStatus == "inactive",
+                            onClick = { selectedStatus = "inactive" },
+                            label = { Text("Inactif") }
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Bouton réinitialiser les filtres
+                    OutlinedButton(
+                        onClick = {
+                            selectedPriceRange = 0f..1000f
+                            selectedStatus = null
+                            searchTerm = ""
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Réinitialiser les filtres")
+                    }
+                }
+            }
+        }
+        
         // Stats Grid
         item {
             Text(
@@ -539,7 +783,7 @@ fun InsurancesSection(
                 )
                 QuickStatCard(
                     icon = Icons.Default.AttachMoney,
-                    value = "${stats.estimatedRevenue.toInt()}€",
+                    value = "${stats.estimatedRevenue.toInt()} TND",
                     label = "Revenu",
                     color = Color(0xFFFF9800),
                     modifier = Modifier.weight(1f)
@@ -655,8 +899,53 @@ fun InsurancesSection(
                     }
                 }
             }
+        } else if (filteredInsurances.isEmpty()) {
+            item {
+                ModernCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    cornerRadius = 16.dp
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = null,
+                            tint = ColorTextSecondary,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "Aucun résultat",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ColorTextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "Aucune assurance ne correspond à vos critères de recherche",
+                            fontSize = 14.sp,
+                            color = ColorTextSecondary,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedButton(
+                            onClick = {
+                                searchTerm = ""
+                                selectedPriceRange = 0f..1000f
+                                selectedStatus = null
+                            }
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Réinitialiser la recherche")
+                        }
+                    }
+                }
+            }
         } else {
-            items(insurances) { insurance ->
+            items(filteredInsurances) { insurance ->
                 AgencyInsuranceCard(
                     insurance = insurance,
                     onEdit = { onEditInsurance(insurance._id) },
@@ -864,7 +1153,7 @@ fun CompactInsuranceCard(insurance: com.travelmate.data.models.Insurance) {
                     fontSize = 14.sp
                 )
                 Text(
-                    "${insurance.price.toInt()}€ • ${insurance.subscribers.size} inscrits",
+                    "${insurance.price.toInt()} TND • ${insurance.subscribers.size} inscrits",
                     fontSize = 12.sp,
                     color = ColorTextSecondary
                 )
@@ -881,6 +1170,279 @@ fun CompactInsuranceCard(insurance: com.travelmate.data.models.Insurance) {
                     fontWeight = FontWeight.Medium,
                     color = if (insurance.isActive) ColorSuccess else ColorTextSecondary
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun SettingsSection(
+    viewModel: AgencyDashboardViewModel,
+    onBack: () -> Unit
+) {
+    val context = LocalContext.current
+    var signatureName by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                // Header
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = null,
+                        tint = ColorPrimary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        "Paramètres de l'agence",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorTextPrimary
+                    )
+                }
+            }
+
+            item {
+                Divider(color = ColorDivider)
+            }
+
+            // Signature Section
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Draw,
+                                contentDescription = null,
+                                tint = ColorPrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "Signature pour contrats",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = ColorTextPrimary
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            "Cette signature apparaîtra sur tous les contrats d'assurance envoyés aux clients.",
+                            fontSize = 14.sp,
+                            color = ColorTextSecondary
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Signature Name
+                        OutlinedTextField(
+                            value = signatureName,
+                            onValueChange = { signatureName = it },
+                            label = { Text("Nom du signataire") },
+                            placeholder = { Text("Ex: Le Directeur Général") },
+                            leadingIcon = {
+                                Icon(Icons.Default.Person, contentDescription = null)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = ColorPrimary,
+                                focusedLabelColor = ColorPrimary
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Image Upload
+                        OutlinedButton(
+                            onClick = { imagePickerLauncher.launch("image/*") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = ColorPrimary
+                            )
+                        ) {
+                            Icon(Icons.Default.Image, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                if (selectedImageUri != null) "Image sélectionnée"
+                                else "Sélectionner une image de signature"
+                            )
+                        }
+
+                        if (selectedImageUri != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "Image: ${selectedImageUri?.lastPathSegment ?: ""}",
+                                fontSize = 12.sp,
+                                color = ColorSuccess
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Save Buttons
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            if (signatureName.isNotEmpty()) {
+                                Button(
+                                    onClick = {
+                                        scope.launch {
+                                            isUploading = true
+                                            val result = viewModel.updateSignatureName(signatureName)
+                                            isUploading = false
+                                            if (result) {
+                                                snackbarHostState.showSnackbar(
+                                                    "Nom du signataire enregistré avec succès"
+                                                )
+                                                signatureName = ""
+                                            } else {
+                                                snackbarHostState.showSnackbar(
+                                                    "Erreur lors de l'enregistrement"
+                                                )
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    enabled = !isUploading,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = ColorPrimary
+                                    )
+                                ) {
+                                    if (isUploading) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(20.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                    } else {
+                                        Icon(Icons.Default.Save, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Enregistrer le nom")
+                                    }
+                                }
+                            }
+
+                            if (selectedImageUri != null) {
+                                Button(
+                                    onClick = {
+                                        scope.launch {
+                                            isUploading = true
+                                            val result = viewModel.uploadSignature(context, selectedImageUri!!)
+                                            isUploading = false
+                                            if (result) {
+                                                snackbarHostState.showSnackbar(
+                                                    "Signature uploadée avec succès"
+                                                )
+                                                selectedImageUri = null
+                                            } else {
+                                                snackbarHostState.showSnackbar(
+                                                    "Erreur lors de l'upload"
+                                                )
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    enabled = !isUploading,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = ColorSuccess
+                                    )
+                                ) {
+                                    if (isUploading) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(20.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                    } else {
+                                        Icon(Icons.Default.Upload, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Upload signature")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Info Card
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = ColorPrimary.copy(alpha = 0.1f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = ColorPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                "Information",
+                                fontWeight = FontWeight.SemiBold,
+                                color = ColorPrimary,
+                                fontSize = 14.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "Formats acceptés: JPG, PNG, GIF. Taille maximale: 2MB. " +
+                                "Pour un meilleur résultat, utilisez une image avec fond transparent (PNG).",
+                                fontSize = 12.sp,
+                                color = ColorTextSecondary,
+                                lineHeight = 18.sp
+                            )
+                        }
+                    }
+                }
             }
         }
     }

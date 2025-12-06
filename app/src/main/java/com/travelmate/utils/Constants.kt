@@ -8,10 +8,30 @@ object Constants {
         const val USER_REGISTRATION = "user_registration"
         const val AGENCY_REGISTRATION = "agency_registration"
         const val LOGIN = "login"
+        const val FORGOT_PASSWORD = "forgot_password"
         const val HOME = "home"
         const val USER_HOME = "user_home"
         const val AGENCY_DASHBOARD = "agency_dashboard"
         const val FLIGHT_DETAILS = "flight_details"
+        const val USER_PROFILE = "user_profile"
+        const val AGENCY_PROFILE = "agency_profile"
+        
+        // Insurance Requests Routes
+        const val CREATE_INSURANCE_REQUEST = "create_insurance_request"
+        const val MY_INSURANCE_REQUESTS = "my_insurance_requests"
+        const val REQUEST_DETAILS = "request_details"
+        const val AGENCY_INSURANCE_REQUESTS = "agency_insurance_requests"
+        const val REVIEW_REQUEST = "review_request"
+        const val PAYMENT = "payment"
+        
+        // Claims Routes - User
+        const val MY_CLAIMS = "my_claims"
+        const val CREATE_CLAIM = "create_claim"
+        const val CLAIM_DETAIL = "claim_detail"
+        
+        // Claims Routes - Agency
+        const val AGENCY_CLAIMS = "agency_claims"
+        const val AGENCY_CLAIM_DETAIL = "agency_claim_detail"
     }
     
     // SharedPreferences Keys

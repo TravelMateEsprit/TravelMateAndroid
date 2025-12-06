@@ -170,7 +170,7 @@ fun AgencyDashboardScreen(
                     )
                     StatCard(
                         icon = Icons.Default.AttachMoney,
-                        value = "${stats.estimatedRevenue.toInt()}€",
+                        value = "${stats.estimatedRevenue.toInt()} TND",
                         label = "Revenu Estimé",
                         modifier = Modifier.weight(1f)
                     )

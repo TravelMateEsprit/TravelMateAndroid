@@ -1,15 +1,23 @@
 package com.travelmate.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.travelmate.data.models.Insurance
 import com.travelmate.data.models.UpdateInsuranceRequest
 import com.travelmate.data.service.InsuranceService
+import com.travelmate.data.service.AuthService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 data class AgencyStats(
@@ -21,7 +29,8 @@ data class AgencyStats(
 
 @HiltViewModel
 class AgencyDashboardViewModel @Inject constructor(
-    private val insuranceService: InsuranceService
+    private val insuranceService: InsuranceService,
+    private val authService: AuthService
 ) : ViewModel() {
     
     val myInsurances = insuranceService.myAgencyInsurances
@@ -95,4 +104,42 @@ class AgencyDashboardViewModel @Inject constructor(
     }
     
     suspend fun getInsuranceSubscribers(insuranceId: String) = insuranceService.getInsuranceSubscribers(insuranceId)
+
+    suspend fun uploadSignature(context: Context, imageUri: Uri): Boolean {
+        return try {
+            // Copier le fichier URI vers un fichier temporaire
+            val inputStream = context.contentResolver.openInputStream(imageUri)
+            val tempFile = File(context.cacheDir, "signature_temp.png")
+            inputStream?.use { input ->
+                FileOutputStream(tempFile).use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            // Créer le MultipartBody.Part
+            val requestFile = tempFile.asRequestBody("image/*".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("signature", tempFile.name, requestFile)
+
+            // Uploader
+            val result = authService.uploadSignature(body)
+            
+            // Nettoyer le fichier temporaire
+            tempFile.delete()
+            
+            result.isSuccess
+        } catch (e: Exception) {
+            android.util.Log.e("AgencyDashboardVM", "Failed to upload signature: ${e.message}", e)
+            false
+        }
+    }
+
+    suspend fun updateSignatureName(name: String): Boolean {
+        return try {
+            val result = authService.updateSignatureName(mapOf("signatureName" to name))
+            result.isSuccess
+        } catch (e: Exception) {
+            android.util.Log.e("AgencyDashboardVM", "Failed to update signature name: ${e.message}", e)
+            false
+        }
+    }
 }

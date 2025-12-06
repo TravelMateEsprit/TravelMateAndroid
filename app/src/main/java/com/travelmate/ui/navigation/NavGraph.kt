@@ -21,11 +21,25 @@ import com.travelmate.ui.screens.agency.AgencyMainDashboard
 import com.travelmate.ui.screens.agency.InsuranceFormScreen
 import com.travelmate.ui.screens.agency.InsuranceSubscribersScreen
 import com.travelmate.ui.screens.login.LoginScreen
+import com.travelmate.ui.screens.login.ForgotPasswordScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
 import com.travelmate.ui.screens.user.FlightDetailsScreen
 import com.travelmate.ui.screens.user.UserHomeScreen
 import com.travelmate.ui.screens.welcome.WelcomeScreen
+import com.travelmate.ui.user.requests.CreateInsuranceRequestScreen
+import com.travelmate.ui.user.requests.MyInsuranceRequestsScreen
+import com.travelmate.ui.requests.RequestDetailsScreen
+import com.travelmate.ui.agency.requests.AgencyInsuranceRequestsScreen
+import com.travelmate.ui.agency.requests.ReviewRequestScreen
+import com.travelmate.ui.screens.payment.PaymentScreen
+import com.travelmate.ui.screens.MyClaimsScreen
+import com.travelmate.ui.screens.CreateClaimScreen
+import com.travelmate.ui.screens.ClaimDetailScreen
+import com.travelmate.ui.screens.AgencyClaimsScreen
+import com.travelmate.ui.screens.AgencyClaimDetailScreen
+import com.travelmate.ui.profile.UserProfileScreen
+import com.travelmate.ui.profile.AgencyProfileScreen
 import com.travelmate.utils.Constants
 import com.travelmate.utils.UserPreferences
 import com.travelmate.viewmodel.OffersViewModel
@@ -99,6 +113,9 @@ fun NavGraph(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
+                onNavigateToForgotPassword = {
+                    navController.navigate(Constants.Routes.FORGOT_PASSWORD)
+                },
                 onLoginSuccess = { userType ->
                     // Navigate based on user type from login response
                     // Admin users cannot access mobile app
@@ -117,6 +134,15 @@ fun NavGraph(
                     navController.navigate(destination) {
                         popUpTo(Constants.Routes.WELCOME) { inclusive = true }
                     }
+                }
+            )
+        }
+        
+        // Mot de passe oublié
+        composable(Constants.Routes.FORGOT_PASSWORD) {
+            ForgotPasswordScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -165,6 +191,7 @@ fun NavGraph(
         // Agency Dashboard
         composable(Constants.Routes.AGENCY_DASHBOARD) {
             AgencyMainDashboard(
+                navController = navController,
                 onNavigateToInsuranceForm = {
                     navController.navigate("insurance_form")
                 },
@@ -179,6 +206,20 @@ fun NavGraph(
                     navController.navigate(Constants.Routes.WELCOME) {
                         popUpTo(0) { inclusive = true }
                     }
+                }
+            )
+        }
+
+        // User Profile
+        composable(Constants.Routes.USER_PROFILE) {
+            UserProfileScreen()
+        }
+
+        // Agency Profile
+        composable(Constants.Routes.AGENCY_PROFILE) {
+            AgencyProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -222,6 +263,92 @@ fun NavGraph(
                         popUpTo(0) { inclusive = true }
                     }
                 }
+            )
+        }
+        
+        // Insurance Request Routes - User
+        composable("${Constants.Routes.CREATE_INSURANCE_REQUEST}/{insuranceId}") { backStackEntry ->
+            val insuranceId = backStackEntry.arguments?.getString("insuranceId") ?: return@composable
+            CreateInsuranceRequestScreen(
+                navController = navController,
+                insuranceId = insuranceId
+            )
+        }
+        
+        composable(Constants.Routes.MY_INSURANCE_REQUESTS) {
+            MyInsuranceRequestsScreen(navController = navController)
+        }
+        
+        composable("${Constants.Routes.REQUEST_DETAILS}/{requestId}") { backStackEntry ->
+            val requestId = backStackEntry.arguments?.getString("requestId") ?: return@composable
+            RequestDetailsScreen(
+                navController = navController,
+                requestId = requestId,
+                isAgencyView = false
+            )
+        }
+        
+        // Insurance Request Routes - Agency
+        composable(Constants.Routes.AGENCY_INSURANCE_REQUESTS) {
+            AgencyInsuranceRequestsScreen(navController = navController)
+        }
+        
+        composable("${Constants.Routes.REVIEW_REQUEST}/{requestId}") { backStackEntry ->
+            val requestId = backStackEntry.arguments?.getString("requestId") ?: return@composable
+            ReviewRequestScreen(
+                navController = navController,
+                requestId = requestId
+            )
+        }
+        
+        // Payment Route
+        composable("${Constants.Routes.PAYMENT}/{requestId}") { backStackEntry ->
+            val requestId = backStackEntry.arguments?.getString("requestId") ?: return@composable
+            PaymentScreen(
+                requestId = requestId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onPaymentSuccess = {
+                    // Retour à la liste des demandes après paiement réussi
+                    navController.navigate(Constants.Routes.MY_INSURANCE_REQUESTS) {
+                        popUpTo(Constants.Routes.MY_INSURANCE_REQUESTS) { inclusive = true }
+                    }
+                }
+            )
+        }
+        
+        // Claims Routes - User
+        composable(Constants.Routes.MY_CLAIMS) {
+            MyClaimsScreen(navController = navController)
+        }
+        
+        composable("${Constants.Routes.CREATE_CLAIM}?insuranceId={insuranceId}") { backStackEntry ->
+            val insuranceId = backStackEntry.arguments?.getString("insuranceId")
+            CreateClaimScreen(
+                navController = navController,
+                insuranceId = insuranceId
+            )
+        }
+        
+        composable("${Constants.Routes.CLAIM_DETAIL}/{claimId}") { backStackEntry ->
+            val claimId = backStackEntry.arguments?.getString("claimId") ?: return@composable
+            ClaimDetailScreen(
+                navController = navController,
+                claimId = claimId
+            )
+        }
+        
+        // Claims Routes - Agency
+        composable(Constants.Routes.AGENCY_CLAIMS) {
+            AgencyClaimsScreen(navController = navController)
+        }
+        
+        composable("${Constants.Routes.AGENCY_CLAIM_DETAIL}/{claimId}") { backStackEntry ->
+            val claimId = backStackEntry.arguments?.getString("claimId") ?: return@composable
+            AgencyClaimDetailScreen(
+                navController = navController,
+                claimId = claimId
             )
         }
     }

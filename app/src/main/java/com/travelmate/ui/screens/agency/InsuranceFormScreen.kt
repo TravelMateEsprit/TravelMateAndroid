@@ -170,7 +170,7 @@ fun InsuranceFormScreen(
                 OutlinedTextField(
                     value = priceText,
                     onValueChange = { priceText = it; formError = null },
-                    label = { Text("Prix (€) *") },
+                    label = { Text("Prix (TND) *") },
                     leadingIcon = { Icon(Icons.Default.AttachMoney, null) },
                     isError = priceText.toDoubleOrNull() == null,
                     modifier = Modifier.weight(1f),
