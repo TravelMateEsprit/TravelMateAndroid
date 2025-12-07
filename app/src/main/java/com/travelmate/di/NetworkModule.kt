@@ -5,6 +5,7 @@ import com.travelmate.config.AppConfig
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.travelmate.data.api.AuthApi
 import com.travelmate.data.api.ClaimApi
+import com.travelmate.data.api.GroupsApi
 import com.travelmate.data.api.InsuranceApi
 import com.travelmate.data.api.NotificationApiService
 import com.travelmate.data.api.OffersApi
@@ -123,5 +124,11 @@ object NetworkModule {
     @Singleton
     fun provideClaimApi(retrofit: Retrofit): ClaimApi {
         return retrofit.create(ClaimApi::class.java)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideGroupsApi(retrofit: Retrofit): GroupsApi {
+        return retrofit.create(GroupsApi::class.java)
     }
 }

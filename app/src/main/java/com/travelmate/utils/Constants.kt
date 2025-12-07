@@ -33,6 +33,8 @@ object Constants {
         // Claims Routes - Agency
         const val AGENCY_CLAIMS = "agency_claims"
         const val AGENCY_CLAIM_DETAIL = "agency_claim_detail"
+
+        const val GROUPS = "groups"
     }
     
     // SharedPreferences Keys

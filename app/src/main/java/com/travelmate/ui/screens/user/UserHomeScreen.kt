@@ -24,6 +24,7 @@ import com.travelmate.ui.theme.*
 import com.travelmate.viewmodel.NotificationsViewModel
 
 import com.travelmate.ui.profile.UserProfileScreen
+import com.travelmate.ui.screens.groups.GroupsListScreen
 
 sealed class BottomNavItem(
     val route: String,
@@ -144,7 +145,11 @@ fun UserHomeScreen(
         Box(modifier = Modifier.padding(paddingValues)) {
             when (selectedTab) {
                 0 -> PlaceholderScreen("Accueil")
-                1 -> PlaceholderScreen("Groupes")
+                1 -> GroupsListScreen(
+                    onNavigateToGroupDetails = { groupId ->
+                        navController.navigate("groupDetails/$groupId")
+                    }
+                )
                 2 -> OffresScreen(navController = navController)
                 3 -> InsurancesUserScreen(navController = navController)
                 4 -> com.travelmate.ui.notifications.NotificationsScreen(

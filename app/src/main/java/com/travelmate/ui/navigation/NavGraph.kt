@@ -14,12 +14,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.travelmate.data.socket.SocketService
 import com.travelmate.ui.screens.agency.AgencyMainDashboard
 import com.travelmate.ui.screens.agency.InsuranceFormScreen
 import com.travelmate.ui.screens.agency.InsuranceSubscribersScreen
+import com.travelmate.ui.screens.groups.GroupDetailsScreen
+import com.travelmate.ui.screens.groups.GroupsListScreen
+import com.travelmate.ui.screens.groups.GroupMembersScreen
 import com.travelmate.ui.screens.login.LoginScreen
 import com.travelmate.ui.screens.login.ForgotPasswordScreen
 import com.travelmate.ui.screens.login.ResetPasswordScreen
@@ -363,6 +368,52 @@ fun NavGraph(
             AgencyClaimDetailScreen(
                 navController = navController,
                 claimId = claimId
+            )
+        }
+        
+        // ✅ ========== ROUTES GROUPES ==========
+        
+        // Liste des groupes
+        composable("groups") {
+            GroupsListScreen(
+                onNavigateToGroupDetails = { groupId ->
+                    navController.navigate("groupDetails/$groupId")
+                }
+            )
+        }
+
+        // Détails d'un groupe avec messages
+        composable(
+            route = "groupDetails/{groupId}",
+            arguments = listOf(
+                navArgument("groupId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getString("groupId") ?: return@composable
+            GroupDetailsScreen(
+                groupId = groupId,
+                onBack = { navController.popBackStack() },
+                onNavigateToMembers = { gid ->
+                    navController.navigate("groupMembers/$gid")
+                }
+            )
+        }
+
+        // Membres d'un groupe
+        composable(
+            route = "groupMembers/{groupId}",
+            arguments = listOf(
+                navArgument("groupId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getString("groupId") ?: return@composable
+            GroupMembersScreen(
+                groupId = groupId,
+                onBack = { navController.popBackStack() }
             )
         }
     }
