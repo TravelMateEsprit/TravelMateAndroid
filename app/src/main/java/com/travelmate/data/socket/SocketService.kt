@@ -135,35 +135,22 @@ class SocketService @Inject constructor() {
         }
     }
     
+    // DEPRECATED: Authentication now uses HTTP REST API instead of WebSocket
+    @Deprecated("Use authRepository.registerUser() instead")
     fun emitUserRegistration(data: UserRegistrationRequest) {
-        if (socket?.connected() == true) {
-            val jsonData = data.toJson()
-            socket?.emit("user:register", jsonData)
-            Log.d(TAG, "Emitting user:register")
-        } else {
-            Log.e(TAG, "Cannot emit user:register - socket not connected")
-        }
+        Log.w(TAG, "emitUserRegistration is deprecated - use HTTP REST API instead")
     }
     
+    // DEPRECATED: Authentication now uses HTTP REST API instead of WebSocket
+    @Deprecated("Use authRepository.registerAgency() instead")
     fun emitAgencyRegistration(data: AgencyRegistrationRequest) {
-        if (socket?.connected() == true) {
-            val jsonData = data.toJson()
-            socket?.emit("agency:register", jsonData)
-            Log.d(TAG, "Emitting agency:register")
-        } else {
-            Log.e(TAG, "Cannot emit agency:register - socket not connected")
-        }
+        Log.w(TAG, "emitAgencyRegistration is deprecated - use HTTP REST API instead")
     }
     
+    // DEPRECATED: Authentication now uses HTTP REST API instead of WebSocket
+    @Deprecated("Use authRepository.login() instead")
     fun emitLogin(email: String, password: String) {
-        if (socket?.connected() == true) {
-            val data = LoginRequest(email, password)
-            val jsonData = Json.encodeToString(LoginRequest.serializer(), data)
-            socket?.emit("user:login", jsonData)
-            Log.d(TAG, "Emitting user:login")
-        } else {
-            Log.e(TAG, "Cannot emit user:login - socket not connected")
-        }
+        Log.w(TAG, "emitLogin is deprecated - use HTTP REST API instead")
     }
     
     fun resetRegistrationState() {

@@ -44,7 +44,6 @@ fun UserRegistrationScreen(
     viewModel: UserRegistrationViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isConnected by viewModel.connectionState.collectAsState()
     val focusManager = LocalFocusManager.current
     
     // Champs du formulaire
@@ -296,7 +295,7 @@ fun UserRegistrationScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        ModernConnectionStatus(isConnected = isConnected)
+                        // Connection status removed - using HTTP REST API
                     }
                     
                     Spacer(modifier = Modifier.height(24.dp))
@@ -504,18 +503,16 @@ fun UserRegistrationScreen(
                             ModernButton(
                                 text = "S'inscrire",
                                 onClick = {
+                                    val fullName = "${firstName.trim()} ${lastName.trim()}"
                                     val request = UserRegistrationRequest(
+                                        name = fullName,
                                         email = email.trim(),
-                                        password = password,
-                                        firstName = firstName.trim(),
-                                        lastName = lastName.trim(),
-                                        phone = phone.trim(),
-                                        dateOfBirth = dateOfBirth.trim()
+                                        password = password
                                     )
                                     viewModel.registerUser(request)
                                 },
                                 isLoading = uiState is UserRegistrationUiState.Loading,
-                                enabled = isStep3Valid && isConnected,
+                                enabled = isStep3Valid,
                                 modifier = Modifier.weight(if (currentStep > 0) 1f else 1f),
                                 icon = Icons.Default.Check
                             )

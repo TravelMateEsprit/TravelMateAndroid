@@ -44,7 +44,6 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isConnected by viewModel.connectionState.collectAsState()
     val focusManager = LocalFocusManager.current
     
     var email by remember { mutableStateOf("") }
@@ -296,7 +295,7 @@ fun LoginScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        ModernConnectionStatus(isConnected = isConnected)
+                        // Connection status removed - now using HTTP REST API
                     }
                     
                     Spacer(modifier = Modifier.height(24.dp))
@@ -347,7 +346,7 @@ fun LoginScreen(
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 focusManager.clearFocus()
-                                if (isFormValid && isConnected) {
+                                if (isFormValid) {
                                     viewModel.login(email.trim(), password)
                                 }
                             }
@@ -380,36 +379,13 @@ fun LoginScreen(
                             viewModel.login(email.trim(), password)
                         },
                         isLoading = uiState is LoginUiState.Loading,
-                        enabled = isFormValid && isConnected,
+                        enabled = isFormValid,
                         icon = Icons.Default.Login
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Message de non-connexion
-                    AnimatedVisibility(
-                        visible = !isConnected,
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    ColorWarning.copy(alpha = 0.1f),
-                                    RoundedCornerShape(12.dp)
-                                )
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                color = ColorWarning,
-                                strokeWidth = 2.dp
-                            )
-                        }
-                    }
+                    // Connection warning removed - using HTTP REST API
                 }
             }
             

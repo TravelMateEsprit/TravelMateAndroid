@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.travelmate.data.models.AuthResponse
 import com.travelmate.data.models.UserRegistrationRequest
 import com.travelmate.data.repository.AuthRepository
-import com.travelmate.data.socket.SocketService
 import com.travelmate.utils.ValidationUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -22,63 +21,32 @@ sealed class UserRegistrationUiState {
 
 @HiltViewModel
 class UserRegistrationViewModel @Inject constructor(
-    private val socketService: SocketService,
     private val authRepository: AuthRepository
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow<UserRegistrationUiState>(UserRegistrationUiState.Idle)
     val uiState: StateFlow<UserRegistrationUiState> = _uiState.asStateFlow()
     
-    val socketMessages = socketService.messages
-    val connectionState = socketService.connectionState
-    val registrationSuccess = socketService.registrationSuccess
-    val registrationError = socketService.registrationError
-    
-    fun connectSocket() {
-        socketService.connect()
-    }
-    
-    fun disconnectSocket() {
-        socketService.disconnect()
-    }
-    
     fun registerUser(request: UserRegistrationRequest) {
         viewModelScope.launch {
             _uiState.value = UserRegistrationUiState.Loading
             
-            // Reset les valeurs précédentes
-            socketService.resetRegistrationState()
-            
-            // Émettre l'inscription via Socket.IO
-            socketService.emitUserRegistration(request)
-            
-            // Écouter les réponses avec timeout
-            launch {
-                socketService.registrationSuccess
-                    .filterNotNull()
-                    .first()
-                    .let { response ->
-                        try {
-                            Log.d("UserRegistrationVM", "Registration success response: $response")
-                            val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-                            val authResponse = json.decodeFromString<AuthResponse>(response)
-                            _uiState.value = UserRegistrationUiState.Success(authResponse)
-                        } catch (e: Exception) {
-                            Log.e("UserRegistrationVM", "Parse error: ${e.message}")
-                            _uiState.value = UserRegistrationUiState.Error("Erreur de format: ${e.message}")
-                        }
+            try {
+                val result = authRepository.registerUser(request)
+                
+                result.fold(
+                    onSuccess = { authResponse ->
+                        Log.d("UserRegistrationVM", "Registration success: ${authResponse.user?.email}")
+                        _uiState.value = UserRegistrationUiState.Success(authResponse)
+                    },
+                    onFailure = { error ->
+                        Log.e("UserRegistrationVM", "Registration failed: ${error.message}")
+                        _uiState.value = UserRegistrationUiState.Error(error.message ?: "Erreur d'inscription")
                     }
-            }
-            
-            launch {
-                socketService.registrationError
-                    .filterNotNull()
-                    .first()
-                    .let { error ->
-                        _uiState.value = UserRegistrationUiState.Error(
-                            error.message ?: "Erreur lors de l'inscription"
-                        )
-                    }
+                )
+            } catch (e: Exception) {
+                Log.e("UserRegistrationVM", "Registration error: ${e.message}")
+                _uiState.value = UserRegistrationUiState.Error("Erreur: ${e.message}")
             }
         }
     }
@@ -101,11 +69,9 @@ class UserRegistrationViewModel @Inject constructor(
     
     fun resetState() {
         _uiState.value = UserRegistrationUiState.Idle
-        socketService.resetRegistrationState()
     }
     
     override fun onCleared() {
         super.onCleared()
-        socketService.resetRegistrationState()
     }
 }

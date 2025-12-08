@@ -231,7 +231,14 @@ fun NavGraph(
 
         // User Profile
         composable(Constants.Routes.USER_PROFILE) {
-            UserProfileScreen()
+            UserProfileScreen(
+                navController = navController,
+                onLogout = {
+                    navController.navigate(Constants.Routes.WELCOME) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
 
         // Agency Profile

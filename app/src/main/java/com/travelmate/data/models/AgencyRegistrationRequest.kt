@@ -1,34 +1,40 @@
 package com.travelmate.data.models
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.SerialName
 
 @Serializable
 data class AgencyRegistrationRequest(
+    @SerialName("name")
+    val name: String,
+    
+    @SerialName("email")
     val email: String,
+    
+    @SerialName("password")
     val password: String,
+    
+    @SerialName("agencyName")
     val agencyName: String,
-    val siret: String,
-    val address: String,
-    val city: String,
-    val postalCode: String,
-    val country: String,
+    
+    @SerialName("agencyLicense")
+    val agencyLicense: String,
+    
+    @SerialName("agencyWebsite")
+    val agencyWebsite: String? = null,
+    
+    @SerialName("phone")
     val phone: String,
-    val websiteUrl: String? = null,
-    val description: String? = null,
-    val kbisDocument: String? = null, // Base64 encoded
-    val legalRepresentativeFirstName: String,
-    val legalRepresentativeLastName: String
-) {
-    fun toJson(): String {
-        // Créer un objet avec le format attendu par le backend
-        val backendFormat = mapOf(
-            "name" to "$legalRepresentativeFirstName $legalRepresentativeLastName",
-            "email" to email,
-            "password" to password,
-            "agencyName" to agencyName
-        )
-        return Json.encodeToString(backendFormat)
-    }
-}
+    
+    @SerialName("address")
+    val address: String,
+    
+    @SerialName("city")
+    val city: String,
+    
+    @SerialName("country")
+    val country: String,
+    
+    @SerialName("agencyDescription")
+    val agencyDescription: String? = null
+)

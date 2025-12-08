@@ -1,25 +1,16 @@
 package com.travelmate.data.models
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.SerialName
 
 @Serializable
 data class UserRegistrationRequest(
+    @SerialName("name")
+    val name: String,
+    
+    @SerialName("email")
     val email: String,
-    val password: String,
-    val firstName: String,
-    val lastName: String,
-    val phone: String? = null,
-    val dateOfBirth: String? = null // Format: yyyy-MM-dd
-) {
-    fun toJson(): String {
-        // Créer un objet avec le format attendu par le backend
-        val backendFormat = mapOf(
-            "name" to "$firstName $lastName",
-            "email" to email,
-            "password" to password
-        )
-        return Json.encodeToString(backendFormat)
-    }
-}
+    
+    @SerialName("password")
+    val password: String
+)

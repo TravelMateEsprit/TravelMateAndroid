@@ -95,27 +95,22 @@ class AgencyRegistrationViewModel @Inject constructor(
             
             try {
                 val data = _formData.value
+                val fullName = "${data.legalRepFirstName.trim()} ${data.legalRepLastName.trim()}"
                 val request = AgencyRegistrationRequest(
+                    name = fullName,
                     email = data.email.trim(),
                     password = data.password,
                     agencyName = data.agencyName.trim(),
-                    siret = data.siret.trim(),
+                    agencyLicense = data.siret.trim(),
                     address = data.address.trim(),
                     city = data.city.trim(),
-                    postalCode = data.postalCode.trim(),
                     country = data.country.trim(),
                     phone = data.phone.trim(),
-                    websiteUrl = data.websiteUrl.trim().takeIf { it.isNotEmpty() },
-                    description = data.description.trim().takeIf { it.isNotEmpty() },
-                    kbisDocument = data.kbisDocument,
-                    legalRepresentativeFirstName = data.legalRepFirstName.trim(),
-                    legalRepresentativeLastName = data.legalRepLastName.trim()
+                    agencyWebsite = data.websiteUrl.trim().takeIf { it.isNotEmpty() },
+                    agencyDescription = data.description.trim().takeIf { it.isNotEmpty() }
                 )
                 
-                // Émettre l'inscription via Socket.IO
-                socketService.emitAgencyRegistration(request)
-                
-                // Également appeler l'API REST comme backup
+                // Call HTTP REST API for agency registration
                 val result = authRepository.registerAgency(request)
                 
                 result.fold(

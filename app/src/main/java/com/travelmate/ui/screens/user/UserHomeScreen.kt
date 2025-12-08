@@ -144,7 +144,7 @@ fun UserHomeScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             when (selectedTab) {
-                0 -> PlaceholderScreen("Accueil")
+                0 -> PlaceholderScreen("Accueil", navController)
                 1 -> GroupsListScreen(
                     onNavigateToGroupDetails = { groupId ->
                         navController.navigate("groupDetails/$groupId")
@@ -158,6 +158,7 @@ fun UserHomeScreen(
                     onNavigateToPaymentDetails = { /* TODO */ }
                 )
                 5 -> UserProfileScreen(
+                    navController = navController,
                     onLogout = onLogout
                 )
             }
@@ -166,15 +167,137 @@ fun UserHomeScreen(
 }
 
 @Composable
-fun PlaceholderScreen(title: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = androidx.compose.ui.Alignment.Center
+fun PlaceholderScreen(title: String, navController: NavController? = null) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(ColorBackground)
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // En-tête
         Text(
-            text = "Écran $title",
+            text = "Bienvenue sur TravelMate",
             style = MaterialTheme.typography.headlineMedium,
-            color = ColorTextSecondary
+            fontWeight = FontWeight.Bold,
+            color = ColorTextPrimary,
+            modifier = Modifier.padding(vertical = 16.dp)
         )
+
+        // Carte: Mes demandes d'assurance
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { navController?.navigate(com.travelmate.utils.Constants.Routes.MY_INSURANCE_REQUESTS) },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(ColorPrimary, ColorPrimary.copy(alpha = 0.8f))
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Assignment,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Mes demandes d'assurance",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorTextPrimary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Suivre vos demandes en cours",
+                        fontSize = 14.sp,
+                        color = ColorTextSecondary
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = ColorTextSecondary
+                )
+            }
+        }
+
+        // Carte: Mes réclamations
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { navController?.navigate(com.travelmate.utils.Constants.Routes.MY_CLAIMS) },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(ColorSecondary, ColorSecondary.copy(alpha = 0.8f))
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Report,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Mes réclamations",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = ColorTextPrimary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Gérer vos réclamations",
+                        fontSize = 14.sp,
+                        color = ColorTextSecondary
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = ColorTextSecondary
+                )
+            }
+        }
     }
 }

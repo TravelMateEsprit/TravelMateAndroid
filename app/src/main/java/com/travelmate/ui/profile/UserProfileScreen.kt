@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun UserProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
+    navController: androidx.navigation.NavController? = null,
     onLogout: () -> Unit = {}
 ) {
     val user by viewModel.userProfile.collectAsState()
@@ -489,4 +490,56 @@ private fun UserModernTextField(
         ),
         minLines = minLines
     )
+}
+
+@Composable
+private fun UserProfileNavigationItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(ColorPrimary.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = ColorPrimary,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = ColorTextPrimary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = subtitle,
+                fontSize = 13.sp,
+                color = ColorTextSecondary
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = ColorTextSecondary,
+            modifier = Modifier.size(24.dp)
+        )
+    }
 }
