@@ -3,11 +3,13 @@ package com.travelmate.data.api
 import com.travelmate.data.models.AgencyRegistrationRequest
 import com.travelmate.data.models.AuthResponse
 import com.travelmate.data.models.LoginRequest
+import com.travelmate.data.models.User
 import com.travelmate.data.models.UserRegistrationRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Path
 import retrofit2.http.POST
 
 interface AuthApi {

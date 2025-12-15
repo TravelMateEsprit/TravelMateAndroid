@@ -101,6 +101,15 @@ interface GroupsApi {
         @Header("Authorization") token: String
     ): Response<Unit>
 
+    // ✅ NEW: Remove or ban member from group
+    @DELETE("groups/{id}/members/{userId}")
+    suspend fun removeMember(
+        @Path("id") groupId: String,
+        @Path("userId") userId: String,
+        @Header("Authorization") token: String,
+        @Query("action") action: String
+    ): Response<RemoveMemberResponse>
+
     // ========== MESSAGES ==========
 
     @POST("groups/{id}/messages")

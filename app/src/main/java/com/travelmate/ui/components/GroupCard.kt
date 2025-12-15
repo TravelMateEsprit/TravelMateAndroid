@@ -57,17 +57,16 @@ fun GroupCard(
                     .height(160.dp)
             ) {
                 val imageUrl = when {
-                    !group.image.isNullOrBlank() &&
-                            group.image.startsWith("http") &&
-                            !group.image.contains("example.com") -> group.image
-
+                    !group.image.isNullOrBlank() -> {
+                        // Utiliser la fonction helper pour construire l'URL
+                        com.travelmate.utils.Constants.buildImageUrl(group.image)
+                            ?: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
+                    }
                     group.destination?.contains("Allemagne", ignoreCase = true) == true ->
                         "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800"
-
                     group.destination?.contains("Thailande", ignoreCase = true) == true ||
                             group.destination?.contains("Thaïlande", ignoreCase = true) == true ->
                         "https://images.unsplash.com/photo-1528181304800-259b08848526?w=800"
-
                     else -> "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
                 }
 

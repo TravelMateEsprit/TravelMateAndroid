@@ -36,7 +36,9 @@ import android.util.Log
 @Composable
 fun GroupsListScreen(
     onNavigateToGroupDetails: (String) -> Unit,
-    viewModel: GroupsViewModel = hiltViewModel()
+    onNavigateToNotifications: () -> Unit = {},
+    viewModel: GroupsViewModel = hiltViewModel(),
+    notificationViewModel: com.travelmate.viewmodel.NotificationViewModel = hiltViewModel()
 ) {
     val allGroups by viewModel.allGroups.collectAsState()
     val myGroups by viewModel.myGroups.collectAsState()
@@ -161,25 +163,16 @@ fun GroupsListScreen(
                                 )
                             }
 
-                            IconButton(onClick = { /* Notifications */ }) {
-                                BadgedBox(
-                                    badge = {
-                                        Badge(
-                                            containerColor = ColorError,
-                                            modifier = Modifier.offset(x = (-4).dp, y = 4.dp)
-                                        ) {
-                                            Text("3", fontSize = 10.sp, color = Color.White)
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        Icons.Default.Notifications,
-                                        contentDescription = "Notifications",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
+                            val unreadCount by notificationViewModel.unreadCount.collectAsState()
+                            
+                            LaunchedEffect(Unit) {
+                                notificationViewModel.loadUnreadCount()
                             }
+                            
+                            com.travelmate.ui.components.NotificationBadge(
+                                count = unreadCount,
+                                onClick = onNavigateToNotifications
+                            )
                         }
 
                         // Barre de recherche intégrée

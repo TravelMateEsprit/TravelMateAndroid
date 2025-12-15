@@ -108,12 +108,35 @@ class GroupsService @Inject constructor(
                         memberIdStr.equals(userIdStr, ignoreCase = true) || memberIdStr == userIdStr
                     }
 
-                    val isMember = isInCache || isMemberInArray || isCreator
+                    // Utiliser membershipStatus du backend si disponible, sinon calculer
+                    val membershipStatus = group.membershipStatus?.takeIf { it.isNotBlank() }
+                        ?: when {
+                            isCreator -> "creator"
+                            isMemberInArray -> "member"
+                            isInCache -> "member"
+                            else -> null
+                        }
+                    
+                    // isMember doit être true si :
+                    // 1. membershipStatus est "member" ou "joined" (membre rejoint)
+                    // 2. OU si l'utilisateur est dans le tableau members (même sans membershipStatus)
+                    // 3. OU si l'utilisateur est dans le cache des groupes rejoints
+                    // MAIS PAS si c'est le créateur (le créateur va dans "Mes créations")
+                    val isMember = when {
+                        isCreator -> false // Le créateur ne va pas dans "Mes groupes"
+                        membershipStatus in listOf("member", "joined") -> true
+                        isMemberInArray -> true // Si dans members, considérer comme membre
+                        isInCache -> true // Si dans cache, considérer comme membre
+                        else -> false
+                    }
 
                     Log.d("GroupsService", "Processing group: ${group.name}")
                     Log.d("GroupsService", "  - isCreator: $isCreator")
-                    Log.d("GroupsService", "  - isMember: $isMember")
+                    Log.d("GroupsService", "  - isMemberInArray: $isMemberInArray")
+                    Log.d("GroupsService", "  - isInCache: $isInCache")
                     Log.d("GroupsService", "  - membershipStatus from API: ${group.membershipStatus}")
+                    Log.d("GroupsService", "  - calculated membershipStatus: $membershipStatus")
+                    Log.d("GroupsService", "  - isMember (for My Groups): $isMember")
 
                     group.apply {
                         memberCount = members.size
@@ -159,6 +182,12 @@ class GroupsService @Inject constructor(
                 val member = response.body()!!
 
                 Log.d("GroupsService", "✅ Status: ${member.status}")
+
+                // Ajouter au cache seulement si approuvé (status = "active")
+                if (member.status == "active") {
+                    _joinedGroupIds.value = _joinedGroupIds.value + groupId
+                    Log.d("GroupsService", "✅ Added to joined cache: $groupId")
+                }
 
                 kotlinx.coroutines.delay(1000)
                 getAllGroups()
@@ -259,7 +288,9 @@ class GroupsService @Inject constructor(
 
             if (response.isSuccessful && response.body() != null) {
                 val group = response.body()!!
-                _joinedGroupIds.value = _joinedGroupIds.value + group._id
+                // Ne pas ajouter au cache des groupes rejoints car c'est le créateur
+                // Le créateur apparaîtra dans "Mes créations" grâce à isCreator
+                Log.d("GroupsService", "✅ Group created: ${group._id}, creator will appear in 'Mes créations'")
                 getAllGroups()
                 Result.success(group)
             } else {
@@ -336,20 +367,26 @@ class GroupsService @Inject constructor(
             _isLoading.value = true
             _error.value = null
 
+            Log.d("GroupsService", "🚶 Leaving group: $groupId")
             val response = groupsApi.leaveGroup(groupId, getAuthToken())
 
+            Log.d("GroupsService", "Response code: ${response.code()}")
+            
             if (response.isSuccessful) {
                 _joinedGroupIds.value = _joinedGroupIds.value - groupId
+                Log.d("GroupsService", "✅ Successfully left group, reloading groups...")
                 getAllGroups()
                 Result.success(Unit)
             } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("GroupsService", "❌ Error leaving group: ${response.code()}, body: $errorBody")
                 val errorMsg = "Erreur: ${response.code()}"
                 _error.value = errorMsg
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
-            Log.e("GroupsService", "❌ Error leaving group", e)
-            _error.value = e.message
+            Log.e("GroupsService", "❌ Exception leaving group", e)
+            _error.value = e.message ?: "Erreur inconnue"
             Result.failure(e)
         } finally {
             _isLoading.value = false
@@ -613,9 +650,40 @@ class GroupsService @Inject constructor(
         }
     }
 
+    // ✅ NEW: Remove or ban member from group
+    suspend fun removeMember(groupId: String, userId: String, action: String) {
+        try {
+            Log.d("GroupsService", "🗑️ Removing member - groupId: $groupId, userId: $userId, action: $action")
+            
+            val token = prefs.getString("access_token", "") ?: ""
+            Log.d("GroupsService", "📤 Calling API: DELETE /groups/$groupId/members/$userId?action=$action")
+            
+            val response = groupsApi.removeMember(
+                groupId,
+                userId,
+                "Bearer $token",
+                action
+            )
 
-
-
+            Log.d("GroupsService", "📥 Response code: ${response.code()}")
+            
+            if (response.isSuccessful) {
+                Log.d("GroupsService", "✅ Member removed successfully")
+                // Rafraîchir les membres après un court délai
+                kotlinx.coroutines.delay(500)
+                getGroupMembers(groupId)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("GroupsService", "❌ Error removing member: ${response.code()}")
+                Log.e("GroupsService", "Response body: $errorBody")
+                _error.value = "Erreur lors de la suppression du membre (${response.code()})"
+            }
+        } catch (e: Exception) {
+            Log.e("GroupsService", "❌ Error removing member", e)
+            e.printStackTrace()
+            _error.value = "Erreur: ${e.message}"
+        }
+    }
 
     fun clearError() {
         _error.value = null

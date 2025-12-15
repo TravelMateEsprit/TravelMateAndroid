@@ -99,6 +99,9 @@ fun UserHomeScreen(
                             GroupsListScreen(
                                 onNavigateToGroupDetails = { groupId ->
                                     groupsNavController.navigate("groupDetails/$groupId")
+                                },
+                                onNavigateToNotifications = {
+                                    groupsNavController.navigate("notifications")
                                 }
                             )
                         }
@@ -112,6 +115,34 @@ fun UserHomeScreen(
                             val groupId = backStackEntry.arguments?.getString("groupId") ?: return@composable
                             GroupDetailsScreen(
                                 groupId = groupId,
+                                onBack = { groupsNavController.popBackStack() },
+                                onNavigateToUserProfile = { userId ->
+                                    groupsNavController.navigate("userProfile/$userId")
+                                }
+                            )
+                        }
+
+                        composable("notifications") {
+                            com.travelmate.ui.screens.notifications.NotificationsScreen(
+                                onNavigateToGroup = { groupId ->
+                                    groupsNavController.navigate("groupDetails/$groupId")
+                                },
+                                onNavigateToUserProfile = { userId ->
+                                    groupsNavController.navigate("userProfile/$userId")
+                                },
+                                onBack = { groupsNavController.popBackStack() }
+                            )
+                        }
+
+                        composable(
+                            route = "userProfile/{userId}",
+                            arguments = listOf(
+                                navArgument("userId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+                            com.travelmate.ui.screens.user.UserProfileScreen(
+                                userId = userId,
                                 onBack = { groupsNavController.popBackStack() }
                             )
                         }

@@ -189,8 +189,9 @@ fun EditGroupDialog(
                         }
                         !imageUrl.isNullOrBlank() -> {
                             Log.d("EditGroupDialog", "🖼️ Showing existing image: $imageUrl")
+                            val fullImageUrl = com.travelmate.utils.Constants.buildImageUrl(imageUrl) ?: imageUrl
                             AsyncImage(
-                                model = imageUrl,
+                                model = fullImageUrl,
                                 contentDescription = "Photo du groupe",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop,

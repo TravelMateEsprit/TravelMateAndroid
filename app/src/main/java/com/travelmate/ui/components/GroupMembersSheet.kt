@@ -84,7 +84,7 @@ private fun MemberCard(
         ) {
             Column {
                 Text(
-                    text = member.user?.name ?: "User",
+                    text = member.displayName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = ColorTextPrimary

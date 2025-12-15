@@ -22,6 +22,8 @@ import com.travelmate.ui.screens.agency.InsuranceSubscribersScreen
 import com.travelmate.ui.screens.groups.GroupDetailsScreen  // ✅ AJOUTÉ
 import com.travelmate.ui.screens.groups.GroupsListScreen    // ✅ AJOUTÉ
 import com.travelmate.ui.screens.login.LoginScreen
+import com.travelmate.ui.screens.notifications.NotificationsScreen
+import com.travelmate.ui.screens.user.UserProfileScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
 import com.travelmate.ui.screens.user.UserHomeScreen
@@ -211,6 +213,39 @@ fun NavGraph(
         }
 
         // ✅ ========== FIN ROUTES GROUPES ==========
+
+        // ✅ ========== ROUTES NOTIFICATIONS ET PROFIL ==========
+
+        // Notifications
+        composable("notifications") {
+            NotificationsScreen(
+                onNavigateToGroup = { groupId ->
+                    navController.navigate("groupDetails/$groupId")
+                },
+                onNavigateToUserProfile = { userId ->
+                    navController.navigate("userProfile/$userId")
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // User Profile
+        composable(
+            route = "userProfile/{userId}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            UserProfileScreen(
+                userId = userId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // ✅ ========== FIN ROUTES NOTIFICATIONS ET PROFIL ==========
 
         // Home screen (placeholder for now)
         composable(Constants.Routes.HOME) {

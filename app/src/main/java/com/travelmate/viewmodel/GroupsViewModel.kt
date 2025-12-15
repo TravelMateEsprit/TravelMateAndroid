@@ -35,6 +35,10 @@ class GroupsViewModel @Inject constructor(
     val socketError = chatSocketService.error
     val typingUsers = chatSocketService.typingUsers
 
+    // ✅ NEW: Expose group members and reactions from socket service
+    val groupMembers = chatSocketService.groupMembers
+    val reactionsByEmoji = chatSocketService.reactionsByEmoji
+
     private val _pendingRequests = MutableStateFlow<List<PendingRequest>>(emptyList())
     val pendingRequests: StateFlow<List<PendingRequest>> = _pendingRequests.asStateFlow()
 
@@ -48,6 +52,11 @@ class GroupsViewModel @Inject constructor(
     val filteredGroups: StateFlow<List<Group>> = _filteredGroups.asStateFlow()
 
     private var currentUserId: String = ""
+    private var observersInitialized = false
+    
+    // ✅ Flags pour éviter les clics multiples rapides
+    private var lastReactionMessageId: String? = null
+    private var lastReactionEmoji: String? = null
 
     init {
         viewModelScope.launch {
@@ -56,12 +65,16 @@ class GroupsViewModel @Inject constructor(
             }
         }
 
-        connectToWebSocket()
-        observeWebSocketMessages()
-        observeWebSocketDeletes()
-        observeWebSocketUpdates()
-        observeWebSocketReactions()
-        observeTypingUsers()
+        if (!observersInitialized) {
+            connectToWebSocket()
+            observeWebSocketMessages()
+            observeWebSocketDeletes()
+            observeWebSocketUpdates()
+            observeWebSocketReactions()
+            observeTypingUsers()
+            observersInitialized = true
+            Log.d("GroupsViewModel", "✅ Observers initialized (once)")
+        }
     }
 
     fun setUserId(userId: String) {
@@ -146,31 +159,36 @@ class GroupsViewModel @Inject constructor(
     private fun observeWebSocketReactions() {
         viewModelScope.launch {
             chatSocketService.messageReacted.collect { reactedMessage ->
-                if (reactedMessage != null) {
-                    Log.d("GroupsViewModel", "🔄 Réaction WebSocket reçue pour message ${reactedMessage.id}")
-                    Log.d("GroupsViewModel", "   Réactions totales: ${reactedMessage.reactions.size}")
+                    if (reactedMessage != null) {
+                        val timestamp = System.currentTimeMillis()
+                        Log.d("GroupsViewModel", "🔄 Reaction WebSocket recue: ${reactedMessage.id} [$timestamp]")
+                        Log.d("GroupsViewModel", "   Reactions totales: ${reactedMessage.reactions.size}")
 
-                    val currentMessages = _groupMessages.value.toMutableList()
-                    val index = currentMessages.indexOfFirst { it.id == reactedMessage.id }
+                        val currentMessages = _groupMessages.value.toMutableList()
+                        val index = currentMessages.indexOfFirst { it.id == reactedMessage.id }
 
-                    if (index != -1) {
-                        currentMessages[index] = reactedMessage
-                        _groupMessages.value = currentMessages
+                        if (index != -1) {
+                            Log.d("GroupsViewModel", "   Updating message at index $index")
+                            currentMessages[index] = reactedMessage
+                            Log.d("GroupsViewModel", "   Setting _groupMessages.value...")
+                            _groupMessages.value = currentMessages
+                            Log.d("GroupsViewModel", "✅ Message updated with ${reactedMessage.reactions.size} reactions [$timestamp]")
+                        } else {
+                            Log.w("GroupsViewModel", "⚠️ Message ${reactedMessage.id} not found")
+                        }
 
-                        Log.d("GroupsViewModel", "✅ Message mis à jour à l'index $index avec ${reactedMessage.reactions.size} réactions")
-                    } else {
-                        Log.w("GroupsViewModel", "⚠️ Message ${reactedMessage.id} non trouvé dans la liste")
+                        kotlinx.coroutines.delay(50)
+                        Log.d("GroupsViewModel", "   Resetting messageReacted")
+                        chatSocketService.resetMessageReacted()
                     }
-
-                    chatSocketService.resetMessageReacted()
                 }
-            }
         }
     }
 
     private fun observeTypingUsers() {
         viewModelScope.launch {
             chatSocketService.typingUsers.collect { users ->
+                Log.d("GroupsViewModel", " Typing users: ${users.size}")
                 Log.d("GroupsViewModel", "⌨️ Typing users: ${users.size}")
             }
         }
@@ -248,10 +266,20 @@ class GroupsViewModel @Inject constructor(
 
     fun leaveGroup(groupId: String) {
         viewModelScope.launch {
-            val result = groupsService.leaveGroup(groupId)
-            if (result.isSuccess) {
-                leaveGroupChat(groupId)
-                loadAllGroups()
+            try {
+                val result = groupsService.leaveGroup(groupId)
+                if (result.isSuccess) {
+                    leaveGroupChat(groupId)
+                    loadAllGroups()
+                    Log.d("GroupsViewModel", "✅ Successfully left group: $groupId")
+                } else {
+                    val error = result.exceptionOrNull()?.message ?: "Erreur inconnue"
+                    Log.e("GroupsViewModel", "❌ Error leaving group: $error")
+                    groupsService.setError("Erreur lors de la sortie du groupe: $error")
+                }
+            } catch (e: Exception) {
+                Log.e("GroupsViewModel", "❌ Exception leaving group", e)
+                groupsService.setError("Erreur: ${e.message}")
             }
         }
     }
@@ -373,7 +401,9 @@ class GroupsViewModel @Inject constructor(
                 if (result.isSuccess) {
                     Log.d("GroupsViewModel", "✅ Message avec image sauvegardé")
                     loadGroupMessages(groupId)
-                    chatSocketService.sendMessage(groupId, content, listOf(imageUrl))
+                    // ✅ NE PAS ENVOYER VIA WEBSOCKET!
+                    // Le message viendra du listener observeWebSocketMessages()
+                    // qui reçoit l'événement du backend
                 } else {
                     val errorMsg = result.exceptionOrNull()?.message ?: "Erreur inconnue"
                     Log.e("GroupsViewModel", "❌ Erreur création message: $errorMsg")
@@ -421,10 +451,24 @@ class GroupsViewModel @Inject constructor(
 
     fun toggleReaction(groupId: String, messageId: String, emoji: String) {
         viewModelScope.launch {
+            // ✅ Éviter les clics multiples rapides
+            if (lastReactionMessageId == messageId && lastReactionEmoji == emoji) {
+                Log.w("GroupsViewModel", "⚠️ Reaction déjà en cours pour ce message/emoji")
+                return@launch
+            }
+            
+            lastReactionMessageId = messageId
+            lastReactionEmoji = emoji
+            
             Log.d("GroupsViewModel", "👍 Toggle réaction: $emoji sur message $messageId")
 
             // ✅ Envoyer via WebSocket (la mise à jour viendra du listener)
             chatSocketService.sendReaction(groupId, messageId, emoji)
+            
+            // ✅ Reset après 500ms pour permettre un nouveau clic
+            kotlinx.coroutines.delay(500)
+            lastReactionMessageId = null
+            lastReactionEmoji = null
         }
     }
 
@@ -488,6 +532,38 @@ class GroupsViewModel @Inject constructor(
     fun clearError() {
         groupsService.clearError()
         chatSocketService.clearError()
+    }
+
+    // ✅ NEW: Public functions to access socket service methods
+    fun getGroupMembers(groupId: String) {
+        chatSocketService.getGroupMembers(groupId)
+    }
+
+    fun resetGroupMembers() {
+        chatSocketService.resetGroupMembers()
+    }
+
+    fun getReactionsByEmoji(messageId: String, emoji: String) {
+        chatSocketService.getReactionsByEmoji(messageId, emoji)
+    }
+
+    fun resetReactionsByEmoji() {
+        chatSocketService.resetReactionsByEmoji()
+    }
+
+    // ✅ NEW: Remove member from group
+    fun removeMember(groupId: String, userId: String, action: String = "remove") {
+        viewModelScope.launch {
+            try {
+                Log.d("GroupsViewModel", "🗑️ Removing member - groupId: $groupId, userId: $userId, action: $action")
+                groupsService.removeMember(groupId, userId, action)
+                Log.d("GroupsViewModel", "✅ Member $userId removed/banned from group $groupId")
+            } catch (e: Exception) {
+                Log.e("GroupsViewModel", "❌ Error removing member: ${e.message}", e)
+                e.printStackTrace()
+                groupsService.setError("Erreur: ${e.message}")
+            }
+        }
     }
 
     override fun onCleared() {

@@ -10,15 +10,43 @@ data class UserReactionInfo(
     @SerialName("_id")
     val id: String,
 
+    @SerialName("name")
+    val name: String? = null,
+
     @SerialName("nom")
     val nom: String? = null,
 
     @SerialName("prenom")
     val prenom: String? = null,
+    
+    @SerialName("firstName")
+    val firstName: String? = null,
+    
+    @SerialName("lastName")
+    val lastName: String? = null,
 
     @SerialName("email")
     val email: String? = null
-)
+) {
+    val displayName: String
+        get() {
+            // Priorité 1: name
+            if (!name.isNullOrBlank()) return name
+            // Priorité 2: firstName + lastName
+            if (!firstName.isNullOrBlank() || !lastName.isNullOrBlank()) {
+                val fullName = "${firstName ?: ""} ${lastName ?: ""}".trim()
+                if (fullName.isNotBlank()) return fullName
+            }
+            // Priorité 3: prenom + nom
+            val fullName = "${prenom ?: ""} ${nom ?: ""}".trim()
+            if (fullName.isNotBlank()) return fullName
+            // Priorité 4: partie avant @ de l'email
+            val username = com.travelmate.utils.Constants.extractUsernameFromEmail(email)
+            if (username != null) return username
+            // Fallback
+            return "Utilisateur"
+        }
+}
 
 // ✅ NOUVEAU: Deserializer flexible pour userId
 object UserReactionInfoSerializer : KSerializer<UserReactionInfo> {
@@ -106,15 +134,43 @@ data class AuthorInfo(
     @SerialName("_id")
     val id: String = "",
 
+    @SerialName("name")
+    val name: String? = null,
+
     @SerialName("nom")
     val nom: String? = null,
 
     @SerialName("prenom")
     val prenom: String? = null,
+    
+    @SerialName("firstName")
+    val firstName: String? = null,
+    
+    @SerialName("lastName")
+    val lastName: String? = null,
 
     @SerialName("email")
     val email: String? = null
-)
+) {
+    val displayName: String
+        get() {
+            // Priorité 1: name
+            if (!name.isNullOrBlank()) return name
+            // Priorité 2: firstName + lastName
+            if (!firstName.isNullOrBlank() || !lastName.isNullOrBlank()) {
+                val fullName = "${firstName ?: ""} ${lastName ?: ""}".trim()
+                if (fullName.isNotBlank()) return fullName
+            }
+            // Priorité 3: prenom + nom
+            val fullName = "${prenom ?: ""} ${nom ?: ""}".trim()
+            if (fullName.isNotBlank()) return fullName
+            // Priorité 4: partie avant @ de l'email
+            val username = com.travelmate.utils.Constants.extractUsernameFromEmail(email)
+            if (username != null) return username
+            // Fallback
+            return "Utilisateur"
+        }
+}
 
 object AuthorIdSerializer : KSerializer<AuthorInfo?> {
     override val descriptor: SerialDescriptor =

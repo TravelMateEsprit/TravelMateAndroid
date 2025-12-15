@@ -45,9 +45,11 @@ fun PendingRequestCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Avatar
-            val userName = "${request.userId.nom ?: ""} ${request.userId.prenom ?: ""}".trim()
+            val userName = request.userId.name?.takeIf { it.isNotBlank() }
+                ?: "${request.userId.prenom ?: ""} ${request.userId.nom ?: ""}".trim()
+                ?: "Utilisateur"
             AsyncImage(
-                model = request.userId.photo ?: "https://ui-avatars.com/api/?name=${userName}",
+                model = request.userId.photo ?: request.userId.avatar ?: "https://ui-avatars.com/api/?name=${userName}",
                 contentDescription = null,
                 modifier = Modifier
                     .size(48.dp)
@@ -62,7 +64,7 @@ fun PendingRequestCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = userName.ifEmpty { "Utilisateur" },
+                    text = userName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = ColorTextPrimary

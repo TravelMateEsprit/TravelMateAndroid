@@ -5,6 +5,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.travelmate.data.api.AuthApi
 import com.travelmate.data.api.GroupsApi
 import com.travelmate.data.api.InsuranceApi
+import com.travelmate.data.api.NotificationApi
 import com.travelmate.data.api.UserApi
 import com.travelmate.data.socket.GroupChatSocketService
 import com.travelmate.data.socket.SocketConfig
@@ -87,6 +88,12 @@ object NetworkModule {
     @Singleton
     fun provideGroupsApi(retrofit: Retrofit): GroupsApi {
         return retrofit.create(GroupsApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationApi(retrofit: Retrofit): NotificationApi {
+        return retrofit.create(NotificationApi::class.java)
     }
 
     // ✅ NOUVEAU : Provider pour le service WebSocket de messagerie de groupe

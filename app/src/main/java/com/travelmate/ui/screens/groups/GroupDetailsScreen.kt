@@ -1,6 +1,7 @@
 package com.travelmate.ui.screens.groups
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -24,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -40,7 +42,7 @@ import com.travelmate.data.models.Group
 import com.travelmate.data.models.MessageGroupe
 import com.travelmate.data.models.MessageReaction
 import com.travelmate.ui.components.EditGroupDialog
-import com.travelmate.ui.components.PendingRequestsSheet
+import com.travelmate.ui.components.GroupMembersDialog
 import com.travelmate.ui.components.ReactionPicker
 import com.travelmate.ui.components.TypingIndicator
 import com.travelmate.ui.theme.*
@@ -56,11 +58,11 @@ import java.util.*
 fun GroupDetailsScreen(
     groupId: String,
     onBack: () -> Unit,
+    onNavigateToUserProfile: (String) -> Unit = {},
     viewModel: GroupsViewModel = hiltViewModel()
 ) {
     val currentGroup by viewModel.currentGroup.collectAsState()
     val messages by viewModel.groupMessages.collectAsState()
-    val pendingRequests by viewModel.pendingRequests.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
@@ -69,6 +71,10 @@ fun GroupDetailsScreen(
     var typingJob: Job? by remember { mutableStateOf(null) }
 
     val context = LocalContext.current
+
+    // ✅ NEW: Use group members from ViewModel (already connected!)
+    val members by viewModel.groupMembers.collectAsState()
+    var showMembersDialog by remember { mutableStateOf(false) }
     val prefs = context.getSharedPreferences("travelmate_prefs", android.content.Context.MODE_PRIVATE)
     val currentUserId = prefs.getString("user_id", "") ?: ""
 
@@ -89,10 +95,11 @@ fun GroupDetailsScreen(
     var messageToDelete by remember { mutableStateOf<String?>(null) }
     var messageToEdit by remember { mutableStateOf<MessageGroupe?>(null) }
     var showEditMessageDialog by remember { mutableStateOf(false) }
-    var showPendingRequestsSheet by remember { mutableStateOf(false) }
     var showGroupInfo by remember { mutableStateOf(false) }
     var showReactionPickerForMessage by remember { mutableStateOf<String?>(null) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isSendingMessage by remember { mutableStateOf(false) }
+    var hasImageBeenProcessed by remember { mutableStateOf(false) }
 
     // États pour le dialog des réactions détaillées
     var showReactionDetailsDialog by remember { mutableStateOf(false) }
@@ -106,6 +113,7 @@ fun GroupDetailsScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         selectedImageUri = uri
+        hasImageBeenProcessed = false
     }
 
     LaunchedEffect(messages.size) {
@@ -123,14 +131,37 @@ fun GroupDetailsScreen(
     }
 
     LaunchedEffect(groupId) {
+        Log.d("GroupDetailsScreen", "📍 Entering group: $groupId")
         viewModel.setUserId(currentUserId)
         viewModel.loadGroupById(groupId)
         viewModel.loadGroupMessages(groupId)
         viewModel.loadPendingRequests(groupId)
+        viewModel.joinGroupChat(groupId)
     }
 
     DisposableEffect(groupId) {
-        onDispose { viewModel.leaveGroupChat(groupId) }
+        onDispose {
+            Log.d("GroupDetailsScreen", "📍 Leaving group: $groupId")
+            viewModel.leaveGroupChat(groupId)
+        }
+    }
+
+    LaunchedEffect(selectedImageUri) {
+        selectedImageUri?.let { uri ->
+            if (!isSendingMessage && !hasImageBeenProcessed) {
+                Log.d("GroupDetailsScreen", "📤 Image selected, uploading: $uri")
+                hasImageBeenProcessed = true
+                isSendingMessage = true
+                
+                viewModel.createMessageWithImage(groupId, messageContent, uri)
+                
+                messageContent = ""
+                selectedImageUri = null
+                isSendingMessage = false
+                
+                Log.d("GroupDetailsScreen", "✅ Image upload completed")
+            }
+        }
     }
 
     val isCreator = currentGroup?.createdBy == currentUserId
@@ -178,20 +209,6 @@ fun GroupDetailsScreen(
                         }
 
                         Row {
-                            if (isCreator && pendingRequests.isNotEmpty()) {
-                                BadgedBox(
-                                    badge = {
-                                        Badge(containerColor = ColorError, modifier = Modifier.offset(x = (-4).dp, y = 4.dp)) {
-                                            Text(pendingRequests.size.toString(), fontSize = 10.sp, color = Color.White)
-                                        }
-                                    }
-                                ) {
-                                    IconButton(onClick = { showPendingRequestsSheet = true }) {
-                                        Icon(Icons.Default.PersonAdd, "Demandes en attente", tint = Color.White)
-                                    }
-                                }
-                            }
-
                             IconButton(onClick = { showGroupInfo = !showGroupInfo }) {
                                 Icon(Icons.Default.Info, "Informations", tint = Color.White)
                             }
@@ -209,7 +226,12 @@ fun GroupDetailsScreen(
                                                 Text("Voir les membres")
                                             }
                                         },
-                                        onClick = { showMenu = false }
+                                        onClick = {
+                                            showMenu = false
+                                            // ✅ NEW: Request members from ViewModel
+                                            viewModel.getGroupMembers(groupId)
+                                            showMembersDialog = true
+                                        }
                                     )
                                     if (isCreator) {
                                         DropdownMenuItem(
@@ -293,23 +315,25 @@ fun GroupDetailsScreen(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        val isEnabled = messageContent.isNotBlank() || selectedImageUri != null
+                        val isTextMessageEnabled = messageContent.isNotBlank() && !isSendingMessage
+                        val isImageSelected = selectedImageUri != null
                         FloatingActionButton(
                             onClick = {
-                                if (isEnabled) {
-                                    if (selectedImageUri != null) {
-                                        viewModel.createMessageWithImage(groupId, messageContent, selectedImageUri!!)
-                                    } else {
-                                        viewModel.createMessage(groupId, messageContent)
-                                    }
+                                if (isTextMessageEnabled && !isSendingMessage) {
+                                    isSendingMessage = true
+                                    Log.d("GroupDetailsScreen", "Sending text message: ${messageContent.length} chars")
+                                    
+                                    viewModel.createMessage(groupId, messageContent)
+                                    
                                     messageContent = ""
-                                    selectedImageUri = null
                                     typingJob?.cancel()
                                     viewModel.sendTypingIndicator(groupId, false)
+                                    
+                                    isSendingMessage = false
                                 }
                             },
-                            containerColor = if (isEnabled) ColorPrimary else ColorTextSecondary.copy(alpha = 0.3f),
-                            modifier = Modifier.size(56.dp)
+                            containerColor = ColorPrimary,
+                            modifier = Modifier.size(56.dp).graphicsLayer(alpha = if (isTextMessageEnabled || isImageSelected) 1f else 0.5f)
                         ) {
                             Icon(Icons.Default.Send, contentDescription = "Envoyer", tint = Color.White, modifier = Modifier.size(24.dp))
                         }
@@ -359,6 +383,13 @@ fun GroupDetailsScreen(
                                     onShowReactionDetails = {
                                         reactionDetailsMessage = message
                                         showReactionDetailsDialog = true
+                                    },
+                                    onAvatarClick = {
+                                        message.authorId?.id?.let { userId ->
+                                            if (userId != currentUserId) {
+                                                onNavigateToUserProfile(userId)
+                                            }
+                                        }
                                     }
                                 )
 
@@ -389,14 +420,28 @@ fun GroupDetailsScreen(
         )
     }
 
-    if (showPendingRequestsSheet) {
-        ModalBottomSheet(onDismissRequest = { showPendingRequestsSheet = false }, containerColor = Color.White) {
-            PendingRequestsSheet(
-                requests = pendingRequests,
-                onApprove = { viewModel.approveMember(groupId, it) },
-                onReject = { viewModel.rejectMember(groupId, it) }
-            )
-        }
+    // ✅ NEW: Members dialog
+    if (showMembersDialog && members.isNotEmpty()) {
+        GroupMembersDialog(
+            members = members,
+            currentUserId = currentUserId,
+            isCreator = isCreator,
+            onRemoveMember = { memberId, action ->
+                viewModel.removeMember(groupId, memberId, action)
+                // Fermer le dialog immédiatement
+                showMembersDialog = false
+                viewModel.resetGroupMembers()
+                // Rafraîchir les membres après un délai
+                coroutineScope.launch {
+                    delay(1000)
+                    viewModel.getGroupMembers(groupId)
+                }
+            },
+            onDismiss = {
+                showMembersDialog = false
+                viewModel.resetGroupMembers()
+            }
+        )
     }
 
     if (showEditDialog && currentGroup != null) {
@@ -443,7 +488,12 @@ fun EnhancedGroupHeader(group: Group) {
     Card(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), elevation = CardDefaults.cardElevation(4.dp)) {
         Column {
             Box(modifier = Modifier.fillMaxWidth().height(200.dp)) {
-                val imageUrl = if (!group.image.isNullOrBlank()) group.image else "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
+                val imageUrl = if (!group.image.isNullOrBlank()) {
+                    com.travelmate.utils.Constants.buildImageUrl(group.image)
+                        ?: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
+                } else {
+                    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"
+                }
                 AsyncImage(model = imageUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.3f)))))
             }
@@ -494,19 +544,26 @@ fun EnhancedMessageCard(
     onEdit: () -> Unit,
     onReactionClick: (String) -> Unit,
     onShowReactionPicker: () -> Unit,
-    onShowReactionDetails: () -> Unit
+    onShowReactionDetails: () -> Unit,
+    onAvatarClick: () -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    val authorName = message.authorId?.let { "${it.prenom ?: ""} ${it.nom ?: ""}".trim().ifEmpty { "Utilisateur" } } ?: "Utilisateur"
-    val authorInitial = message.authorId?.nom?.firstOrNull()?.uppercase()
-        ?: message.authorId?.prenom?.firstOrNull()?.uppercase() ?: "U"
+    val authorName = message.authorId?.displayName ?: "Utilisateur"
+    val authorInitial = message.authorId?.displayName?.firstOrNull()?.uppercase() ?: "U"
     val isMyMessage = message.authorId?.id == currentUserId
 
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = if (isMyMessage) Alignment.End else Alignment.Start) {
         Row(modifier = Modifier.fillMaxWidth(if (isMyMessage) 0.85f else 0.85f), horizontalArrangement = if (isMyMessage) Arrangement.End else Arrangement.Start) {
             if (!isMyMessage) {
-                Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(ColorPrimary), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(ColorPrimary)
+                        .clickable(onClick = onAvatarClick),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(authorInitial, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
                 Spacer(Modifier.width(8.dp))
@@ -548,7 +605,8 @@ fun EnhancedMessageCard(
                     if (message.images.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
                         message.images.forEach { url ->
-                            AsyncImage(model = url, contentDescription = null, modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
+                            val imageUrl = com.travelmate.utils.Constants.buildImageUrl(url) ?: url
+                            AsyncImage(model = imageUrl, contentDescription = null, modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
                             Spacer(Modifier.height(4.dp))
                         }
                     }
@@ -565,7 +623,13 @@ fun EnhancedMessageCard(
 
             if (isMyMessage) {
                 Spacer(Modifier.width(8.dp))
-                Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(ColorPrimary), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(ColorPrimary),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(authorInitial, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
             }
@@ -674,12 +738,9 @@ fun ReactionsDetailsDialog(reactions: List<MessageReaction>, onDismiss: () -> Un
                                 list.forEach { reaction ->
                                     val user = reaction.userId // ✅ C'est déjà un objet UserReactionInfo
 
-                                    val userName = "${user.prenom ?: ""} ${user.nom ?: ""}".trim()
-                                        .ifEmpty { "Utilisateur ${user.id.take(6)}" }
+                                    val userName = user.displayName
 
-                                    val userInitial = user.nom?.firstOrNull()?.uppercase()
-                                        ?: user.prenom?.firstOrNull()?.uppercase()
-                                        ?: "U"
+                                    val userInitial = user.displayName.firstOrNull()?.uppercase() ?: "U"
 
                                     Row(
                                         modifier = Modifier

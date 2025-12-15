@@ -72,4 +72,30 @@ class UserService @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun getUserProfileById(userId: String): Result<User> {
+        return try {
+            Log.d("UserService", "=== GET USER PROFILE BY ID (api/users/:id) ===")
+            Log.d("UserService", "User ID: $userId")
+            
+            val response = userApi.getUserById(userId, getAuthToken())
+            Log.d("UserService", "Response code: ${response.code()}")
+            
+            if (response.isSuccessful && response.body() != null) {
+                val user = response.body()!!
+                Log.d("UserService", "Successfully retrieved user profile: ${user.email}")
+                Result.success(user)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorMsg = "Erreur lors de la récupération du profil utilisateur - HTTP ${response.code()}"
+                Log.e("UserService", errorMsg)
+                Log.e("UserService", "Error body: $errorBody")
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            val errorMsg = "Exception: ${e.javaClass.simpleName} - ${e.message}"
+            Log.e("UserService", errorMsg, e)
+            Result.failure(e)
+        }
+    }
 }
