@@ -22,11 +22,6 @@ interface OffersApi {
      * @param date_depart Departure date (format: "YYYY-MM-DD" or "2024-11-18")
      * @param date_return Return date for round trips (format: "YYYY-MM-DD" or "2024-11-25")
      * @param sort Sort by: "price", "duration", "departure_time"
-     * @param origin Amadeus origin airport code (IATA code like "TUN")
-     * @param destination Amadeus destination airport code (IATA code like "FCO")
-     * @param departureDate Amadeus departure date (format: "YYYY-MM-DD")
-     * @param returnDate Amadeus return date for round trips (format: "YYYY-MM-DD")
-     * @param adults Number of adults for Amadeus search (default: 1)
      */
     @GET("offers")
     suspend fun getOffers(
@@ -37,12 +32,7 @@ interface OffersApi {
         @Query("direct") direct: Boolean? = null,
         @Query("date_depart") date_depart: String? = null,
         @Query("date_return") date_return: String? = null,
-        @Query("sort") sort: String? = null,
-        @Query("origin") origin: String? = null,
-        @Query("destination") destination: String? = null,
-        @Query("departureDate") departureDate: String? = null,
-        @Query("returnDate") returnDate: String? = null,
-        @Query("adults") adults: Int? = null
+        @Query("sort") sort: String? = null
     ): Response<List<FlightOffer>>
     
     /**

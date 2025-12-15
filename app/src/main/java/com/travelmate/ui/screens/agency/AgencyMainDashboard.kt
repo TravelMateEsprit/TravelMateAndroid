@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import com.travelmate.ui.components.ModernButton
 import com.travelmate.ui.components.ModernCard
@@ -35,6 +36,7 @@ enum class DashboardSection(
 ) {
     OVERVIEW("Vue d'ensemble", Icons.Default.Dashboard, ColorPrimary),
     INSURANCES("Assurances", Icons.Default.Shield, Color(0xFF2196F3)),
+    PACKS("Packs", Icons.Default.Workspaces, Color(0xFF00BCD4)),
     BOOKINGS("Réservations", Icons.Default.CalendarMonth, Color(0xFF4CAF50)),
     DESTINATIONS("Destinations", Icons.Default.Flight, Color(0xFFFF9800)),
     CLIENTS("Clients", Icons.Default.People, Color(0xFF9C27B0)),
@@ -48,18 +50,22 @@ fun AgencyMainDashboard(
     onNavigateToInsuranceForm: () -> Unit,
     onEditInsurance: (String) -> Unit,
     onViewSubscribers: (String, String) -> Unit,
+    onNavigateToPacksList: () -> Unit,
+    onNavigateToReservations: () -> Unit,
     onLogout: () -> Unit,
     viewModel: AgencyDashboardViewModel = hiltViewModel()
-) {
+)
+ {
     var selectedSection by remember { mutableStateOf(DashboardSection.OVERVIEW) }
     var showMenu by remember { mutableStateOf(false) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    
+    val navController = rememberNavController()
+
     val insurances by viewModel.myInsurances.collectAsState()
     val stats by viewModel.stats.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    
+
     LaunchedEffect(Unit) {
         viewModel.loadMyInsurances()
     }
@@ -102,9 +108,9 @@ fun AgencyMainDashboard(
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 // Navigation Items
                 DashboardSection.values().forEach { section ->
                     NavigationDrawerItem(
@@ -142,7 +148,7 @@ fun AgencyMainDashboard(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { 
+                    title = {
                         Column {
                             Text("Tableau de bord", fontSize = 20.sp)
                             Text(
@@ -188,7 +194,18 @@ fun AgencyMainDashboard(
                                 )
                             }
                         }
-                        
+
+                        // Chat bubble button
+                        IconButton(onClick = {
+                            selectedSection = DashboardSection.PACKS
+                        }) {
+                            Icon(
+                                Icons.Default.ChatBubble,
+                                contentDescription = "Messages",
+                                tint = Color.White
+                            )
+                        }
+
                         IconButton(onClick = { showMenu = true }) {
                             Icon(
                                 Icons.Default.MoreVert,
@@ -196,7 +213,7 @@ fun AgencyMainDashboard(
                                 tint = Color.White
                             )
                         }
-                        
+
                         DropdownMenu(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false }
@@ -244,7 +261,16 @@ fun AgencyMainDashboard(
                         insurances = insurances,
                         onNavigateToInsurances = { selectedSection = DashboardSection.INSURANCES },
                         onNavigateToInsuranceForm = onNavigateToInsuranceForm,
-                        onSectionClick = { selectedSection = it }
+                        onSectionClick = { section ->
+                            selectedSection = section
+                            when (section) {
+                                DashboardSection.PACKS -> onNavigateToPacksList()
+                                DashboardSection.BOOKINGS -> onNavigateToReservations()
+                                else -> Unit
+                            }
+                        },
+                        onNavigateToPacks = onNavigateToPacksList,
+                        onNavigateToReservations = onNavigateToReservations
                     )
                     DashboardSection.INSURANCES -> InsurancesSection(
                         insurances = insurances,
@@ -254,6 +280,30 @@ fun AgencyMainDashboard(
                         onViewSubscribers = onViewSubscribers,
                         viewModel = viewModel
                     )
+                    DashboardSection.PACKS -> {
+                        // Call the NavGraph navigation callback
+                        onNavigateToPacksList()
+
+                        PacksListScreen(
+                            onNavigateToCreatePack = { navController.navigate("pack_create") },
+                            onNavigateToPackDetails = { packId ->
+                                navController.navigate("pack_details/$packId")
+                            },
+                            onNavigateToChat = { navController.navigate("chat") },
+                            onNavigateToReservations = onNavigateToReservations
+                        )
+                    }
+                    
+                    DashboardSection.BOOKINGS -> {
+                        AgencyReservationsScreen(
+                            onNavigateBack = { selectedSection = DashboardSection.OVERVIEW },
+                            onNavigateToPacks = {
+                                selectedSection = DashboardSection.PACKS
+                                onNavigateToPacksList()
+                            }
+                        )
+                    }
+
                     else -> ComingSoonSection(section)
                 }
             }
@@ -267,7 +317,9 @@ fun OverviewSection(
     insurances: List<com.travelmate.data.models.Insurance>,
     onNavigateToInsurances: () -> Unit,
     onNavigateToInsuranceForm: () -> Unit,
-    onSectionClick: (DashboardSection) -> Unit
+    onSectionClick: (DashboardSection) -> Unit,
+    onNavigateToPacks: () -> Unit = {},
+    onNavigateToReservations: () -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier
@@ -321,7 +373,7 @@ fun OverviewSection(
                 color = ColorTextPrimary
             )
         }
-        
+
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -344,7 +396,7 @@ fun OverviewSection(
                 )
             }
         }
-        
+
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -377,7 +429,7 @@ fun OverviewSection(
                 color = ColorTextPrimary
             )
         }
-        
+
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -392,13 +444,36 @@ fun OverviewSection(
                     onClick = onNavigateToInsuranceForm
                 )
                 QuickActionCard(
+                    icon = Icons.Default.Workspaces,
+                    title = "Packs",
+                    subtitle = "Gérer les packs",
+                    color = Color(0xFF00BCD4),
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        onNavigateToPacks()
+                        onSectionClick(DashboardSection.PACKS)
+                    }
+                )
+            }
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickActionCard(
                     icon = Icons.Default.CalendarMonth,
                     title = "Réservations",
                     subtitle = "Voir les réservations",
                     color = Color(0xFF4CAF50),
                     modifier = Modifier.weight(1f),
-                    onClick = { onSectionClick(DashboardSection.BOOKINGS) }
+                    onClick = {
+                        onNavigateToReservations()
+                        onSectionClick(DashboardSection.BOOKINGS)
+                    }
                 )
+                // Add more QuickActionCards here if needed
             }
         }
 
@@ -426,11 +501,11 @@ fun OverviewSection(
                 }
             }
         }
-        
+
         items(insurances.take(3)) { insurance ->
             CompactInsuranceCard(insurance)
         }
-        
+
         if (insurances.isEmpty()) {
             item {
                 Card(
@@ -486,7 +561,7 @@ fun InsurancesSection(
 ) {
     val stats by viewModel.stats.collectAsState()
     val error by viewModel.error.collectAsState()
-    
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -502,7 +577,7 @@ fun InsurancesSection(
                 color = ColorTextPrimary
             )
         }
-        
+
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -524,7 +599,7 @@ fun InsurancesSection(
                 )
             }
         }
-        
+
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -546,7 +621,7 @@ fun InsurancesSection(
                 )
             }
         }
-        
+
         // Insurances List
         item {
             Row(
@@ -567,7 +642,7 @@ fun InsurancesSection(
                 }
             }
         }
-        
+
         if (isLoading) {
             item {
                 Box(
@@ -871,7 +946,7 @@ fun CompactInsuranceCard(insurance: com.travelmate.data.models.Insurance) {
             }
             Surface(
                 color = if (insurance.isActive) ColorSuccess.copy(alpha = 0.2f)
-                       else ColorTextSecondary.copy(alpha = 0.2f),
+                else ColorTextSecondary.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(

@@ -2,6 +2,7 @@ package com.travelmate.data.socket
 
 import android.util.Log
 import com.travelmate.data.models.AgencyRegistrationRequest
+import com.travelmate.data.models.ChatMessage
 import com.travelmate.data.models.LoginRequest
 import com.travelmate.data.models.SocketErrorResponse
 import com.travelmate.data.models.UserRegistrationRequest
@@ -35,6 +36,9 @@ class SocketService @Inject constructor() {
     
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError.asStateFlow()
+    
+    private val _incomingMessages = MutableStateFlow<ChatMessage?>(null)
+    val incomingMessages: StateFlow<ChatMessage?> = _incomingMessages.asStateFlow()
     
     private val json = Json { 
         ignoreUnknownKeys = true
@@ -127,6 +131,20 @@ class SocketService @Inject constructor() {
                         }
                     }
                     
+                    // Événement de message reçu
+                    on("message:received") { args ->
+                        if (args.isNotEmpty()) {
+                            try {
+                                val messageJson = args[0].toString()
+                                val message = json.decodeFromString<ChatMessage>(messageJson)
+                                _incomingMessages.value = message
+                                Log.d(TAG, "Message received: ${message.message}")
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to parse message: ${e.message}")
+                            }
+                        }
+                    }
+                    
                     connect()
                 }
             } catch (e: Exception) {
@@ -174,6 +192,55 @@ class SocketService @Inject constructor() {
     fun resetLoginState() {
         _loginSuccess.value = null
         _loginError.value = null
+    }
+    
+    /**
+     * Join a conversation room
+     */
+    fun joinConversation(receiverId: String, packId: String?) {
+        if (socket?.connected() == true) {
+            val roomId = if (packId != null) {
+                "pack_${packId}_${receiverId}"
+            } else {
+                "agency_${receiverId}"
+            }
+            socket?.emit("join:conversation", roomId)
+            Log.d(TAG, "Joining conversation: $roomId")
+        } else {
+            Log.e(TAG, "Cannot join conversation - socket not connected")
+        }
+    }
+
+    /**
+     * Send a chat message
+     */
+    fun sendMessage(message: ChatMessage) {
+        if (socket?.connected() == true) {
+            try {
+                val messageJson = json.encodeToString(ChatMessage.serializer(), message)
+                socket?.emit("message:send", messageJson)
+                Log.d(TAG, "Sending message: ${message.message}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to send message: ${e.message}")
+            }
+        } else {
+            Log.e(TAG, "Cannot send message - socket not connected")
+        }
+    }
+
+    /**
+     * Leave a conversation room
+     */
+    fun leaveConversation(receiverId: String, packId: String?) {
+        if (socket?.connected() == true) {
+            val roomId = if (packId != null) {
+                "pack_${packId}_${receiverId}"
+            } else {
+                "agency_${receiverId}"
+            }
+            socket?.emit("leave:conversation", roomId)
+            Log.d(TAG, "Leaving conversation: $roomId")
+        }
     }
     
     fun disconnect() {

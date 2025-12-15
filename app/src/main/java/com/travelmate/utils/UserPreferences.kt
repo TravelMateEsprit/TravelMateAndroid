@@ -66,9 +66,23 @@ class UserPreferences @Inject constructor(
     
     fun isLoggedIn(): Boolean = getAccessToken() != null
     
-    fun isUser(): Boolean = getUserType() == "user"
+    fun isUser(): Boolean {
+        val userType = getUserType()?.lowercase()?.trim()
+        return userType == "user"
+    }
     
-    fun isAgency(): Boolean = getUserType() == "agence"
+    fun isAgency(): Boolean {
+        val userType = getUserType()?.lowercase()?.trim()
+        return userType == "agence" || userType == "agency"
+    }
+    
+    fun saveString(key: String, value: String) {
+        prefs.edit().putString(key, value).apply()
+    }
+    
+    fun getString(key: String, defaultValue: String = ""): String {
+        return prefs.getString(key, defaultValue) ?: defaultValue
+    }
     
     fun clearAll() {
         prefs.edit().clear().apply()

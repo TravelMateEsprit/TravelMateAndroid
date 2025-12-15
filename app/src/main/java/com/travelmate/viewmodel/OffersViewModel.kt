@@ -6,8 +6,6 @@ import com.travelmate.data.models.FlightOffer
 import com.travelmate.data.models.Preferences
 import com.travelmate.data.models.RecommendedOffer
 import com.travelmate.data.service.OffersService
-import com.travelmate.data.service.PriceAlertService
-import com.travelmate.data.models.PriceAlert
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OffersViewModel @Inject constructor(
-    private val offersService: OffersService,
-    private val priceAlertService: PriceAlertService
+    private val offersService: OffersService
 ) : ViewModel() {
     
     val offers: StateFlow<List<FlightOffer>> = offersService.offers
@@ -53,29 +50,6 @@ class OffersViewModel @Inject constructor(
     private val _sortBy = MutableStateFlow<String?>(null)
     val sortBy: StateFlow<String?> = _sortBy.asStateFlow()
     
-    // Amadeus search parameters
-    private val _origin = MutableStateFlow<String?>(null)
-    val origin: StateFlow<String?> = _origin.asStateFlow()
-    
-    private val _destination = MutableStateFlow<String?>(null)
-    val destination: StateFlow<String?> = _destination.asStateFlow()
-    
-    private val _departureDate = MutableStateFlow<String?>(null)
-    val departureDate: StateFlow<String?> = _departureDate.asStateFlow()
-    
-    private val _returnDate = MutableStateFlow<String?>(null)
-    val returnDate: StateFlow<String?> = _returnDate.asStateFlow()
-    
-    private val _adults = MutableStateFlow<Int?>(null)
-    val adults: StateFlow<Int?> = _adults.asStateFlow()
-    
-    // Selected offer for details screen
-    private val _selectedOffer = MutableStateFlow<FlightOffer?>(null)
-    val selectedOffer: StateFlow<FlightOffer?> = _selectedOffer.asStateFlow()
-    
-    // Price alerts
-    val priceAlerts: StateFlow<List<PriceAlert>> = priceAlertService.alerts
-    
     init {
         // Load all offers on init
         loadAllOffers()
@@ -103,55 +77,7 @@ class OffersViewModel @Inject constructor(
                 direct = _directOnly.value,
                 date_depart = _dateDepart.value,
                 date_return = _dateReturn.value,
-                sort = _sortBy.value,
-                origin = _origin.value,
-                destination = _destination.value,
-                departureDate = _departureDate.value,
-                returnDate = _returnDate.value,
-                adults = _adults.value
-            )
-        }
-    }
-    
-    /**
-     * Search flights using Amadeus real-time API
-     * This is the dedicated function for Amadeus search with validation
-     * IMPORTANT: Only pass Amadeus parameters, NOT JSON parameters (q, from, to, date_depart)
-     */
-    fun searchFlights(
-        origin: String,
-        destination: String,
-        departureDate: String,
-        returnDate: String? = null,
-        adults: Int = 1,
-        direct: Boolean? = null,
-        sort: String? = null
-    ) {
-        viewModelScope.launch {
-            // Update state
-            _origin.value = origin
-            _destination.value = destination
-            _departureDate.value = departureDate
-            _returnDate.value = returnDate
-            _adults.value = adults
-            _directOnly.value = direct
-            _sortBy.value = sort
-            
-            // Perform search - ONLY pass Amadeus parameters, NOT JSON fallback parameters
-            offersService.getOffers(
-                q = null,              // DO NOT pass - would trigger JSON fallback
-                type = null,          // DO NOT pass - would trigger JSON fallback
-                from = null,          // DO NOT pass - would trigger JSON fallback
-                to = null,            // DO NOT pass - would trigger JSON fallback
-                date_depart = null,   // DO NOT pass - would trigger JSON fallback
-                date_return = null,   // DO NOT pass - would trigger JSON fallback
-                direct = direct,
-                sort = sort,
-                origin = origin,      // Amadeus parameter
-                destination = destination,  // Amadeus parameter
-                departureDate = departureDate,  // Amadeus parameter
-                returnDate = returnDate,  // Amadeus parameter
-                adults = adults       // Amadeus parameter
+                sort = _sortBy.value
             )
         }
     }
@@ -212,27 +138,6 @@ class OffersViewModel @Inject constructor(
         _sortBy.value = sort
     }
     
-    // Setters for Amadeus parameters
-    fun setOrigin(origin: String?) {
-        _origin.value = origin
-    }
-    
-    fun setDestination(destination: String?) {
-        _destination.value = destination
-    }
-    
-    fun setDepartureDate(date: String?) {
-        _departureDate.value = date
-    }
-    
-    fun setReturnDate(date: String?) {
-        _returnDate.value = date
-    }
-    
-    fun setAdults(adults: Int?) {
-        _adults.value = adults
-    }
-    
     fun clearFilters() {
         _searchQuery.value = ""
         _selectedType.value = null
@@ -242,11 +147,6 @@ class OffersViewModel @Inject constructor(
         _dateDepart.value = null
         _dateReturn.value = null
         _sortBy.value = null
-        _origin.value = null
-        _destination.value = null
-        _departureDate.value = null
-        _returnDate.value = null
-        _adults.value = null
         loadAllOffers()
     }
     
@@ -265,33 +165,6 @@ class OffersViewModel @Inject constructor(
     
     fun clearRecommendations() {
         offersService.clearRecommendations()
-    }
-    
-    /**
-     * Set selected offer for details screen
-     */
-    fun setSelectedOffer(offer: FlightOffer) {
-        _selectedOffer.value = offer
-    }
-    
-    /**
-     * Clear selected offer
-     */
-    fun clearSelectedOffer() {
-        _selectedOffer.value = null
-    }
-    
-    // Price alerts actions
-    fun deleteAlert(alertId: String) {
-        viewModelScope.launch { priceAlertService.deleteAlert(alertId) }
-    }
-    
-    fun createAlertFromOffer(offer: FlightOffer, priceThreshold: Double) {
-        viewModelScope.launch { priceAlertService.createAlertFromOffer(offer, priceThreshold) }
-    }
-    
-    fun checkAlerts(offers: List<FlightOffer>) {
-        viewModelScope.launch { priceAlertService.checkAlerts(offers) }
     }
 }
 

@@ -56,12 +56,7 @@ class OffersService @Inject constructor(
         direct: Boolean? = null,
         date_depart: String? = null,
         date_return: String? = null,
-        sort: String? = null,
-        origin: String? = null,
-        destination: String? = null,
-        departureDate: String? = null,
-        returnDate: String? = null,
-        adults: Int? = null
+        sort: String? = null
     ): Result<List<FlightOffer>> {
         return try {
             _isLoading.value = true
@@ -69,10 +64,6 @@ class OffersService @Inject constructor(
             
             Log.d("OffersService", "=== GET OFFERS ===")
             Log.d("OffersService", "q=$q, type=$type, from=$from, to=$to, direct=$direct, date_depart=$date_depart, date_return=$date_return, sort=$sort")
-            Log.d("OffersService", "Amadeus params: origin=$origin, destination=$destination, departureDate=$departureDate, returnDate=$returnDate, adults=$adults")
-            
-            // Default adults to 1 if not specified (Amadeus requirement)
-            val adultsValue = adults ?: if (origin != null && destination != null && departureDate != null) 1 else null
             
             val response = offersApi.getOffers(
                 q = q,
@@ -82,12 +73,7 @@ class OffersService @Inject constructor(
                 direct = direct,
                 date_depart = date_depart,
                 date_return = date_return,
-                sort = sort,
-                origin = origin,
-                destination = destination,
-                departureDate = departureDate,
-                returnDate = returnDate,
-                adults = adultsValue
+                sort = sort
             )
             
             Log.d("OffersService", "Response code: ${response.code()}")

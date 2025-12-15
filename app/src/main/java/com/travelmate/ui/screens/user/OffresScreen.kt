@@ -33,29 +33,12 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.travelmate.data.models.Airport
 import com.travelmate.data.models.FlightOffer
-import com.travelmate.data.models.PriceAlert
-import com.travelmate.data.models.AlertStatus
-import com.travelmate.data.service.PriceAlertService
-import com.travelmate.ui.components.PriceAlertsBottomSheet
-import com.travelmate.ui.components.*
 import com.travelmate.ui.theme.*
 import com.travelmate.utils.Constants
 import com.travelmate.utils.Constants.Routes
 import com.travelmate.viewmodel.OffersViewModel
-import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.android.components.ActivityComponent
-import javax.inject.Inject
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,92 +56,39 @@ fun OffresScreen(navController: NavController? = null) {
     val selectedType by viewModel.selectedType.collectAsState()
     val directOnly by viewModel.directOnly.collectAsState()
     val sortBy by viewModel.sortBy.collectAsState()
-    val origin by viewModel.origin.collectAsState()
-    val destination by viewModel.destination.collectAsState()
-    val departureDate by viewModel.departureDate.collectAsState()
-    val returnDate by viewModel.returnDate.collectAsState()
-    val adults by viewModel.adults.collectAsState()
 
-    val searchDone = origin != null && destination != null && departureDate != null
-
+    var showFilters by remember { mutableStateOf(false) }
+    var showSortOptions by remember { mutableStateOf(false) }
     var selectedFlights by remember { mutableStateOf<Set<String>>(emptySet()) }
     var showComparisonDialog by remember { mutableStateOf(false) }
     var showRecommendationsDialog by remember { mutableStateOf(false) }
-    var showAlertsDialog by remember { mutableStateOf(false) }
     
     val recommendations by viewModel.recommendations.collectAsState()
     val isLoadingRecommendations by viewModel.isLoadingRecommendations.collectAsState()
-    
-    // Price alerts from ViewModel
-    val alerts by viewModel.priceAlerts.collectAsState()
-    val alertsCount = alerts.size
-    val triggeredCount = alerts.count { it.status == AlertStatus.TRIGGERED }
-    
-    // Check alerts when offers are loaded
-    LaunchedEffect(offers) {
-        if (offers.isNotEmpty() && !isLoading) {
-            viewModel.checkAlerts(offers)
-            // Show snackbar for triggered alerts
-            // We'll add this later
-        }
-    }
 
     Scaffold(
         floatingActionButton = {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Price alerts FAB (visible only after a search with results)
-                if (searchDone && offers.isNotEmpty()) {
-                    FloatingActionButton(
-                        onClick = { showAlertsDialog = true },
-                        containerColor = ColorSecondary,
-                        modifier = Modifier.size(56.dp)
-                    ) {
-                        BadgedBox(
-                            badge = {
-                                if (alertsCount > 0) {
-                                    Badge {
-                                        Text(
-                                            text = if (triggeredCount > 0) triggeredCount.toString() else "",
-                                            fontSize = 10.sp
-                                        )
-                                    }
-                                }
-                            }
-                        ) {
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = "Gérer les alertes de prix",
-                                tint = Color.White
-                            )
-                        }
+            if (selectedFlights.isNotEmpty()) {
+                ExtendedFloatingActionButton(
+                    onClick = { showComparisonDialog = true },
+                    containerColor = ColorPrimary,
+                    modifier = Modifier.padding(16.dp),
+                    icon = {
+                        Icon(
+                            Icons.Default.SwapHoriz,
+                            contentDescription = "Comparer",
+                            tint = Color.White
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = "Comparer (${selectedFlights.size})",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
                     }
-                }
-                
-                // Comparison FAB (only if flights selected)
-                if (selectedFlights.isNotEmpty()) {
-                    ExtendedFloatingActionButton(
-                        onClick = { showComparisonDialog = true },
-                        containerColor = ColorPrimary,
-                        icon = {
-                            Icon(
-                                Icons.Default.SwapHoriz,
-                                contentDescription = "Comparer",
-                                tint = Color.White
-                            )
-                        },
-                        text = {
-                            Text(
-                                text = "Comparer (${selectedFlights.size})",
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-                        }
-                    )
-                }
+                )
             }
         },
         topBar = {
@@ -170,31 +100,6 @@ fun OffresScreen(navController: NavController? = null) {
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
-                },
-                actions = {
-                    // Notification bell icon with badge
-                    IconButton(
-                        onClick = { showAlertsDialog = true }
-                    ) {
-                        BadgedBox(
-                            badge = {
-                                if (alertsCount > 0) {
-                                    Badge {
-                                        Text(
-                                            text = if (triggeredCount > 0) triggeredCount.toString() else alertsCount.toString(),
-                                            fontSize = 10.sp
-                                        )
-                                    }
-                                }
-                            }
-                        ) {
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = "Alertes de prix",
-                                tint = Color.White
-                            )
-                        }
-                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = ColorPrimary
@@ -209,115 +114,162 @@ fun OffresScreen(navController: NavController? = null) {
                 .background(ColorBackground),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // SECTION 1: AI RECOMMENDATIONS (TOP - Shows FIRST)
+            // Recommendations Button
             item {
-                Card(
+                Button(
+                    onClick = { showRecommendationsDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(0.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = ColorPrimary,
-                            modifier = Modifier.size(48.dp)
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        Text(
-                            "Recommandations personnalisées",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = ColorPrimary
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // Show recommendations if available
-                        if (recommendations.isEmpty() && !isLoadingRecommendations) {
-                            Text(
-                                "Aucune recommandation personnalisée trouvée",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = ColorTextSecondary
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                "Essayez d'ajuster vos critères de recherche",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = ColorTextSecondary
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = { showRecommendationsDialog = true },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Transparent
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(ColorPrimary, ColorSecondary),
+                                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                    end = androidx.compose.ui.geometry.Offset(1000f, 0f)
                                 ),
-                                shape = RoundedCornerShape(12.dp),
-                                contentPadding = PaddingValues(0.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(
-                                            brush = Brush.linearGradient(
-                                                colors = listOf(ColorPrimary, ColorSecondary),
-                                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                                                end = androidx.compose.ui.geometry.Offset(1000f, 0f)
-                                            ),
-                                            shape = RoundedCornerShape(12.dp)
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.padding(horizontal = 16.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.AutoAwesome,
-                                            contentDescription = null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            "Obtenir des recommandations personnalisées",
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 15.sp
-                                        )
-                                    }
-                                }
-                            }
-                        } else if (isLoadingRecommendations) {
-                            CircularProgressIndicator(
-                                color = ColorPrimary,
-                                modifier = Modifier.size(48.dp)
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "Analyse en cours par l'IA Gemini...",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = ColorTextSecondary
+                                "Obtenir des recommandations personnalisées",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
                             )
                         }
                     }
                 }
             }
             
-            // Display recommendation cards if available
+            // Loading State for Recommendations - Prominent display
+            if (isLoadingRecommendations) {
+                item {
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = ColorPrimary.copy(alpha = 0.05f),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                ColorPrimary.copy(alpha = 0.2f)
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = ColorPrimary,
+                                        modifier = Modifier.size(56.dp),
+                                        strokeWidth = 5.dp
+                                    )
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.AutoAwesome,
+                                                contentDescription = null,
+                                                tint = ColorPrimary,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Text(
+                                                text = "Analyse en cours par l'IA Gemini",
+                                                fontSize = 18.sp,
+                                                color = ColorPrimary,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                        Text(
+                                            text = "Cela peut prendre quelques instants...",
+                                            fontSize = 14.sp,
+                                            color = ColorTextSecondary,
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Recommendations Section Header
             if (recommendations.isNotEmpty() && !isLoadingRecommendations) {
                 item {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.AutoAwesome,
+                                        contentDescription = null,
+                                        tint = ColorPrimary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Text(
+                                        "Recommandé pour vous",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = ColorPrimary
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
                 }
                 
                 items(
@@ -349,7 +301,7 @@ fun OffresScreen(navController: NavController? = null) {
                             modifier = Modifier.weight(1f)
                         )
                         Text(
-                            text = "Recherche manuelle",
+                            text = "Autres offres",
                             fontSize = 14.sp,
                             color = ColorTextSecondary,
                             fontWeight = FontWeight.Medium,
@@ -363,52 +315,279 @@ fun OffresScreen(navController: NavController? = null) {
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
-            } else if (!isLoadingRecommendations) {
+            }
+            
+            // Empty Recommendations State
+            if (!isLoadingRecommendations && recommendations.isEmpty() && error == null) {
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = ColorBackground
+                        )
                     ) {
-                        Divider(
-                            color = ColorTextSecondary.copy(alpha = 0.2f),
-                            thickness = 1.dp,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = "Recherche manuelle",
-                            fontSize = 14.sp,
-                            color = ColorTextSecondary,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
-                        Divider(
-                            color = ColorTextSecondary.copy(alpha = 0.2f),
-                            thickness = 1.dp,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = ColorTextSecondary.copy(alpha = 0.5f),
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text(
+                                text = "Aucune recommandation personnalisée trouvée",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ColorTextPrimary
+                            )
+                            Text(
+                                text = "Essayez d'ajuster vos critères de recherche",
+                                fontSize = 14.sp,
+                                color = ColorTextSecondary,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedButton(
+                                onClick = { showRecommendationsDialog = true },
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = ColorPrimary
+                                )
+                            ) {
+                                Text("Modifier mes préférences")
+                            }
+                        }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
             
-            // SECTION 2: MANUAL SEARCH (BELOW - Scroll to see)
+            // Search Bar Section
             item {
-                UnifiedFlightSearchForm(
-                    viewModel = viewModel,
-                    isLoading = isLoading,
-                    error = error,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        ColorPrimary.copy(alpha = 0.05f),
+                                        ColorSecondary.copy(alpha = 0.02f)
+                                    ),
+                                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                    end = androidx.compose.ui.geometry.Offset(1000f, 0f)
+                                )
+                            )
+                    ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Text Search Bar
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { viewModel.setSearchQuery(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = {
+                                Text(
+                                    "Rechercher une destination, ville...",
+                                    color = ColorTextSecondary.copy(alpha = 0.6f)
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Search,
+                                    null,
+                                    tint = ColorPrimary
+                                )
+                            },
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = {
+                                        viewModel.setSearchQuery("")
+                                        viewModel.searchOffers()
+                                    }) {
+                                        Icon(Icons.Default.Clear, null, tint = ColorTextSecondary)
+                                    }
+                                }
+                            },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = ColorPrimary,
+                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f),
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White
+                            ),
+                            textStyle = MaterialTheme.typography.bodyLarge
+                        )
+
+                        // Filter Toggle Button
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { showFilters = !showFilters },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = ColorPrimary
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.FilterList,
+                                    null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Filtres", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            }
+
+                            OutlinedButton(
+                                onClick = { showSortOptions = !showSortOptions },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = ColorPrimary
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.Sort,
+                                    null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Trier", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            }
+                        }
+                    }
+                    }
+                }
             }
-            
-            
+
+            // Filters Panel
+            item {
+                AnimatedVisibility(
+                    visible = showFilters,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    FiltersCard(
+                        fromAirport = fromAirport,
+                        toAirport = toAirport,
+                        dateDepart = dateDepart,
+                        dateReturn = dateReturn,
+                        selectedType = selectedType,
+                        directOnly = directOnly,
+                        onFromAirportChange = { viewModel.setFromAirport(it) },
+                        onToAirportChange = { viewModel.setToAirport(it) },
+                        onDateDepartChange = { viewModel.setDateDepart(it) },
+                        onDateReturnChange = { viewModel.setDateReturn(it) },
+                        onTypeChange = { viewModel.setType(it) },
+                        onDirectOnlyChange = { viewModel.setDirectOnly(it) },
+                        onSearch = {
+                            viewModel.searchOffers()
+                            showFilters = false
+                        },
+                        onClear = {
+                            viewModel.clearFilters()
+                            showFilters = false
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+            }
+
+            // Sort Options Panel
+            item {
+                AnimatedVisibility(
+                    visible = showSortOptions,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SortOptionsPanel(
+                        selectedSort = sortBy,
+                        onSortSelected = { sort ->
+                            viewModel.setSortBy(sort)
+                            viewModel.searchOffers()
+                            showSortOptions = false
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+            }
+
+            // Search Button
+            item {
+                Button(
+                    onClick = { viewModel.searchOffers() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(ColorPrimary, ColorSecondary),
+                                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                    end = androidx.compose.ui.geometry.Offset(1000f, 0f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Search,
+                                null,
+                                modifier = Modifier.size(20.dp),
+                                tint = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "Rechercher des vols",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
 
             // Results Count
-            if (offers.isNotEmpty() && !isLoading) {
+            if (offers.isNotEmpty()) {
                 item {
                     Surface(
                         modifier = Modifier
@@ -585,8 +764,6 @@ fun OffresScreen(navController: NavController? = null) {
                         }
                     },
                     onClick = {
-                        // Save selected offer to ViewModel before navigation
-                        viewModel.setSelectedOffer(offer)
                         navController?.navigate("${Constants.Routes.FLIGHT_DETAILS}/${offerId}")
                     },
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
@@ -644,1271 +821,6 @@ fun OffresScreen(navController: NavController? = null) {
             error = error
         )
     }
-    
-    // Price Alerts Bottom Sheet
-    val alertCoroutineScope = rememberCoroutineScope()
-    if (showAlertsDialog) {
-        PriceAlertsBottomSheet(
-            alerts = alerts,
-            offers = offers,
-            onDismiss = { showAlertsDialog = false },
-            onDeleteAlert = { alertId ->
-                alertCoroutineScope.launch {
-                    viewModel.deleteAlert(alertId)
-                }
-            },
-            onCreateAlert = { offer, priceThreshold ->
-                alertCoroutineScope.launch {
-                    viewModel.createAlertFromOffer(offer, priceThreshold)
-                }
-            }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AmadeusSearchForm(
-    viewModel: OffersViewModel,
-    isLoading: Boolean,
-    error: String?,
-    modifier: Modifier = Modifier
-) {
-    var originText by remember { mutableStateOf("") }
-    var destinationText by remember { mutableStateOf("") }
-    var departureDateText by remember { mutableStateOf("") }
-    var returnDateText by remember { mutableStateOf("") }
-    var adultsText by remember { mutableStateOf("1") }
-    var directOnly by remember { mutableStateOf(false) }
-    var sortOption by remember { mutableStateOf<String?>(null) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showRoundTrip by remember { mutableStateOf(false) }
-    
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            ColorPrimary.copy(alpha = 0.1f),
-                            ColorSecondary.copy(alpha = 0.05f)
-                        ),
-                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                        end = androidx.compose.ui.geometry.Offset(1000f, 0f)
-                    )
-                )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Flight,
-                        contentDescription = null,
-                        tint = ColorPrimary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Text(
-                        "Recherche de vols en temps réel",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ColorPrimary
-                    )
-                }
-                
-                Text(
-                    "Recherchez des vols réels avec Amadeus",
-                    fontSize = 12.sp,
-                    color = ColorTextSecondary
-                )
-                
-                Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
-                
-                // Error Message (from validation or API)
-                if (errorMessage != null || error != null) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = ColorError.copy(alpha = 0.1f),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Error,
-                                contentDescription = null,
-                                tint = ColorError,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                errorMessage ?: error ?: "",
-                                fontSize = 13.sp,
-                                color = ColorError,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(
-                                onClick = { 
-                                    errorMessage = null
-                                    viewModel.clearError()
-                                },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Close,
-                                    contentDescription = "Fermer",
-                                    tint = ColorError,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-                
-                // Origin and Destination
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Origin
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "D'où partez-vous?",
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        OutlinedTextField(
-                            value = originText,
-                            onValueChange = { 
-                                originText = it.uppercase().take(3)
-                                errorMessage = null
-                            },
-                            placeholder = { Text("TUN", fontSize = 14.sp) },
-                            modifier = Modifier.fillMaxWidth(),
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.FlightTakeoff,
-                                    null,
-                                    tint = ColorPrimary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = ColorPrimary,
-                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
-                            ),
-                            enabled = !isLoading
-                        )
-                        if (originText.isNotEmpty() && originText.length != 3) {
-                            Text(
-                                "Code IATA (3 lettres)",
-                                fontSize = 10.sp,
-                                color = ColorError,
-                                modifier = Modifier.padding(top = 4.dp, start = 4.dp)
-                            )
-                        }
-                    }
-                    
-                    // Swap Button
-                    IconButton(
-                        onClick = {
-                            val temp = originText
-                            originText = destinationText
-                            destinationText = temp
-                        },
-                        modifier = Modifier
-                            .align(Alignment.Bottom)
-                            .padding(bottom = 8.dp)
-                            .size(40.dp)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = ColorPrimary.copy(alpha = 0.1f)
-                        ) {
-                            Icon(
-                                Icons.Default.SwapHoriz,
-                                null,
-                                tint = ColorPrimary,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .padding(8.dp)
-                            )
-                        }
-                    }
-                    
-                    // Destination
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Où allez-vous?",
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        OutlinedTextField(
-                            value = destinationText,
-                            onValueChange = { 
-                                destinationText = it.uppercase().take(3)
-                                errorMessage = null
-                            },
-                            placeholder = { Text("FCO", fontSize = 14.sp) },
-                            modifier = Modifier.fillMaxWidth(),
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.FlightLand,
-                                    null,
-                                    tint = ColorPrimary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = ColorPrimary,
-                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
-                            ),
-                            enabled = !isLoading
-                        )
-                        if (destinationText.isNotEmpty() && destinationText.length != 3) {
-                            Text(
-                                "Code IATA (3 lettres)",
-                                fontSize = 10.sp,
-                                color = ColorError,
-                                modifier = Modifier.padding(top = 4.dp, start = 4.dp)
-                            )
-                        }
-                    }
-                }
-                
-                // Dates
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Departure Date
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Date de départ",
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        OutlinedTextField(
-                            value = departureDateText,
-                            onValueChange = { 
-                                departureDateText = it
-                                errorMessage = null
-                            },
-                            placeholder = { Text("YYYY-MM-DD", fontSize = 14.sp) },
-                            modifier = Modifier.fillMaxWidth(),
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.CalendarToday,
-                                    null,
-                                    tint = ColorPrimary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = ColorPrimary,
-                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
-                            ),
-                            enabled = !isLoading
-                        )
-                    }
-                    
-                    // Return Date (optional)
-                    if (showRoundTrip) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Date de retour",
-                                fontSize = 12.sp,
-                                color = ColorTextSecondary,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                            OutlinedTextField(
-                                value = returnDateText,
-                                onValueChange = { 
-                                    returnDateText = it
-                                    errorMessage = null
-                                },
-                                placeholder = { Text("YYYY-MM-DD", fontSize = 14.sp) },
-                                modifier = Modifier.fillMaxWidth(),
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.CalendarToday,
-                                        null,
-                                        tint = ColorPrimary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                },
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = ColorPrimary,
-                                    unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
-                                ),
-                                enabled = !isLoading
-                            )
-                        }
-                    }
-                }
-                
-                // Round Trip Toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Aller-retour",
-                        fontSize = 14.sp,
-                        color = ColorTextPrimary,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Switch(
-                        checked = showRoundTrip,
-                        onCheckedChange = { 
-                            showRoundTrip = it
-                            if (!it) returnDateText = ""
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = ColorPrimary
-                        )
-                    )
-                }
-                
-                // Adults and Filters Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Adults
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Nombre de passagers",
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        OutlinedTextField(
-                            value = adultsText,
-                            onValueChange = { 
-                                val value = it.filter { char -> char.isDigit() }
-                                if (value.isEmpty() || value.toIntOrNull()?.let { it > 0 && it <= 9 } == true) {
-                                    adultsText = value.ifEmpty { "1" }
-                                }
-                            },
-                            placeholder = { Text("1", fontSize = 14.sp) },
-                            modifier = Modifier.fillMaxWidth(),
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Person,
-                                    null,
-                                    tint = ColorPrimary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = ColorPrimary,
-                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
-                            ),
-                            enabled = !isLoading
-                        )
-                    }
-                    
-                    // Sort
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Trier par",
-                            fontSize = 12.sp,
-                            color = ColorTextSecondary,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        var expanded by remember { mutableStateOf(false) }
-                        ExposedDropdownMenuBox(
-                            expanded = expanded,
-                            onExpandedChange = { expanded = !expanded }
-                        ) {
-                            OutlinedTextField(
-                                value = when (sortOption) {
-                                    "price" -> "Prix"
-                                    "duration" -> "Durée"
-                                    "departure_time" -> "Heure de départ"
-                                    else -> "Aucun"
-                                },
-                                onValueChange = {},
-                                readOnly = true,
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor(),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = ColorPrimary,
-                                    unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
-                                ),
-                                enabled = !isLoading
-                            )
-                            ExposedDropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Aucun") },
-                                    onClick = {
-                                        sortOption = null
-                                        expanded = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Prix") },
-                                    onClick = {
-                                        sortOption = "price"
-                                        expanded = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Durée") },
-                                    onClick = {
-                                        sortOption = "duration"
-                                        expanded = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Heure de départ") },
-                                    onClick = {
-                                        sortOption = "departure_time"
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-                
-                // Direct Flights Toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Flight,
-                            null,
-                            tint = ColorPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "Vols directs uniquement",
-                            fontSize = 14.sp,
-                            color = ColorTextPrimary,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                    Switch(
-                        checked = directOnly,
-                        onCheckedChange = { directOnly = it },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = ColorPrimary
-                        )
-                    )
-                }
-                
-                // Search Button
-                Button(
-                    onClick = {
-                        // Validation
-                        when {
-                            originText.isEmpty() -> {
-                                errorMessage = "Veuillez entrer l'aéroport de départ"
-                            }
-                            destinationText.isEmpty() -> {
-                                errorMessage = "Veuillez entrer l'aéroport de destination"
-                            }
-                            originText.length != 3 -> {
-                                errorMessage = "Code IATA invalide pour l'origine (3 lettres requis)"
-                            }
-                            destinationText.length != 3 -> {
-                                errorMessage = "Code IATA invalide pour la destination (3 lettres requis)"
-                            }
-                            departureDateText.isEmpty() -> {
-                                errorMessage = "Veuillez sélectionner une date de départ"
-                            }
-                            !isValidDate(departureDateText) -> {
-                                errorMessage = "Format de date invalide (YYYY-MM-DD requis)"
-                            }
-                            isDateInPast(departureDateText) -> {
-                                errorMessage = "La date de départ ne peut pas être dans le passé"
-                            }
-                            showRoundTrip && returnDateText.isNotEmpty() -> {
-                                if (!isValidDate(returnDateText)) {
-                                    errorMessage = "Format de date de retour invalide (YYYY-MM-DD requis)"
-                                } else if (isDateBefore(returnDateText, departureDateText)) {
-                                    errorMessage = "La date de retour doit être après la date de départ"
-                                } else {
-                                    // Valid - perform search
-                                    viewModel.searchFlights(
-                                        origin = originText,
-                                        destination = destinationText,
-                                        departureDate = departureDateText,
-                                        returnDate = returnDateText.ifEmpty { null },
-                                        adults = adultsText.toIntOrNull() ?: 1,
-                                        direct = if (directOnly) true else null,
-                                        sort = sortOption
-                                    )
-                                    errorMessage = null
-                                }
-                            }
-                            else -> {
-                                // Valid - perform search
-                                viewModel.searchFlights(
-                                    origin = originText,
-                                    destination = destinationText,
-                                    departureDate = departureDateText,
-                                    returnDate = returnDateText.ifEmpty { null },
-                                    adults = adultsText.toIntOrNull() ?: 1,
-                                    direct = if (directOnly) true else null,
-                                    sort = sortOption
-                                )
-                                errorMessage = null
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    enabled = !isLoading
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(ColorPrimary, ColorSecondary),
-                                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                                    end = androidx.compose.ui.geometry.Offset(1000f, 0f)
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (isLoading) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    color = Color.White,
-                                    strokeWidth = 2.dp
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    "Recherche en cours...",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                )
-                            }
-                        } else {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Search,
-                                    null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Color.White
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    "Rechercher des vols",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Helper functions for date validation
-fun isValidDate(dateString: String): Boolean {
-    val regex = Regex("^\\d{4}-\\d{2}-\\d{2}$")
-    if (!regex.matches(dateString)) return false
-    
-    return try {
-        val parts = dateString.split("-")
-        val year = parts[0].toInt()
-        val month = parts[1].toInt()
-        val day = parts[2].toInt()
-        
-        month in 1..12 && day in 1..31 && year >= 2024
-    } catch (e: Exception) {
-        false
-    }
-}
-
-fun isDateInPast(dateString: String): Boolean {
-    if (!isValidDate(dateString)) return false
-    
-    return try {
-        val parts = dateString.split("-")
-        val year = parts[0].toInt()
-        val month = parts[1].toInt() - 1
-        val day = parts[2].toInt()
-        
-        val date = java.util.Calendar.getInstance().apply {
-            set(year, month, day)
-            set(java.util.Calendar.HOUR_OF_DAY, 0)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-        
-        val today = java.util.Calendar.getInstance().apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 0)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-        
-        date.before(today)
-    } catch (e: Exception) {
-        false
-    }
-}
-
-fun isDateBefore(date1: String, date2: String): Boolean {
-    if (!isValidDate(date1) || !isValidDate(date2)) return false
-    
-    return try {
-        val parts1 = date1.split("-")
-        val year1 = parts1[0].toInt()
-        val month1 = parts1[1].toInt() - 1
-        val day1 = parts1[2].toInt()
-        
-        val parts2 = date2.split("-")
-        val year2 = parts2[0].toInt()
-        val month2 = parts2[1].toInt() - 1
-        val day2 = parts2[2].toInt()
-        
-        val date1Cal = java.util.Calendar.getInstance().apply {
-            set(year1, month1, day1)
-            set(java.util.Calendar.HOUR_OF_DAY, 0)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-        
-        val date2Cal = java.util.Calendar.getInstance().apply {
-            set(year2, month2, day2)
-            set(java.util.Calendar.HOUR_OF_DAY, 0)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-        
-        date1Cal.before(date2Cal)
-    } catch (e: Exception) {
-        false
-    }
-}
-
-/**
- * Interface de recherche unifiée qui combine Amadeus et filtres
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun UnifiedFlightSearchForm(
-    viewModel: OffersViewModel,
-    isLoading: Boolean,
-    error: String?,
-    modifier: Modifier = Modifier
-) {
-    // État pour le type de voyage
-    var tripType by remember { mutableStateOf("aller-simple") } // "aller-simple" ou "aller-retour"
-    
-    // État pour les aéroports
-    var originAirport by remember { mutableStateOf<Airport?>(null) }
-    var destinationAirport by remember { mutableStateOf<Airport?>(null) }
-    
-    // État pour les dates
-    var departureDate by remember { mutableStateOf<String?>(null) }
-    var returnDate by remember { mutableStateOf<String?>(null) }
-    
-    // État pour les filtres
-    var adults by remember { mutableStateOf(1) }
-    var directOnly by remember { mutableStateOf(false) }
-    var sortOption by remember { mutableStateOf<String?>(null) }
-    var showAdvancedFilters by remember { mutableStateOf(false) }
-    
-    // État pour les erreurs
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    
-    // Mettre à jour errorMessage quand error change
-    LaunchedEffect(error) {
-        if (error != null) {
-            errorMessage = error
-        }
-    }
-    
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            ColorPrimary.copy(alpha = 0.1f),
-                            ColorSecondary.copy(alpha = 0.05f)
-                        ),
-                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                        end = androidx.compose.ui.geometry.Offset(1000f, 0f)
-                    )
-                )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Flight,
-                        contentDescription = null,
-                        tint = ColorPrimary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Text(
-                        "Recherche de vols en temps réel",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ColorPrimary
-                    )
-                }
-                
-                // Message d'erreur
-                if (errorMessage != null) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = ColorError.copy(alpha = 0.1f),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Error,
-                                contentDescription = null,
-                                tint = ColorError,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                errorMessage ?: "",
-                                fontSize = 13.sp,
-                                color = ColorError,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(
-                                onClick = { 
-                                    errorMessage = null
-                                    viewModel.clearError()
-                                },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Close,
-                                    contentDescription = "Fermer",
-                                    tint = ColorError,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-                
-                Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
-                
-                // Type de voyage
-                Column {
-                    Text(
-                        text = "Type de voyage",
-                        fontSize = 12.sp,
-                        color = ColorTextSecondary,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FilterChip(
-                            selected = tripType == "aller-simple",
-                            onClick = { 
-                                tripType = "aller-simple"
-                                returnDate = null
-                            },
-                            label = { Text("Aller simple") },
-                            modifier = Modifier.weight(1f),
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = ColorPrimary,
-                                selectedLabelColor = Color.White,
-                                containerColor = Color.White,
-                                labelColor = ColorTextSecondary
-                            )
-                        )
-                        FilterChip(
-                            selected = tripType == "aller-retour",
-                            onClick = { tripType = "aller-retour" },
-                            label = { Text("Aller-retour") },
-                            modifier = Modifier.weight(1f),
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = ColorPrimary,
-                                selectedLabelColor = Color.White,
-                                containerColor = Color.White,
-                                labelColor = ColorTextSecondary
-                            )
-                        )
-                    }
-                }
-                
-                // Aéroports avec autocomplete
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Origin
-                    Column(modifier = Modifier.weight(1f)) {
-                        AirportAutocomplete(
-                            label = "D'où partez-vous?",
-                            selectedAirport = originAirport,
-                            onAirportSelected = { 
-                                originAirport = it
-                                errorMessage = null
-                            },
-                            enabled = !isLoading
-                        )
-                    }
-                    
-                    // Swap Button
-                    IconButton(
-                        onClick = {
-                            val temp = originAirport
-                            originAirport = destinationAirport
-                            destinationAirport = temp
-                        },
-                        modifier = Modifier
-                            .align(Alignment.Bottom)
-                            .padding(bottom = 8.dp)
-                            .size(40.dp)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = ColorPrimary.copy(alpha = 0.1f)
-                        ) {
-                            Icon(
-                                Icons.Default.SwapHoriz,
-                                null,
-                                tint = ColorPrimary,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .padding(8.dp)
-                            )
-                        }
-                    }
-                    
-                    // Destination
-                    Column(modifier = Modifier.weight(1f)) {
-                        AirportAutocomplete(
-                            label = "Où allez-vous?",
-                            selectedAirport = destinationAirport,
-                            onAirportSelected = { 
-                                destinationAirport = it
-                                errorMessage = null
-                            },
-                            enabled = !isLoading
-                        )
-                    }
-                }
-                
-                // Dates
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Departure Date
-                    Column(modifier = Modifier.weight(1f)) {
-                        DatePickerField(
-                            label = "Date de départ",
-                            selectedDate = departureDate,
-                            onDateSelected = { 
-                                departureDate = it
-                                errorMessage = null
-                            },
-                            enabled = !isLoading
-                        )
-                    }
-                    
-                    // Return Date (si aller-retour)
-                    if (tripType == "aller-retour") {
-                        Column(modifier = Modifier.weight(1f)) {
-                            DatePickerField(
-                                label = "Date de retour",
-                                selectedDate = returnDate,
-                                onDateSelected = { 
-                                    returnDate = it
-                                    errorMessage = null
-                                },
-                                enabled = !isLoading,
-                                minDate = departureDate?.let {
-                                    try {
-                                        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it)?.time
-                                    } catch (e: Exception) {
-                                        null
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
-                
-                // Nombre de passagers
-                AdultsSelector(
-                    adults = adults,
-                    onAdultsChanged = { adults = it },
-                    enabled = !isLoading
-                )
-                
-                // Filtres avancés (collapsible)
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showAdvancedFilters = !showAdvancedFilters },
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.FilterList,
-                                    null,
-                                    tint = ColorPrimary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    "Filtres avancés",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = ColorPrimary
-                                )
-                            }
-                            Icon(
-                                if (showAdvancedFilters) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                null,
-                                tint = ColorTextSecondary
-                            )
-                        }
-                        
-                        AnimatedVisibility(visible = showAdvancedFilters) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                // Direct Flights Toggle
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Flight,
-                                            null,
-                                            tint = ColorPrimary,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Text(
-                                            text = "Vols directs uniquement",
-                                            fontSize = 14.sp,
-                                            color = ColorTextPrimary,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                    }
-                                    Switch(
-                                        checked = directOnly,
-                                        onCheckedChange = { directOnly = it },
-                                        colors = SwitchDefaults.colors(
-                                            checkedThumbColor = Color.White,
-                                            checkedTrackColor = ColorPrimary
-                                        )
-                                    )
-                                }
-                                
-                                // Sort
-                                Column {
-                                    Text(
-                                        text = "Trier par",
-                                        fontSize = 12.sp,
-                                        color = ColorTextSecondary,
-                                        fontWeight = FontWeight.Medium,
-                                        modifier = Modifier.padding(bottom = 4.dp)
-                                    )
-                                    var expanded by remember { mutableStateOf(false) }
-                                    ExposedDropdownMenuBox(
-                                        expanded = expanded,
-                                        onExpandedChange = { expanded = !expanded }
-                                    ) {
-                                        OutlinedTextField(
-                                            value = when (sortOption) {
-                                                "price" -> "Prix"
-                                                "duration" -> "Durée"
-                                                "departure_time" -> "Heure de départ"
-                                                else -> "Aucun"
-                                            },
-                                            onValueChange = {},
-                                            readOnly = true,
-                                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .menuAnchor(),
-                                            shape = RoundedCornerShape(12.dp),
-                                            colors = OutlinedTextFieldDefaults.colors(
-                                                focusedBorderColor = ColorPrimary,
-                                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
-                                            ),
-                                            enabled = !isLoading
-                                        )
-                                        ExposedDropdownMenu(
-                                            expanded = expanded,
-                                            onDismissRequest = { expanded = false }
-                                        ) {
-                                            DropdownMenuItem(
-                                                text = { Text("Aucun") },
-                                                onClick = {
-                                                    sortOption = null
-                                                    expanded = false
-                                                }
-                                            )
-                                            DropdownMenuItem(
-                                                text = { Text("Prix") },
-                                                onClick = {
-                                                    sortOption = "price"
-                                                    expanded = false
-                                                }
-                                            )
-                                            DropdownMenuItem(
-                                                text = { Text("Durée") },
-                                                onClick = {
-                                                    sortOption = "duration"
-                                                    expanded = false
-                                                }
-                                            )
-                                            DropdownMenuItem(
-                                                text = { Text("Heure de départ") },
-                                                onClick = {
-                                                    sortOption = "departure_time"
-                                                    expanded = false
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Search Button
-                Button(
-                    onClick = {
-                        // Validation
-                        when {
-                            originAirport == null || originAirport?.code.isNullOrEmpty() -> {
-                                errorMessage = "Veuillez sélectionner l'aéroport de départ"
-                            }
-                            destinationAirport == null || destinationAirport?.code.isNullOrEmpty() -> {
-                                errorMessage = "Veuillez sélectionner l'aéroport d'arrivée"
-                            }
-                            departureDate.isNullOrEmpty() -> {
-                                errorMessage = "Veuillez sélectionner une date de départ"
-                            }
-                            tripType == "aller-retour" && returnDate.isNullOrEmpty() -> {
-                                errorMessage = "Veuillez sélectionner une date de retour"
-                            }
-                            tripType == "aller-retour" && returnDate != null && departureDate != null -> {
-                                val returnDateValue = returnDate
-                                val departureDateValue = departureDate
-                                if (returnDateValue != null && departureDateValue != null && isDateBefore(returnDateValue, departureDateValue)) {
-                                    errorMessage = "La date de retour doit être après la date de départ"
-                                } else {
-                                    // Valid - perform search
-                                    viewModel.searchFlights(
-                                        origin = originAirport!!.code,
-                                        destination = destinationAirport!!.code,
-                                        departureDate = departureDateValue!!,
-                                        returnDate = returnDateValue,
-                                        adults = adults,
-                                        direct = if (directOnly) true else null,
-                                        sort = sortOption
-                                    )
-                                    errorMessage = null
-                                }
-                            }
-                            else -> {
-                                // Valid - perform search
-                                val departureDateValue = departureDate
-                                if (departureDateValue != null) {
-                                    viewModel.searchFlights(
-                                        origin = originAirport!!.code,
-                                        destination = destinationAirport!!.code,
-                                        departureDate = departureDateValue,
-                                        returnDate = returnDate,
-                                        adults = adults,
-                                        direct = if (directOnly) true else null,
-                                        sort = sortOption
-                                    )
-                                    errorMessage = null
-                                }
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    enabled = !isLoading
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(ColorPrimary, ColorSecondary),
-                                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                                    end = androidx.compose.ui.geometry.Offset(1000f, 0f)
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (isLoading) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    color = Color.White,
-                                    strokeWidth = 2.dp
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    "Recherche en cours...",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                )
-                            }
-                        } else {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Search,
-                                    null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Color.White
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    "Rechercher des vols",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 @Composable
@@ -1919,22 +831,12 @@ fun FiltersCard(
     dateReturn: String?,
     selectedType: String?,
     directOnly: Boolean?,
-    origin: String?,
-    destination: String?,
-    departureDate: String?,
-    returnDate: String?,
-    adults: Int?,
     onFromAirportChange: (String?) -> Unit,
     onToAirportChange: (String?) -> Unit,
     onDateDepartChange: (String?) -> Unit,
     onDateReturnChange: (String?) -> Unit,
     onTypeChange: (String?) -> Unit,
     onDirectOnlyChange: (Boolean?) -> Unit,
-    onOriginChange: (String?) -> Unit,
-    onDestinationChange: (String?) -> Unit,
-    onDepartureDateChange: (String?) -> Unit,
-    onReturnDateChange: (String?) -> Unit,
-    onAdultsChange: (Int?) -> Unit,
     onSearch: () -> Unit,
     onClear: () -> Unit,
     modifier: Modifier = Modifier
