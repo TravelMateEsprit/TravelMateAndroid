@@ -33,6 +33,7 @@ import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
 import com.travelmate.ui.screens.user.FlightDetailsScreen
 import com.travelmate.ui.screens.user.UserHomeScreen
 import com.travelmate.ui.screens.welcome.WelcomeScreen
+import com.travelmate.ui.screens.splash.SplashScreen
 import com.travelmate.ui.user.requests.CreateInsuranceRequestScreen
 import com.travelmate.ui.user.requests.MyInsuranceRequestsScreen
 import com.travelmate.ui.requests.RequestDetailsScreen
@@ -58,17 +59,29 @@ fun NavGraph(
     modifier: Modifier = Modifier
 ) {
     // Determine start destination based on login status and user type
-    val startDestination = when {
-        !userPreferences.isLoggedIn() -> Constants.Routes.WELCOME
-        userPreferences.isAgency() -> Constants.Routes.AGENCY_DASHBOARD
-        else -> Constants.Routes.USER_HOME
-    }
+    val startDestination = Constants.Routes.SPLASH
     
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
+        // Splash Screen
+        composable(Constants.Routes.SPLASH) {
+            SplashScreen(
+                onNavigateToNext = {
+                    val destination = when {
+                        !userPreferences.isLoggedIn() -> Constants.Routes.WELCOME
+                        userPreferences.isAgency() -> Constants.Routes.AGENCY_DASHBOARD
+                        else -> Constants.Routes.USER_HOME
+                    }
+                    navController.navigate(destination) {
+                        popUpTo(Constants.Routes.SPLASH) { inclusive = true }
+                    }
+                }
+            )
+        }
+        
         // Écran de bienvenue
         composable(Constants.Routes.WELCOME) {
             WelcomeScreen(

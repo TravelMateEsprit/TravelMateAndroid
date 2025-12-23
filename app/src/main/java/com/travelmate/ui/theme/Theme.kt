@@ -64,8 +64,17 @@ fun TravelMateTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            // Configure system bars properly
+            window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
+            
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            // Light status bar icons for light theme, dark icons for dark theme
+            insetsController.isAppearanceLightStatusBars = !darkTheme
+            insetsController.isAppearanceLightNavigationBars = !darkTheme
+            
+            // Ensure system bars are always visible
+            insetsController.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
         }
     }
 

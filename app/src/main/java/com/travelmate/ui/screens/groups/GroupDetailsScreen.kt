@@ -175,7 +175,7 @@ fun GroupDetailsScreen(
             Surface(shadowElevation = 4.dp, color = ColorPrimary) {
                 Column {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -378,7 +378,7 @@ fun GroupDetailsScreen(
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(messages) { message ->
@@ -527,7 +527,7 @@ fun EnhancedGroupHeader(group: Group) {
 @Composable
 fun InfoChip(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, tint: Color) {
     Surface(color = tint.copy(alpha = 0.1f), shape = RoundedCornerShape(20.dp)) {
-        Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Icon(icon, null, tint = tint, modifier = Modifier.size(16.dp))
             Text(text, fontSize = 13.sp, color = tint, fontWeight = FontWeight.Medium)
         }
@@ -675,7 +675,7 @@ fun MessageReactionsBar(
                 )
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {

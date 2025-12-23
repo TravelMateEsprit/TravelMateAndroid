@@ -151,7 +151,7 @@
                     else -> {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+                            contentPadding = PaddingValues(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 20.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             items(filteredClaims) { claim ->

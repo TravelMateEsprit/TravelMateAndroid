@@ -63,7 +63,14 @@ class MainActivity : ComponentActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Configure EdgeToEdge properly to preserve system bars
         enableEdgeToEdge()
+        
+        // Ensure system bars are visible and properly configured
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+        }
         
         // Demander permission notifications et récupérer FCM token
         requestNotificationPermissionAndToken()

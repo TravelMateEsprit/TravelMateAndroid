@@ -30,7 +30,7 @@ fun TypingIndicator(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFF5F5F5))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {

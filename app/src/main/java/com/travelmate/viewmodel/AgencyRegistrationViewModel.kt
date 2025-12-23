@@ -21,22 +21,24 @@ sealed class AgencyRegistrationUiState {
     data class Error(val message: String) : AgencyRegistrationUiState()
 }
 
+/**
+ * Form data structure matching backend SignupAgencyDto
+ * Required fields: name, email, password, agencyName, agencyLicense, phone, address, city, country
+ * Optional fields: agencyWebsite, agencyDescription
+ */
 data class AgencyFormData(
+    var name: String = "", // Contact person full name
     var email: String = "",
     var password: String = "",
     var confirmPassword: String = "",
     var agencyName: String = "",
-    var siret: String = "",
+    var agencyLicense: String = "", // License number (e.g., "LIC-2024-12345")
+    var phone: String = "",
     var address: String = "",
     var city: String = "",
-    var postalCode: String = "",
     var country: String = "France",
-    var phone: String = "",
-    var websiteUrl: String = "",
-    var description: String = "",
-    var legalRepFirstName: String = "",
-    var legalRepLastName: String = "",
-    var kbisDocument: String? = null
+    var agencyWebsite: String = "", // Optional
+    var agencyDescription: String = "" // Optional
 )
 
 @HiltViewModel
@@ -60,7 +62,7 @@ class AgencyRegistrationViewModel @Inject constructor(
     val registrationError = socketService.registrationError
     
     companion object {
-        const val TOTAL_STEPS = 5
+        const val TOTAL_STEPS = 3 // Reduced from 5 to match backend requirements
     }
     
     fun connectSocket() {
@@ -95,19 +97,18 @@ class AgencyRegistrationViewModel @Inject constructor(
             
             try {
                 val data = _formData.value
-                val fullName = "${data.legalRepFirstName.trim()} ${data.legalRepLastName.trim()}"
                 val request = AgencyRegistrationRequest(
-                    name = fullName,
+                    name = data.name.trim(),
                     email = data.email.trim(),
                     password = data.password,
                     agencyName = data.agencyName.trim(),
-                    agencyLicense = data.siret.trim(),
+                    agencyLicense = data.agencyLicense.trim(),
+                    phone = data.phone.trim(),
                     address = data.address.trim(),
                     city = data.city.trim(),
                     country = data.country.trim(),
-                    phone = data.phone.trim(),
-                    agencyWebsite = data.websiteUrl.trim().takeIf { it.isNotEmpty() },
-                    agencyDescription = data.description.trim().takeIf { it.isNotEmpty() }
+                    agencyWebsite = data.agencyWebsite.trim().takeIf { it.isNotEmpty() },
+                    agencyDescription = data.agencyDescription.trim().takeIf { it.isNotEmpty() }
                 )
                 
                 // Call HTTP REST API for agency registration
@@ -133,14 +134,13 @@ class AgencyRegistrationViewModel @Inject constructor(
     
     fun validateEmail(email: String) = ValidationUtils.validateEmail(email)
     fun validatePassword(password: String) = ValidationUtils.validatePassword(password)
-    fun validateSiret(siret: String) = ValidationUtils.validateSiret(siret)
     fun validatePhone(phone: String) = ValidationUtils.validatePhone(phone)
-    fun validatePostalCode(postalCode: String) = ValidationUtils.validatePostalCode(postalCode)
     fun validateUrl(url: String) = ValidationUtils.validateUrl(url)
     
     fun isStep1Valid(): Boolean {
         val data = _formData.value
-        return data.email.isNotBlank() && validateEmail(data.email) &&
+        return data.name.isNotBlank() &&
+               data.email.isNotBlank() && validateEmail(data.email) &&
                data.password.isNotBlank() && validatePassword(data.password) &&
                data.confirmPassword.isNotBlank() && data.password == data.confirmPassword
     }
@@ -148,7 +148,7 @@ class AgencyRegistrationViewModel @Inject constructor(
     fun isStep2Valid(): Boolean {
         val data = _formData.value
         return data.agencyName.isNotBlank() &&
-               data.siret.isNotBlank() && validateSiret(data.siret) &&
+               data.agencyLicense.isNotBlank() &&
                data.phone.isNotBlank() && validatePhone(data.phone)
     }
     
@@ -156,14 +156,7 @@ class AgencyRegistrationViewModel @Inject constructor(
         val data = _formData.value
         return data.address.isNotBlank() &&
                data.city.isNotBlank() &&
-               data.postalCode.isNotBlank() && validatePostalCode(data.postalCode) &&
                data.country.isNotBlank()
-    }
-    
-    fun isStep4Valid(): Boolean {
-        val data = _formData.value
-        return data.legalRepFirstName.isNotBlank() &&
-               data.legalRepLastName.isNotBlank()
     }
     
     fun resetState() {

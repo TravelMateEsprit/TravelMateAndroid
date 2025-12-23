@@ -146,7 +146,7 @@ fun MyClaimsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                        .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     FilterChipModern(
@@ -225,7 +225,12 @@ fun MyClaimsScreen(
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 16.dp,
+                            bottom = 96.dp
+                        ),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(filteredClaims) { claim ->
@@ -261,7 +266,7 @@ fun FilterChipModern(
         shadowElevation = if (selected) 4.dp else 0.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -421,7 +426,7 @@ fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
                                 Color(0xFF4CAF50).copy(alpha = 0.1f),
                                 RoundedCornerShape(12.dp)
                             )
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .padding(start = 10.dp, top = 4.dp, end = 10.dp, bottom = 4.dp)
                     ) {
                         Icon(
                             Icons.Default.CheckCircle,
@@ -488,7 +493,7 @@ fun ModernStatusBadge(status: String) {
         color = backgroundColor
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            modifier = Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -548,7 +553,7 @@ fun ModernPriorityBadge(priority: String) {
         color = backgroundColor
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            modifier = Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {

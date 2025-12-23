@@ -62,7 +62,7 @@ fun ModernCard(
     modifier: Modifier = Modifier,
     elevation: Dp = 4.dp,
     cornerRadius: Dp = 16.dp,
-    backgroundColor: Color = Color.White,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -133,7 +133,7 @@ fun ModernTextField(
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = ColorPrimary,
-                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f),
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                 focusedLabelColor = ColorPrimary,
                 cursorColor = ColorPrimary,
                 errorBorderColor = ColorError,
@@ -169,7 +169,7 @@ fun ModernButton(
     enabled: Boolean = true,
     isLoading: Boolean = false,
     backgroundColor: Color = ColorPrimary,
-    contentColor: Color = Color.White,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     icon: ImageVector? = null
 ) {
     val scale by animateFloatAsState(
@@ -191,8 +191,8 @@ fun ModernButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = backgroundColor,
             contentColor = contentColor,
-            disabledContainerColor = ColorTextSecondary.copy(alpha = 0.3f),
-            disabledContentColor = ColorTextSecondary
+            disabledContainerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 4.dp,
@@ -291,14 +291,14 @@ fun ModernSectionHeader(
             text = title,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = ColorTextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
         subtitle?.let {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = it,
                 fontSize = 14.sp,
-                color = ColorTextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -318,7 +318,7 @@ fun ModernConnectionStatus(
             modifier = modifier
                 .clip(RoundedCornerShape(20.dp))
                 .background(ColorWarning.copy(alpha = 0.1f))
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+                .padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircularProgressIndicator(

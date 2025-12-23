@@ -88,7 +88,7 @@ fun ProfileScreen(
                         text = if (user?.userType == "agence") "Agence" else "Utilisateur",
                         fontSize = 12.sp,
                         color = Color.White,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(start = 12.dp, top = 4.dp, end = 12.dp, bottom = 4.dp)
                     )
                 }
             }
@@ -224,13 +224,13 @@ fun ProfileInfoItem(
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = ColorTextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = value,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -265,18 +265,18 @@ fun ProfileMenuItem(
                     text = title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,
                     fontSize = 14.sp,
-                    color = ColorTextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Ouvrir",
-                tint = ColorTextSecondary,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }

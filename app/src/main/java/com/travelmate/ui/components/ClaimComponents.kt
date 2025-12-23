@@ -33,7 +33,7 @@ fun ClaimStatusChip(status: String) {
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            modifier = Modifier.padding(start = 12.dp, top = 4.dp, end = 12.dp, bottom = 4.dp),
             style = MaterialTheme.typography.labelSmall,
             color = textColor,
             fontWeight = FontWeight.Medium
@@ -57,7 +57,7 @@ fun ClaimPriorityChip(priority: String) {
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            modifier = Modifier.padding(start = 12.dp, top = 4.dp, end = 12.dp, bottom = 4.dp),
             style = MaterialTheme.typography.labelSmall,
             color = textColor,
             fontWeight = FontWeight.Medium
@@ -111,7 +111,7 @@ fun ModernStatusBadge(status: String) {
         color = backgroundColor
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            modifier = Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -171,7 +171,7 @@ fun ModernPriorityBadge(priority: String) {
         color = backgroundColor
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            modifier = Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {

@@ -83,7 +83,7 @@ fun ClaimDetailScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 16.dp),
+                                .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 16.dp),
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -191,7 +191,7 @@ fun ModernChatTopBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 12.dp),
+                .padding(start = 8.dp, top = 12.dp, end = 8.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
@@ -237,7 +237,7 @@ fun ClaimInfoPanel(claim: Claim) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 12.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -389,7 +389,7 @@ fun ChatMessagesView(
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 18.dp),
+                contentPadding = PaddingValues(start = 4.dp, top = 18.dp, end = 4.dp, bottom = 18.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Initial message (claim description)
@@ -458,7 +458,7 @@ fun MessageBubble(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
     ) {
         if (!isUser) {
@@ -498,7 +498,7 @@ fun MessageBubble(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF64748B),
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(start = 14.dp, top = 4.dp, end = 14.dp, bottom = 4.dp)
                 )
             }
             
@@ -515,7 +515,7 @@ fun MessageBubble(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 12.dp)
                 ) {
                     Text(
                         text = messageText,
@@ -581,7 +581,7 @@ fun MessageInputBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 12.dp),
             verticalAlignment = Alignment.Bottom
         ) {
             OutlinedTextField(

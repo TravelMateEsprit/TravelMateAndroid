@@ -994,7 +994,7 @@ fun ComingSoonSection(section: DashboardSection) {
             ) {
                 Text(
                     "🚧 En développement",
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
                     color = section.color,
                     fontWeight = FontWeight.Medium
                 )
@@ -1165,7 +1165,7 @@ fun CompactInsuranceCard(insurance: com.travelmate.data.models.Insurance) {
             ) {
                 Text(
                     if (insurance.isActive) "Active" else "Inactive",
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    modifier = Modifier.padding(start = 12.dp, top = 4.dp, end = 12.dp, bottom = 4.dp),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,
                     color = if (insurance.isActive) ColorSuccess else ColorTextSecondary

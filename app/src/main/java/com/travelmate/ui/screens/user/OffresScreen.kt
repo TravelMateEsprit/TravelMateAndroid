@@ -23,6 +23,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -171,31 +172,6 @@ fun OffresScreen(navController: NavController? = null) {
                         fontSize = 20.sp
                     )
                 },
-                actions = {
-                    // Notification bell icon with badge
-                    IconButton(
-                        onClick = { showAlertsDialog = true }
-                    ) {
-                        BadgedBox(
-                            badge = {
-                                if (alertsCount > 0) {
-                                    Badge {
-                                        Text(
-                                            text = if (triggeredCount > 0) triggeredCount.toString() else alertsCount.toString(),
-                                            fontSize = 10.sp
-                                        )
-                                    }
-                                }
-                            }
-                        ) {
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = "Alertes de prix",
-                                tint = Color.White
-                            )
-                        }
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = ColorPrimary
                 )
@@ -207,7 +183,8 @@ fun OffresScreen(navController: NavController? = null) {
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(ColorBackground),
-            contentPadding = PaddingValues(bottom = 16.dp)
+            contentPadding = PaddingValues(bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             // SECTION 1: AI RECOMMENDATIONS (TOP - Shows FIRST)
             item {
@@ -217,7 +194,7 @@ fun OffresScreen(navController: NavController? = null) {
                         .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Column(
                         modifier = Modifier.padding(20.dp),
@@ -246,13 +223,13 @@ fun OffresScreen(navController: NavController? = null) {
                             Text(
                                 "Aucune recommandation personnalisée trouvée",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 "Essayez d'ajuster vos critères de recherche",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(
@@ -307,7 +284,7 @@ fun OffresScreen(navController: NavController? = null) {
                             Text(
                                 "Analyse en cours par l'IA Gemini...",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -330,7 +307,7 @@ fun OffresScreen(navController: NavController? = null) {
                             val route = "${Routes.FLIGHT_DETAILS}/${recommendedOffer.getOffer().getIdValue()}"
                             navController?.navigate(route)
                         },
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                        modifier = Modifier.padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp)
                     )
                 }
                 
@@ -401,7 +378,7 @@ fun OffresScreen(navController: NavController? = null) {
                     viewModel = viewModel,
                     isLoading = isLoading,
                     error = error,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
                 )
             }
             
@@ -413,7 +390,7 @@ fun OffresScreen(navController: NavController? = null) {
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
                         color = Color.Transparent
                     ) {
                         Row(
@@ -442,7 +419,7 @@ fun OffresScreen(navController: NavController? = null) {
                                                 ),
                                                 shape = RoundedCornerShape(8.dp)
                                             )
-                                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                                            .padding(start = 10.dp, top = 4.dp, end = 10.dp, bottom = 4.dp)
                                     ) {
                                         Text(
                                             text = getSortLabel(sortBy),
@@ -589,7 +566,7 @@ fun OffresScreen(navController: NavController? = null) {
                         viewModel.setSelectedOffer(offer)
                         navController?.navigate("${Constants.Routes.FLIGHT_DETAILS}/${offerId}")
                     },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                    modifier = Modifier.padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp)
                 )
             }
         }
@@ -2346,16 +2323,25 @@ fun ProfessionalFlightCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .border(
+                width = if (isSelected) 2.dp else 0.dp,
+                color = if (isSelected) Color(0xFF2196F3) else Color.Transparent,
+                shape = RoundedCornerShape(16.dp)
+            ),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 6.dp else 3.dp
+            defaultElevation = if (isSelected) 0.dp else 3.dp,
+            pressedElevation = if (isSelected) 0.dp else 3.dp,
+            focusedElevation = if (isSelected) 0.dp else 3.dp,
+            hoveredElevation = if (isSelected) 0.dp else 3.dp
         ),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) ColorPrimary.copy(alpha = 0.05f) else Color.White
+            containerColor = Color.White
         )
     ) {
         Box(
@@ -2510,7 +2496,7 @@ fun ProfessionalFlightCard(
                                     ),
                                     shape = RoundedCornerShape(8.dp)
                                 )
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
                         ) {
                             Text(
                                 text = offer.getFormattedPrice(),
@@ -2739,7 +2725,7 @@ fun ProfessionalFlightCard(
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = ColorSuccess,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    modifier = Modifier.padding(start = 6.dp, top = 2.dp, end = 6.dp, bottom = 2.dp)
                                 )
                             }
                         } else {
@@ -2752,7 +2738,7 @@ fun ProfessionalFlightCard(
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = ColorWarning,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    modifier = Modifier.padding(start = 6.dp, top = 2.dp, end = 6.dp, bottom = 2.dp)
                                 )
                             }
                         }
@@ -2820,7 +2806,7 @@ fun ProfessionalFlightCard(
                                     ),
                                     shape = RoundedCornerShape(6.dp)
                                 )
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
                         ) {
                             Text(
                                 text = when (offer.getTypeValue()) {
@@ -2851,7 +2837,7 @@ fun ProfessionalFlightCard(
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             )
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .padding(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -3048,24 +3034,6 @@ fun FlightComparisonDialog(
                         )
 
                         ComparisonRow(
-                            label = "Heure de départ",
-                            icon = Icons.Default.FlightTakeoff,
-                            flights = flights,
-                            getValue = {
-                                it.getDepartureSegment()?.getDepartureDetails()?.getTimeValue()?.ifEmpty { "--:--" } ?: "--:--"
-                            }
-                        )
-
-                        ComparisonRow(
-                            label = "Heure d'arrivée",
-                            icon = Icons.Default.FlightLand,
-                            flights = flights,
-                            getValue = {
-                                it.getDepartureSegment()?.getArrivalDetails()?.getTimeValue()?.ifEmpty { "--:--" } ?: "--:--"
-                            }
-                        )
-
-                        ComparisonRow(
                             label = "Nombre d'escales",
                             icon = Icons.Default.SwapHoriz,
                             flights = flights,
@@ -3097,27 +3065,6 @@ fun FlightComparisonDialog(
                                 }
                             )
 
-                            ComparisonRow(
-                                label = "Aller - Durée",
-                                icon = Icons.Default.FlightTakeoff,
-                                flights = flights,
-                                getValue = {
-                                    it.getDepartureSegment()?.getDurationValue() ?: "N/A"
-                                }
-                            )
-
-                            ComparisonRow(
-                                label = "Retour - Durée",
-                                icon = Icons.Default.FlightLand,
-                                flights = flights,
-                                getValue = {
-                                    if (it.getTypeValue() == "aller-retour" || it.getReturnSegment() != null) {
-                                        it.getReturnSegment()?.getDurationValue() ?: "N/A"
-                                    } else {
-                                        "N/A"
-                                    }
-                                }
-                            )
                         }
                     }
             }
@@ -3261,7 +3208,7 @@ fun ComparisonRow(
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        modifier = Modifier.padding(start = 6.dp, top = 2.dp, end = 6.dp, bottom = 2.dp)
                                     )
                                 }
                             }
@@ -3299,29 +3246,12 @@ fun PreferencesBottomSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     
     var destination by remember { mutableStateOf("") }
+    var destinationAirport by remember { mutableStateOf<Airport?>(null) }
     var tripType by remember { mutableStateOf("aller-retour") }
     var maxBudget by remember { mutableStateOf(500f) }
     var directOnly by remember { mutableStateOf(false) }
     
-    // Extract unique destinations from offers
-    val availableDestinations = remember(offers) {
-        offers.mapNotNull { it.getToAirport() }
-            .mapNotNull { it.city ?: it.name ?: it.code }
-            .distinct()
-            .sorted()
-    }
-    
-    // Filter destinations based on input
-    val filteredDestinations = remember(destination, availableDestinations) {
-        if (destination.isBlank()) {
-            availableDestinations.take(5)
-        } else {
-            availableDestinations.filter { 
-                it.contains(destination, ignoreCase = true) 
-            }.take(5)
-        }
-    }
-    
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -3370,59 +3300,15 @@ fun PreferencesBottomSheet(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Destination
-                Column {
-                    Text(
-                        text = "Destination (ville ou pays)",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = ColorPrimary,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    OutlinedTextField(
-                        value = destination,
-                        onValueChange = { destination = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Ex: Paris, Istanbul, Rome...") },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.LocationOn,
-                                contentDescription = null,
-                                tint = ColorPrimary
-                            )
+                    AirportAutocomplete(
+                        label = "Destination (ville ou pays)",
+                        selectedAirport = destinationAirport,
+                        onAirportSelected = { airport ->
+                            destinationAirport = airport
+                            destination = airport.city ?: airport.name ?: ""
                         },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = ColorPrimary,
-                            unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
-                        )
-                    )
-                    // Suggestions
-                    if (filteredDestinations.isNotEmpty() && destination.isNotBlank()) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = ColorBackground
-                            )
-                        ) {
-                            Column {
-                                filteredDestinations.forEach { suggestion ->
-                                    TextButton(
-                                        onClick = { destination = suggestion },
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(
-                                            suggestion,
-                                            modifier = Modifier.fillMaxWidth(),
-                                            textAlign = TextAlign.Start
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                        enabled = true
+                )
                 
                 // Trip Type
                 Column {
@@ -3657,7 +3543,7 @@ fun RecommendedFlightCard(
                     color = ColorPrimary.copy(alpha = 0.1f)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -3686,7 +3572,7 @@ fun RecommendedFlightCard(
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = ColorPrimary,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
                         )
                     }
                 }
@@ -3709,7 +3595,7 @@ fun RecommendedFlightCard(
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
                             color = ColorSuccess,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
                         )
                     }
                 }
@@ -3724,7 +3610,7 @@ fun RecommendedFlightCard(
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = ColorPrimary,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
                             )
                         }
                     }
@@ -3738,7 +3624,7 @@ fun RecommendedFlightCard(
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = ColorSecondary,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
                             )
                         }
                     }
@@ -3752,7 +3638,7 @@ fun RecommendedFlightCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
                         ) {
                             Icon(
                                 Icons.Default.Star,

@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -87,8 +88,48 @@ fun CreateInsuranceRequestScreen(
                       nationality.isNotBlank() &&
                       destination.isNotBlank()
     
-    val isStep3Valid = departureDate.isNotBlank() && 
-                      returnDate.isNotBlank()
+    // Validation avancée des dates
+    val isStep3Valid = remember(departureDate, returnDate) {
+        if (departureDate.isBlank() || returnDate.isBlank()) {
+            false
+        } else {
+            try {
+                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val depDate = dateFormat.parse(departureDate)
+                val retDate = dateFormat.parse(returnDate)
+                
+                if (depDate != null && retDate != null) {
+                    // La date de retour doit être après la date de départ
+                    retDate.after(depDate)
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+    
+    // Message d'erreur pour les dates
+    val dateErrorMessage = remember(departureDate, returnDate) {
+        if (departureDate.isNotBlank() && returnDate.isNotBlank()) {
+            try {
+                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val depDate = dateFormat.parse(departureDate)
+                val retDate = dateFormat.parse(returnDate)
+                
+                when {
+                    depDate == null || retDate == null -> "Format de date invalide"
+                    !retDate.after(depDate) -> "La date de retour doit être après la date de départ"
+                    else -> null
+                }
+            } catch (e: Exception) {
+                "Format de date invalide"
+            }
+        } else {
+            null
+        }
+    }
     
     Scaffold(
         topBar = {
@@ -106,9 +147,9 @@ fun CreateInsuranceRequestScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ColorPrimary,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -117,7 +158,7 @@ fun CreateInsuranceRequestScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(ColorBackground)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             // Indicateur de progression
             StepProgressIndicator(
@@ -173,7 +214,8 @@ fun CreateInsuranceRequestScreen(
                             travelPurpose = travelPurpose,
                             onTravelPurposeChange = { travelPurpose = it },
                             message = message,
-                            onMessageChange = { message = it }
+                            onMessageChange = { message = it },
+                            dateErrorMessage = dateErrorMessage
                         )
                     }
                 }
@@ -285,7 +327,7 @@ private fun StepProgressIndicator(
             },
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            color = ColorTextPrimary,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -293,7 +335,7 @@ private fun StepProgressIndicator(
         Text(
             text = "Étape $currentStep sur $totalSteps",
             style = MaterialTheme.typography.bodyMedium,
-            color = ColorTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -310,14 +352,14 @@ private fun StepCircle(
     val backgroundColor by animateColorAsState(
         targetValue = when {
             isCompleted -> ColorSuccess
-            isActive -> ColorPrimary
-            else -> ColorTextSecondary.copy(alpha = 0.3f)
+            isActive -> MaterialTheme.colorScheme.primary
+            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
         },
         animationSpec = tween(300),
         label = "step_bg_color"
     )
     
-    val contentColor = if (isCompleted || isActive) Color.White else ColorTextSecondary
+    val contentColor = if (isCompleted || isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
     
     Box(
         modifier = modifier
@@ -350,7 +392,7 @@ private fun StepConnector(
     modifier: Modifier = Modifier
 ) {
     val color by animateColorAsState(
-        targetValue = if (isCompleted) ColorSuccess else ColorTextSecondary.copy(alpha = 0.3f),
+        targetValue = if (isCompleted) ColorSuccess else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
         animationSpec = tween(300),
         label = "connector_color"
     )
@@ -380,7 +422,7 @@ private fun Step1PersonalInfo(
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -393,7 +435,7 @@ private fun Step1PersonalInfo(
                     Icon(
                         Icons.Default.Person,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -401,7 +443,7 @@ private fun Step1PersonalInfo(
                         "Vos informations",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
@@ -411,21 +453,21 @@ private fun Step1PersonalInfo(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(ColorPrimary.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         Icons.Default.Info,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "Ces informations sont pré-remplies depuis votre profil",
                         style = MaterialTheme.typography.bodySmall,
-                        color = ColorTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
                 }
@@ -495,7 +537,7 @@ private fun Step2DocumentsInfo(
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -506,17 +548,17 @@ private fun Step2DocumentsInfo(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        Icons.Default.Description,
+                        Icons.Default.Public,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        "Documents",
+                        "Destination",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
@@ -548,7 +590,7 @@ private fun Step2DocumentsInfo(
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -561,7 +603,7 @@ private fun Step2DocumentsInfo(
                     Icon(
                         Icons.Default.Public,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -569,7 +611,7 @@ private fun Step2DocumentsInfo(
                         "Destination",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
@@ -599,7 +641,8 @@ private fun Step3TravelDetails(
     travelPurpose: String,
     onTravelPurposeChange: (String) -> Unit,
     message: String,
-    onMessageChange: (String) -> Unit
+    onMessageChange: (String) -> Unit,
+    dateErrorMessage: String?
 ) {
     val today = Calendar.getInstance().timeInMillis
     val departureDateMillis = remember(departureDate) {
@@ -613,6 +656,25 @@ private fun Step3TravelDetails(
         } else null
     }
     
+    // Calculer la durée du voyage
+    val tripDuration = remember(departureDate, returnDate) {
+        if (departureDate.isNotBlank() && returnDate.isNotBlank()) {
+            try {
+                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val depDate = dateFormat.parse(departureDate)
+                val retDate = dateFormat.parse(returnDate)
+                
+                if (depDate != null && retDate != null) {
+                    val diffInMillis = retDate.time - depDate.time
+                    val days = (diffInMillis / (1000 * 60 * 60 * 24)).toInt()
+                    days
+                } else null
+            } catch (e: Exception) {
+                null
+            }
+        } else null
+    }
+    
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -620,7 +682,7 @@ private fun Step3TravelDetails(
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -633,7 +695,7 @@ private fun Step3TravelDetails(
                     Icon(
                         Icons.Default.DateRange,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -641,7 +703,7 @@ private fun Step3TravelDetails(
                         "Dates de voyage",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
@@ -666,13 +728,81 @@ private fun Step3TravelDetails(
                     minDate = departureDateMillis ?: today,
                     modifier = Modifier.fillMaxWidth()
                 )
+                
+                // Message d'erreur pour les dates
+                AnimatedVisibility(
+                    visible = dateErrorMessage != null,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = ColorError.copy(alpha = 0.1f)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Error,
+                                contentDescription = null,
+                                tint = ColorError,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = dateErrorMessage ?: "",
+                                color = ColorError,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+                
+                // Affichage de la durée du voyage si valide
+                AnimatedVisibility(
+                    visible = tripDuration != null && tripDuration > 0,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = ColorSuccess.copy(alpha = 0.1f)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = null,
+                                tint = ColorSuccess,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Durée du voyage : ${tripDuration ?: 0} jour${if (tripDuration != 1) "s" else ""}",
+                                color = ColorSuccess,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
             }
         }
         
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),

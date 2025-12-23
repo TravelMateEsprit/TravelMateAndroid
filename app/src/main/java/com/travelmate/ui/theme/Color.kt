@@ -2,7 +2,7 @@ package com.travelmate.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// TravelMate Color Palette
+// TravelMate Color Palette - Palette originale
 val ColorPrimary = Color(0xFF2F80ED)
 val ColorSecondary = Color(0xFF56CCF2)
 val ColorAccent = Color(0xFFF2C94C)

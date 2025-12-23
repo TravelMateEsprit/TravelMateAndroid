@@ -96,8 +96,13 @@ fun ClaimsListScreen(
                 }
                 else -> {
                     LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 16.dp,
+                            bottom = 96.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(claims) { claim ->
                             ClaimCard(
@@ -236,7 +241,7 @@ fun StatusChip(status: String) {
     ) {
         Text(
             text = statusInfo?.displayName ?: status,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
             style = MaterialTheme.typography.labelSmall,
             color = textColor,
             fontWeight = FontWeight.Medium
@@ -266,7 +271,7 @@ fun PriorityChip(priority: String) {
         color = color
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
@@ -297,7 +302,7 @@ fun CategoryChip(category: String) {
     ) {
         Text(
             text = categoryInfo?.displayName ?: category,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

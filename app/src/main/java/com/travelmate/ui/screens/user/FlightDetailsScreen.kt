@@ -464,7 +464,7 @@ fun FlightDetailsScreen(
             // Header Card with Airline Info
             Card(
                     modifier =
-                            Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
+                            Modifier.fillMaxWidth().padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 16.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -543,8 +543,10 @@ fun FlightDetailsScreen(
                                         fontSize = 24.sp,
                                         modifier =
                                                 Modifier.padding(
-                                                        horizontal = 12.dp,
-                                                        vertical = 6.dp
+                                                        start = 12.dp,
+                                                        top = 6.dp,
+                                                        end = 12.dp,
+                                                        bottom = 6.dp
                                                 )
                                 )
                             }
@@ -686,7 +688,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                                         "aller-retour" -> ColorPrimary
                                         else -> ColorAccent
                                     },
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
                     )
                 }
             }
@@ -892,7 +894,7 @@ fun FlightSegmentDetailsCard(
                                                                 ),
                                                         shape = RoundedCornerShape(8.dp)
                                                 )
-                                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                                .padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
                         ) {
                             Text(
                                     text = title,
@@ -952,7 +954,7 @@ fun FlightSegmentDetailsCard(
                                                                 ),
                                                         shape = RoundedCornerShape(8.dp)
                                                 )
-                                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                                                .padding(start = 10.dp, top = 4.dp, end = 10.dp, bottom = 4.dp)
                         ) {
                             Text(
                                     text =

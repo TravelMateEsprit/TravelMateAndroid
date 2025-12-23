@@ -46,24 +46,17 @@ fun UserRegistrationScreen(
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     
-    // Champs du formulaire
+    // Champs du formulaire (selon le backend: name, email, password)
+    var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var dateOfBirth by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    
-    // Étapes du formulaire
-    var currentStep by remember { mutableStateOf(0) }
-    val totalSteps = 3
     
     // Animation d'entrée
     var visible by remember { mutableStateOf(false) }
@@ -81,13 +74,11 @@ fun UserRegistrationScreen(
     val doPasswordsMatch = remember(password, confirmPassword) { 
         confirmPassword.isEmpty() || password == confirmPassword
     }
-    val isPhoneValid = remember(phone) { 
-        phone.isEmpty() || phone.length >= 10
-    }
     
-    val isStep1Valid = firstName.isNotBlank() && lastName.isNotBlank() && dateOfBirth.isNotBlank()
-    val isStep2Valid = email.isNotBlank() && isEmailValid && phone.isNotBlank() && isPhoneValid
-    val isStep3Valid = password.isNotBlank() && isPasswordValid && doPasswordsMatch
+    val isFormValid = fullName.isNotBlank() && 
+                     email.isNotBlank() && isEmailValid && 
+                     password.isNotBlank() && isPasswordValid && 
+                     doPasswordsMatch
     
     // Gérer les changements d'état
     LaunchedEffect(uiState) {
@@ -120,13 +111,13 @@ fun UserRegistrationScreen(
                     "Inscription réussie !",
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
                 Text(
-                    "Votre compte a été créé avec succès. Bienvenue sur TravelMate !",
-                    color = ColorTextSecondary,
+                    "Votre compte a été créé. Bienvenue sur TravelMate !",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             },
@@ -162,13 +153,13 @@ fun UserRegistrationScreen(
                 Text(
                     "Erreur d'inscription",
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
                 Text(
                     errorMessage,
-                    color = ColorTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             },
@@ -240,42 +231,14 @@ fun UserRegistrationScreen(
                         color = Color.White
                     )
                     Text(
-                        text = "Étape ${currentStep + 1} sur $totalSteps",
+                        text = "Créez votre compte",
                         fontSize = 14.sp,
                         color = Color.White.copy(alpha = 0.9f)
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Indicateur de progression
-            AnimatedVisibility(
-                visible = visible,
-                enter = fadeIn() + expandVertically()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    repeat(totalSteps) { step ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(
-                                    if (step <= currentStep) ColorAccent
-                                    else Color.White.copy(alpha = 0.3f)
-                                )
-                        )
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             
             // Contenu du formulaire dans une carte
             AnimatedVisibility(
@@ -290,234 +253,126 @@ fun UserRegistrationScreen(
                     cornerRadius = 24.dp,
                     elevation = 8.dp
                 ) {
-                    // Statut de connexion
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        // Connection status removed - using HTTP REST API
-                    }
+                    ModernSectionHeader(
+                        title = "Informations du compte",
+                        subtitle = "Remplissez vos informations"
+                    )
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
-                    // Contenu selon l'étape
-                    when (currentStep) {
-                        0 -> {
-                            // Étape 1: Informations personnelles
-                            ModernSectionHeader(
-                                title = "Informations personnelles",
-                                subtitle = "Commençons par votre identité"
-                            )
-                            
-                            Spacer(modifier = Modifier.height(24.dp))
-                            
-                            ModernTextField(
-                                value = firstName,
-                                onValueChange = { firstName = it },
-                                label = "Prénom",
-                                leadingIcon = Icons.Default.Person,
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(
-                                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                    ModernTextField(
+                        value = fullName,
+                        onValueChange = { fullName = it },
+                        label = "Nom complet",
+                        leadingIcon = Icons.Default.Person,
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next,
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        )
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    ModernTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = "Email",
+                        leadingIcon = Icons.Default.Email,
+                        isError = email.isNotEmpty() && !isEmailValid,
+                        errorMessage = if (email.isNotEmpty() && !isEmailValid) 
+                            "Format email invalide" else null,
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        )
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    ModernTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = "Mot de passe",
+                        leadingIcon = Icons.Default.Lock,
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) 
+                                        Icons.Default.Visibility 
+                                    else 
+                                        Icons.Default.VisibilityOff,
+                                    contentDescription = null,
+                                    tint = ColorPrimary
                                 )
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            ModernTextField(
-                                value = lastName,
-                                onValueChange = { lastName = it },
-                                label = "Nom",
-                                leadingIcon = Icons.Default.Person,
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(
-                                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            }
+                        },
+                        visualTransformation = if (passwordVisible) 
+                            androidx.compose.ui.text.input.VisualTransformation.None 
+                        else 
+                            PasswordVisualTransformation(),
+                        isError = password.isNotEmpty() && !isPasswordValid,
+                        errorMessage = if (password.isNotEmpty() && !isPasswordValid) 
+                            "Le mot de passe doit contenir au moins 6 caractères et un chiffre" else null,
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Next,
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        )
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    ModernTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        label = "Confirmer le mot de passe",
+                        leadingIcon = Icons.Default.Lock,
+                        trailingIcon = {
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(
+                                    imageVector = if (confirmPasswordVisible) 
+                                        Icons.Default.Visibility 
+                                    else 
+                                        Icons.Default.VisibilityOff,
+                                    contentDescription = null,
+                                    tint = ColorPrimary
                                 )
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            ModernTextField(
-                                value = dateOfBirth,
-                                onValueChange = { dateOfBirth = it },
-                                label = "Date de naissance (JJ/MM/AAAA)",
-                                leadingIcon = Icons.Default.CalendarToday,
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Done,
-                                keyboardActions = KeyboardActions(
-                                    onDone = { focusManager.clearFocus() }
-                                )
-                            )
-                        }
-                        
-                        1 -> {
-                            // Étape 2: Coordonnées
-                            ModernSectionHeader(
-                                title = "Coordonnées",
-                                subtitle = "Comment vous contacter ?"
-                            )
-                            
-                            Spacer(modifier = Modifier.height(24.dp))
-                            
-                            ModernTextField(
-                                value = email,
-                                onValueChange = { email = it },
-                                label = "Email",
-                                leadingIcon = Icons.Default.Email,
-                                isError = email.isNotEmpty() && !isEmailValid,
-                                errorMessage = if (email.isNotEmpty() && !isEmailValid) 
-                                    "Format email invalide" else null,
-                                keyboardType = KeyboardType.Email,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(
-                                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                                )
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            ModernTextField(
-                                value = phone,
-                                onValueChange = { phone = it },
-                                label = "Téléphone",
-                                leadingIcon = Icons.Default.Phone,
-                                isError = phone.isNotEmpty() && !isPhoneValid,
-                                errorMessage = if (phone.isNotEmpty() && !isPhoneValid) 
-                                    "Format téléphone invalide" else null,
-                                keyboardType = KeyboardType.Phone,
-                                imeAction = ImeAction.Done,
-                                keyboardActions = KeyboardActions(
-                                    onDone = { focusManager.clearFocus() }
-                                )
-                            )
-                        }
-                        
-                        2 -> {
-                            // Étape 3: Sécurité
-                            ModernSectionHeader(
-                                title = "Sécurité",
-                                subtitle = "Créez votre mot de passe"
-                            )
-                            
-                            Spacer(modifier = Modifier.height(24.dp))
-                            
-                            ModernTextField(
-                                value = password,
-                                onValueChange = { password = it },
-                                label = "Mot de passe",
-                                leadingIcon = Icons.Default.Lock,
-                                trailingIcon = {
-                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                        Icon(
-                                            imageVector = if (passwordVisible) 
-                                                Icons.Default.Visibility 
-                                            else 
-                                                Icons.Default.VisibilityOff,
-                                            contentDescription = null,
-                                            tint = ColorPrimary
-                                        )
-                                    }
-                                },
-                                visualTransformation = if (passwordVisible) 
-                                    androidx.compose.ui.text.input.VisualTransformation.None 
-                                else 
-                                    PasswordVisualTransformation(),
-                                isError = password.isNotEmpty() && !isPasswordValid,
-                                errorMessage = if (password.isNotEmpty() && !isPasswordValid) 
-                                    "Le mot de passe doit contenir au moins 8 caractères" else null,
-                                keyboardType = KeyboardType.Password,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(
-                                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                                )
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            ModernTextField(
-                                value = confirmPassword,
-                                onValueChange = { confirmPassword = it },
-                                label = "Confirmer le mot de passe",
-                                leadingIcon = Icons.Default.Lock,
-                                trailingIcon = {
-                                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                                        Icon(
-                                            imageVector = if (confirmPasswordVisible) 
-                                                Icons.Default.Visibility 
-                                            else 
-                                                Icons.Default.VisibilityOff,
-                                            contentDescription = null,
-                                            tint = ColorPrimary
-                                        )
-                                    }
-                                },
-                                visualTransformation = if (confirmPasswordVisible) 
-                                    androidx.compose.ui.text.input.VisualTransformation.None 
-                                else 
-                                    PasswordVisualTransformation(),
-                                isError = confirmPassword.isNotEmpty() && !doPasswordsMatch,
-                                errorMessage = if (confirmPassword.isNotEmpty() && !doPasswordsMatch) 
-                                    "Les mots de passe ne correspondent pas" else null,
-                                keyboardType = KeyboardType.Password,
-                                imeAction = ImeAction.Done,
-                                keyboardActions = KeyboardActions(
-                                    onDone = { focusManager.clearFocus() }
-                                )
-                            )
-                        }
-                    }
+                            }
+                        },
+                        visualTransformation = if (confirmPasswordVisible) 
+                            androidx.compose.ui.text.input.VisualTransformation.None 
+                        else 
+                            PasswordVisualTransformation(),
+                        isError = confirmPassword.isNotEmpty() && !doPasswordsMatch,
+                        errorMessage = if (confirmPassword.isNotEmpty() && !doPasswordsMatch) 
+                            "Les mots de passe ne correspondent pas" else null,
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                        keyboardActions = KeyboardActions(
+                            onDone = { focusManager.clearFocus() }
+                        )
+                    )
                     
                     Spacer(modifier = Modifier.height(32.dp))
                     
-                    // Boutons de navigation
-                    Row(
+                    // Bouton d'inscription
+                    ModernButton(
+                        text = "S'inscrire",
+                        onClick = {
+                            val request = UserRegistrationRequest(
+                                name = fullName.trim(),
+                                email = email.trim(),
+                                password = password
+                            )
+                            viewModel.registerUser(request)
+                        },
+                        isLoading = uiState is UserRegistrationUiState.Loading,
+                        enabled = isFormValid,
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        if (currentStep > 0) {
-                            ModernOutlineButton(
-                                text = "Précédent",
-                                onClick = { currentStep-- },
-                                modifier = Modifier.weight(1f),
-                                icon = Icons.Default.ArrowBack
-                            )
-                        }
-                        
-                        if (currentStep < totalSteps - 1) {
-                            val canGoNext = when (currentStep) {
-                                0 -> isStep1Valid
-                                1 -> isStep2Valid
-                                else -> false
-                            }
-                            
-                            ModernButton(
-                                text = "Suivant",
-                                onClick = { currentStep++ },
-                                enabled = canGoNext,
-                                modifier = Modifier.weight(if (currentStep > 0) 1f else 1f),
-                                icon = Icons.Default.ArrowForward
-                            )
-                        } else {
-                            ModernButton(
-                                text = "S'inscrire",
-                                onClick = {
-                                    val fullName = "${firstName.trim()} ${lastName.trim()}"
-                                    val request = UserRegistrationRequest(
-                                        name = fullName,
-                                        email = email.trim(),
-                                        password = password
-                                    )
-                                    viewModel.registerUser(request)
-                                },
-                                isLoading = uiState is UserRegistrationUiState.Loading,
-                                enabled = isStep3Valid,
-                                modifier = Modifier.weight(if (currentStep > 0) 1f else 1f),
-                                icon = Icons.Default.Check
-                            )
-                        }
-                    }
+                        icon = Icons.Default.Check
+                    )
                 }
             }
             

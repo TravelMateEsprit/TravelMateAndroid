@@ -3,10 +3,15 @@ package com.travelmate.data.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 
+/**
+ * Agency registration request matching backend SignupAgencyDto
+ * Backend accepts: name, email, password, agencyName, agencyLicense, 
+ * agencyWebsite (optional), phone, address, city, country, agencyDescription (optional)
+ */
 @Serializable
 data class AgencyRegistrationRequest(
     @SerialName("name")
-    val name: String,
+    val name: String, // Contact person full name (e.g., "Mohamed Ben Ali")
     
     @SerialName("email")
     val email: String,
@@ -18,7 +23,7 @@ data class AgencyRegistrationRequest(
     val agencyName: String,
     
     @SerialName("agencyLicense")
-    val agencyLicense: String,
+    val agencyLicense: String, // License number (e.g., "LIC-2024-12345")
     
     @SerialName("agencyWebsite")
     val agencyWebsite: String? = null,

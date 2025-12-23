@@ -166,7 +166,7 @@ fun GroupCard(
                                         colors = ButtonDefaults.outlinedButtonColors(
                                             contentColor = ColorPrimary
                                         ),
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                                        contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
                                     ) {
                                         Icon(
                                             Icons.Default.Edit,
@@ -184,7 +184,7 @@ fun GroupCard(
                                         colors = ButtonDefaults.outlinedButtonColors(
                                             contentColor = ColorError
                                         ),
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                                        contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
                                     ) {
                                         Icon(
                                             Icons.Default.Delete,
@@ -204,7 +204,7 @@ fun GroupCard(
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = ColorError
                                 ),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
                             ) {
                                 Icon(
                                     Icons.Default.ExitToApp,
@@ -224,7 +224,7 @@ fun GroupCard(
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = ColorTextSecondary
                                 ),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
                             ) {
                                 Icon(
                                     Icons.Default.HourglassEmpty,
@@ -242,7 +242,7 @@ fun GroupCard(
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = ColorPrimary
                                 ),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
                             ) {
                                 Icon(
                                     Icons.Default.Add,

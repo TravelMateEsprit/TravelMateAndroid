@@ -109,14 +109,17 @@ fun InsurancesUserScreen(
         // Content
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(
+                bottom = 96.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             // Header artistique avec gradient diagonal
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
+                        .height(200.dp)
                         .background(
                             brush = Brush.linearGradient(
                                 colors = listOf(
@@ -153,7 +156,7 @@ fun InsurancesUserScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(24.dp),
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
                         verticalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(
@@ -215,13 +218,12 @@ fun InsurancesUserScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .offset(y = (-30).dp)
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(20.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface
                         )
@@ -320,8 +322,6 @@ fun InsurancesUserScreen(
                         }
                     }
                 }
-                
-                Spacer(modifier = Modifier.height(16.dp))
             }
             
             // Panneau de filtres moderne avec animation
@@ -330,10 +330,10 @@ fun InsurancesUserScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
                             .animateContentSize(),
-                        shape = RoundedCornerShape(20.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface
                         )
@@ -599,7 +599,7 @@ fun InsurancesUserScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     tabs.forEachIndexed { index, title ->
@@ -621,8 +621,6 @@ fun InsurancesUserScreen(
                         }
                     }
                 }
-                
-                Spacer(modifier = Modifier.height(20.dp))
             }
             
             // Insurance List Header avec compteur
@@ -630,7 +628,7 @@ fun InsurancesUserScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 8.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -655,7 +653,7 @@ fun InsurancesUserScreen(
                             color = ColorPrimary.copy(alpha = 0.12f)
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
@@ -696,8 +694,7 @@ fun InsurancesUserScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 24.dp)
-                                .padding(vertical = 32.dp),
+                                .padding(horizontal = 16.dp, vertical = 16.dp),
                             shape = RoundedCornerShape(24.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             colors = CardDefaults.cardColors(
@@ -771,7 +768,7 @@ fun InsurancesUserScreen(
                                             contentColor = Color.White
                                         ),
                                         shape = RoundedCornerShape(12.dp),
-                                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+                                        contentPadding = PaddingValues(start = 24.dp, top = 12.dp, end = 24.dp, bottom = 12.dp)
                                     ) {
                                         Icon(
                                             Icons.Default.Refresh,
@@ -803,13 +800,11 @@ fun InsurancesUserScreen(
                                 }
                             } else null,
                             isInMySubscriptionsTab = selectedTabIndex == 1,
-                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
                     }
                 }
             }
-            
-            item { Spacer(modifier = Modifier.height(24.dp)) }
         }
         
         // Snackbar for errors
@@ -830,7 +825,7 @@ fun InfoChip(
         color = Color.White.copy(alpha = 0.2f)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {

@@ -213,15 +213,16 @@ fun ForgotPasswordScreen(
                         .padding(horizontal = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(id = com.travelmate.R.drawable.ic_launcher_foreground),
-                        contentDescription = "TravelMate logo",
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(RoundedCornerShape(60.dp))
-                            .background(Color.White)
-                            .padding(12.dp)
-                    )
+                    Box(
+                        modifier = Modifier.size(120.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = com.travelmate.R.drawable.logo_travelmate),
+                            contentDescription = "TravelMate logo",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
             

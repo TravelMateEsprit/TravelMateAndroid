@@ -143,7 +143,7 @@ fun MyInsuranceRequestsScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = ColorPrimary.copy(alpha = 0.1f)
                     )
@@ -246,8 +246,13 @@ fun MyInsuranceRequestsScreen(
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                            end = 16.dp,
+                                top = 16.dp,
+                                bottom = 96.dp
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             items(requests, key = { it.id }) { request ->
                                 AnimatedVisibility(
@@ -536,7 +541,7 @@ fun EnhancedStatusChip(status: RequestStatus) {
         shape = RoundedCornerShape(20.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {

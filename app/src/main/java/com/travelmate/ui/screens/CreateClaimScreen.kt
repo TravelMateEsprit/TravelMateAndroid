@@ -174,7 +174,7 @@ fun CreateClaimScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 20.dp),
+                            .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
@@ -207,7 +207,7 @@ fun CreateClaimScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 20.dp),
+                            .padding(start = 24.dp, top = 20.dp, end = 24.dp, bottom = 20.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         StepIndicator(

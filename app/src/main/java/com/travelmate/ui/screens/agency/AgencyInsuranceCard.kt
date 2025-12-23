@@ -147,7 +147,7 @@ fun AgencyInsuranceCard(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (insurance.isActive) ColorPrimary else ColorTextSecondary,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
                         )
                     }
                 }
@@ -203,7 +203,7 @@ fun AgencyInsuranceCard(
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    modifier = Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
@@ -232,7 +232,7 @@ fun AgencyInsuranceCard(
                                     "+${insurance.coverage.size - 3}",
                                     fontSize = 11.sp,
                                     color = ColorTextSecondary,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                    modifier = Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = 6.dp)
                                 )
                             }
                         }
@@ -334,7 +334,7 @@ fun AgencyInsuranceCard(
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = ColorPrimary
                         ),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                        contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
                     ) {
                         Icon(Icons.Default.Edit, null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
@@ -347,7 +347,7 @@ fun AgencyInsuranceCard(
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = ColorPrimary
                         ),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                        contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
                     ) {
                         Icon(Icons.Default.People, null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
@@ -359,7 +359,7 @@ fun AgencyInsuranceCard(
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = ColorError
                         ),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                        contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
                     ) {
                         Icon(Icons.Default.Delete, "Supprimer", tint = ColorError, modifier = Modifier.size(16.dp))
                     }

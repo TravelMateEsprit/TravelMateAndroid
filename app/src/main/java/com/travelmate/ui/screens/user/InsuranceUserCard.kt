@@ -82,7 +82,7 @@ fun InsuranceUserCard(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -100,7 +100,7 @@ fun InsuranceUserCard(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -125,7 +125,7 @@ fun InsuranceUserCard(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(

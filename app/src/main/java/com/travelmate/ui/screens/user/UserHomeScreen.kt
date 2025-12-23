@@ -180,7 +180,7 @@ fun PlaceholderScreen(title: String, navController: NavController? = null) {
             text = "Bienvenue sur TravelMate",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = ColorTextPrimary,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(vertical = 16.dp)
         )
 
@@ -191,7 +191,7 @@ fun PlaceholderScreen(title: String, navController: NavController? = null) {
                 .clickable { navController?.navigate(com.travelmate.utils.Constants.Routes.MY_INSURANCE_REQUESTS) },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = MaterialTheme.colorScheme.surface
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
@@ -225,19 +225,19 @@ fun PlaceholderScreen(title: String, navController: NavController? = null) {
                         text = "Mes demandes d'assurance",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Suivre vos demandes en cours",
                         fontSize = 14.sp,
-                        color = ColorTextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Icon(
-                    imageVector = Icons.Default.ChevronRight,
+                    Icons.Default.ChevronRight,
                     contentDescription = null,
-                    tint = ColorTextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -249,7 +249,7 @@ fun PlaceholderScreen(title: String, navController: NavController? = null) {
                 .clickable { navController?.navigate(com.travelmate.utils.Constants.Routes.MY_CLAIMS) },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = MaterialTheme.colorScheme.surface
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
@@ -283,19 +283,19 @@ fun PlaceholderScreen(title: String, navController: NavController? = null) {
                         text = "Mes réclamations",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Gérer vos réclamations",
                         fontSize = 14.sp,
-                        color = ColorTextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
                     contentDescription = null,
-                    tint = ColorTextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

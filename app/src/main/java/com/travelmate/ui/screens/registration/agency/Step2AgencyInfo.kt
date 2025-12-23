@@ -1,33 +1,40 @@
 package com.travelmate.ui.screens.registration.agency
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.travelmate.ui.components.CustomTextField
 import com.travelmate.ui.components.ValidationIcon
+import com.travelmate.ui.theme.*
 import com.travelmate.viewmodel.AgencyFormData
 import com.travelmate.viewmodel.AgencyRegistrationViewModel
 
+/**
+ * Step 2: Agency information
+ * Required: agencyName, agencyLicense, phone
+ * Optional: agencyWebsite, agencyDescription
+ */
 @Composable
 fun Step2AgencyInfo(
     formData: AgencyFormData,
@@ -38,39 +45,143 @@ fun Step2AgencyInfo(
 ) {
     val focusManager = LocalFocusManager.current
     
-    val isSiretValid = remember(formData.siret) {
-        formData.siret.isEmpty() || viewModel.validateSiret(formData.siret)
-    }
     val isPhoneValid = remember(formData.phone) {
         formData.phone.isEmpty() || viewModel.validatePhone(formData.phone)
     }
-    val isUrlValid = remember(formData.websiteUrl) {
-        viewModel.validateUrl(formData.websiteUrl)
+    val isUrlValid = remember(formData.agencyWebsite) {
+        viewModel.validateUrl(formData.agencyWebsite)
     }
     
-    val isStepValid = remember(formData.agencyName, formData.siret, formData.phone, isSiretValid, isPhoneValid) {
+    val isStepValid = remember(formData.agencyName, formData.agencyLicense, formData.phone, isPhoneValid) {
         formData.agencyName.isNotBlank() &&
-        formData.siret.isNotBlank() && isSiretValid &&
+        formData.agencyLicense.isNotBlank() &&
         formData.phone.isNotBlank() && isPhoneValid
+    }
+    
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(100)
+        visible = true
+    }
+    
+    // Calculate completion
+    val fieldsCompleted = remember(formData.agencyName, formData.agencyLicense, formData.phone, formData.agencyWebsite, formData.agencyDescription) {
+        listOf(
+            formData.agencyName.isNotBlank(),
+            formData.agencyLicense.isNotBlank(),
+            formData.phone.isNotBlank() && isPhoneValid,
+            formData.agencyWebsite.isNotBlank(),
+            formData.agencyDescription.isNotBlank()
+        ).count { it }
     }
     
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
-            .verticalScroll(rememberScrollState())
     ) {
-        Text(
-            text = "Informations de l'agence",
-            fontSize = 20.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        // Header avec icon
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(ColorPrimary, ColorSecondary)
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Business,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Informations de l'agence",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = ColorTextPrimary
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Détails de votre agence",
+                        fontSize = 14.sp,
+                        color = ColorTextSecondary
+                    )
+                    if (fieldsCompleted > 0) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = ColorPrimary.copy(alpha = 0.15f)
+                        ) {
+                            Text(
+                                text = "$fieldsCompleted/5",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ColorPrimary,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
         
-        Text(
-            text = "Détails de votre agence",
-            fontSize = 14.sp,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Info Card
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn() + expandVertically()
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = ColorSecondary.copy(alpha = 0.08f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        Icons.Default.VerifiedUser,
+                        contentDescription = null,
+                        tint = ColorSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Column {
+                        Text(
+                            text = "Licence professionnelle requise",
+                            fontSize = 13.sp,
+                            color = ColorTextPrimary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "Assurez-vous d'avoir votre numéro de licence officielle.",
+                            fontSize = 12.sp,
+                            color = ColorTextSecondary,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
         
         CustomTextField(
             value = formData.agencyName,
@@ -83,17 +194,16 @@ fun Step2AgencyInfo(
         Spacer(modifier = Modifier.height(16.dp))
         
         CustomTextField(
-            value = formData.siret,
-            onValueChange = { onFormDataChange(formData.copy(siret = it)) },
-            label = "SIRET (14 chiffres)",
-            isError = formData.siret.isNotEmpty() && !isSiretValid,
-            errorMessage = if (formData.siret.isNotEmpty() && !isSiretValid) "SIRET invalide (14 chiffres)" else null,
-            trailingIcon = {
-                if (formData.siret.isNotEmpty()) {
-                    ValidationIcon(isValid = isSiretValid)
-                }
+            value = formData.agencyLicense,
+            onValueChange = { onFormDataChange(formData.copy(agencyLicense = it)) },
+            label = "Numéro de licence officielle",
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Badge,
+                    contentDescription = null,
+                    tint = if (formData.agencyLicense.isNotBlank()) ColorPrimary else ColorTextSecondary
+                )
             },
-            keyboardType = KeyboardType.Number,
             imeAction = ImeAction.Next,
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
         )
@@ -103,13 +213,20 @@ fun Step2AgencyInfo(
         CustomTextField(
             value = formData.phone,
             onValueChange = { onFormDataChange(formData.copy(phone = it)) },
-            label = "Téléphone",
+            label = "Téléphone professionnel",
             isError = formData.phone.isNotEmpty() && !isPhoneValid,
             errorMessage = if (formData.phone.isNotEmpty() && !isPhoneValid) "Numéro invalide" else null,
             trailingIcon = {
                 if (formData.phone.isNotEmpty()) {
                     ValidationIcon(isValid = isPhoneValid)
                 }
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Phone,
+                    contentDescription = null,
+                    tint = if (formData.phone.isNotBlank() && isPhoneValid) ColorSuccess else ColorTextSecondary
+                )
             },
             keyboardType = KeyboardType.Phone,
             imeAction = ImeAction.Next,
@@ -119,11 +236,18 @@ fun Step2AgencyInfo(
         Spacer(modifier = Modifier.height(16.dp))
         
         CustomTextField(
-            value = formData.websiteUrl,
-            onValueChange = { onFormDataChange(formData.copy(websiteUrl = it)) },
+            value = formData.agencyWebsite,
+            onValueChange = { onFormDataChange(formData.copy(agencyWebsite = it)) },
             label = "Site web (optionnel)",
-            isError = formData.websiteUrl.isNotEmpty() && !isUrlValid,
-            errorMessage = if (formData.websiteUrl.isNotEmpty() && !isUrlValid) "URL invalide" else null,
+            isError = formData.agencyWebsite.isNotEmpty() && !isUrlValid,
+            errorMessage = if (formData.agencyWebsite.isNotEmpty() && !isUrlValid) "URL invalide" else null,
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Language,
+                    contentDescription = null,
+                    tint = if (formData.agencyWebsite.isNotBlank() && isUrlValid) ColorPrimary else ColorTextSecondary
+                )
+            },
             keyboardType = KeyboardType.Uri,
             imeAction = ImeAction.Next,
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
@@ -132,11 +256,18 @@ fun Step2AgencyInfo(
         Spacer(modifier = Modifier.height(16.dp))
         
         CustomTextField(
-            value = formData.description,
-            onValueChange = { onFormDataChange(formData.copy(description = it)) },
-            label = "Description (optionnel)",
+            value = formData.agencyDescription,
+            onValueChange = { onFormDataChange(formData.copy(agencyDescription = it)) },
+            label = "Description de l'agence (optionnel)",
             singleLine = false,
             maxLines = 4,
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Description,
+                    contentDescription = null,
+                    tint = if (formData.agencyDescription.isNotBlank()) ColorPrimary else ColorTextSecondary
+                )
+            },
             imeAction = ImeAction.Done,
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
         )
@@ -147,8 +278,15 @@ fun Step2AgencyInfo(
         Row(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
                 onClick = onPrevious,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp)
             ) {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("Précédent")
             }
             
@@ -157,9 +295,19 @@ fun Step2AgencyInfo(
             Button(
                 onClick = onNext,
                 enabled = isStepValid,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ColorPrimary
+                )
             ) {
-                Text("Suivant")
+                Text("Continuer")
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }

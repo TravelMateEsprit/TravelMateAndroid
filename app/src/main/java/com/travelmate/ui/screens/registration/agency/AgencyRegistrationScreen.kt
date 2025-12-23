@@ -2,12 +2,10 @@ package com.travelmate.ui.screens.registration.agency
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,16 +14,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +28,12 @@ import com.travelmate.ui.theme.*
 import com.travelmate.viewmodel.AgencyRegistrationUiState
 import com.travelmate.viewmodel.AgencyRegistrationViewModel
 
+/**
+ * Agency registration screen with 3 steps matching backend requirements:
+ * Step 1: Contact person info and login credentials (name, email, password)
+ * Step 2: Agency information (agencyName, agencyLicense, phone, agencyWebsite, agencyDescription)
+ * Step 3: Address (address, city, country)
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgencyRegistrationScreen(
@@ -48,9 +47,6 @@ fun AgencyRegistrationScreen(
     val isConnected by viewModel.connectionState.collectAsState()
     val focusManager = LocalFocusManager.current
     
-    var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-    
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -58,16 +54,10 @@ fun AgencyRegistrationScreen(
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         visible = true
+        viewModel.connectSocket()
     }
     
-    val totalSteps = 5
-    
-    val isStep1Valid = formData.agencyName.isNotBlank() && formData.description.isNotBlank()
-    val isStep2Valid = formData.email.isNotBlank() && formData.phone.isNotBlank() && 
-                       formData.address.isNotBlank() && formData.city.isNotBlank() && formData.country.isNotBlank()
-    val isStep3Valid = formData.siret.isNotBlank() && formData.legalRepFirstName.isNotBlank() && formData.legalRepLastName.isNotBlank()
-    val isStep4Valid = formData.password.isNotBlank() && formData.password == formData.confirmPassword && 
-                       formData.password.length >= 8
+    val totalSteps = 3
     
     LaunchedEffect(uiState) {
         when (uiState) {
@@ -183,6 +173,7 @@ fun AgencyRegistrationScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -258,225 +249,33 @@ fun AgencyRegistrationScreen(
                     cornerRadius = 24.dp,
                     elevation = 8.dp
                 ) {
-                    if (!isConnected) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            ModernConnectionStatus(isConnected = isConnected)
-                        }
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
-                    
                     when (currentStep) {
                         1 -> {
-                            ModernSectionHeader(
-                                title = "Informations de l'agence",
-                                subtitle = "Détails de votre agence"
-                            )
-                            Spacer(modifier = Modifier.height(24.dp))
-                            ModernTextField(
-                                value = formData.agencyName,
-                                onValueChange = { viewModel.updateFormData { copy(agencyName = it) } },
-                                label = "Nom de l'agence",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            ModernTextField(
-                                value = formData.description,
-                                onValueChange = { viewModel.updateFormData { copy(description = it) } },
-                                label = "Description",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done,
-                                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+                            Step1LoginInfo(
+                                formData = formData,
+                                onFormDataChange = { newData -> viewModel.updateFormData { newData } },
+                                onNext = { viewModel.nextStep() },
+                                viewModel = viewModel,
+                                isConnected = isConnected
                             )
                         }
                         2 -> {
-                            ModernSectionHeader(
-                                title = "Coordonnées",
-                                subtitle = "Informations de contact"
-                            )
-                            Spacer(modifier = Modifier.height(24.dp))
-                            ModernTextField(
-                                value = formData.email,
-                                onValueChange = { viewModel.updateFormData { copy(email = it) } },
-                                label = "Email",
-                                keyboardType = KeyboardType.Email,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            ModernTextField(
-                                value = formData.phone,
-                                onValueChange = { viewModel.updateFormData { copy(phone = it) } },
-                                label = "Téléphone",
-                                keyboardType = KeyboardType.Phone,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            ModernTextField(
-                                value = formData.address,
-                                onValueChange = { viewModel.updateFormData { copy(address = it) } },
-                                label = "Adresse",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            ModernTextField(
-                                value = formData.city,
-                                onValueChange = { viewModel.updateFormData { copy(city = it) } },
-                                label = "Ville",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            ModernTextField(
-                                value = formData.country,
-                                onValueChange = { viewModel.updateFormData { copy(country = it) } },
-                                label = "Pays",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done,
-                                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+                            Step2AgencyInfo(
+                                formData = formData,
+                                onFormDataChange = { newData -> viewModel.updateFormData { newData } },
+                                onNext = { viewModel.nextStep() },
+                                onPrevious = { viewModel.previousStep() },
+                                viewModel = viewModel
                             )
                         }
                         3 -> {
-                            ModernSectionHeader(
-                                title = "Informations légales",
-                                subtitle = "Licences et certifications"
-                            )
-                            Spacer(modifier = Modifier.height(24.dp))
-                            ModernTextField(
-                                value = formData.siret,
-                                onValueChange = { viewModel.updateFormData { copy(siret = it) } },
-                                label = "Numéro SIRET",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            ModernTextField(
-                                value = formData.legalRepFirstName,
-                                onValueChange = { viewModel.updateFormData { copy(legalRepFirstName = it) } },
-                                label = "Prénom du représentant légal",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            ModernTextField(
-                                value = formData.legalRepLastName,
-                                onValueChange = { viewModel.updateFormData { copy(legalRepLastName = it) } },
-                                label = "Nom du représentant légal",
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Done,
-                                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
-                            )
-                        }
-                        4 -> {
-                            ModernSectionHeader(
-                                title = "Sécurité",
-                                subtitle = "Créez votre mot de passe"
-                            )
-                            Spacer(modifier = Modifier.height(24.dp))
-                            ModernTextField(
-                                value = formData.password,
-                                onValueChange = { viewModel.updateFormData { copy(password = it) } },
-                                label = "Mot de passe",
-                                trailingIcon = {
-                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                        Icon(
-                                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                            contentDescription = null,
-                                            tint = ColorPrimary
-                                        )
-                                    }
-                                },
-                                visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
-                                isError = formData.password.isNotEmpty() && formData.password.length < 8,
-                                errorMessage = if (formData.password.isNotEmpty() && formData.password.length < 8) "Le mot de passe doit contenir au moins 8 caractères" else null,
-                                keyboardType = KeyboardType.Password,
-                                imeAction = ImeAction.Next,
-                                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            ModernTextField(
-                                value = formData.confirmPassword,
-                                onValueChange = { viewModel.updateFormData { copy(confirmPassword = it) } },
-                                label = "Confirmer le mot de passe",
-                                trailingIcon = {
-                                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                                        Icon(
-                                            imageVector = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                            contentDescription = null,
-                                            tint = ColorPrimary
-                                        )
-                                    }
-                                },
-                                visualTransformation = if (confirmPasswordVisible) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
-                                isError = formData.confirmPassword.isNotEmpty() && formData.password != formData.confirmPassword,
-                                errorMessage = if (formData.confirmPassword.isNotEmpty() && formData.password != formData.confirmPassword) "Les mots de passe ne correspondent pas" else null,
-                                keyboardType = KeyboardType.Password,
-                                imeAction = ImeAction.Done,
-                                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
-                            )
-                        }
-                        5 -> {
-                            ModernSectionHeader(
-                                title = "Documents",
-                                subtitle = "Téléchargez vos documents (optionnel)"
-                            )
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Text(
-                                text = "Les documents peuvent être ajoutés plus tard depuis votre profil.",
-                                fontSize = 14.sp,
-                                color = ColorTextSecondary,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(32.dp))
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        if (currentStep > 1) {
-                            ModernOutlineButton(
-                                text = "Précédent",
-                                onClick = { viewModel.previousStep() },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                        
-                        if (currentStep < totalSteps) {
-                            val canGoNext = when (currentStep) {
-                                1 -> isStep1Valid
-                                2 -> isStep2Valid
-                                3 -> isStep3Valid
-                                4 -> isStep4Valid
-                                else -> true
-                            }
-                            
-                            ModernButton(
-                                text = "Suivant",
-                                onClick = { viewModel.nextStep() },
-                                enabled = canGoNext,
-                                modifier = Modifier.weight(if (currentStep > 1) 1f else 1f)
-                            )
-                        } else {
-                            ModernButton(
-                                text = "S'inscrire",
-                                onClick = { viewModel.registerAgency() },
-                                isLoading = uiState is AgencyRegistrationUiState.Loading,
-                                enabled = isStep4Valid && isConnected,
-                                modifier = Modifier.weight(if (currentStep > 1) 1f else 1f)
+                            Step3AddressInfo(
+                                formData = formData,
+                                onFormDataChange = { newData -> viewModel.updateFormData { newData } },
+                                onSubmit = { viewModel.registerAgency() },
+                                onPrevious = { viewModel.previousStep() },
+                                viewModel = viewModel,
+                                uiState = uiState
                             )
                         }
                     }

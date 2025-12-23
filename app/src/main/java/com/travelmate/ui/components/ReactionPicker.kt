@@ -29,7 +29,7 @@ fun ReactionPicker(
         color = Color.White
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             emojis.forEach { emoji ->

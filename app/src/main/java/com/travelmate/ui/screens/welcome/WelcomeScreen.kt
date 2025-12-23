@@ -86,15 +86,16 @@ fun WelcomeScreen(
                         )
                     ) + fadeIn()
                 ) {
-                    Image(
-                        painter = painterResource(id = com.travelmate.R.drawable.ic_launcher_foreground),
-                        contentDescription = "TravelMate logo",
-                        modifier = Modifier
-                            .size(180.dp)
-                            .clip(RoundedCornerShape(90.dp))
-                            .background(Color.White)
-                            .padding(20.dp)
-                    )
+                    Box(
+                        modifier = Modifier.size(180.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = com.travelmate.R.drawable.logo_travelmate),
+                            contentDescription = "TravelMate logo",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -166,7 +167,7 @@ fun WelcomeScreen(
                         text = "Commencez votre aventure",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -190,7 +191,7 @@ fun WelcomeScreen(
                         onClick = onNavigateToAgencyRegistration,
                         enabled = isConnected,
                         icon = Icons.Default.Business,
-                        backgroundColor = ColorSecondary
+                        backgroundColor = ColorAccent
                     )
                     
                     Spacer(modifier = Modifier.height(12.dp))
@@ -215,7 +216,7 @@ fun WelcomeScreen(
                         ) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(28.dp),
-                                color = ColorSecondary,
+                                color = ColorAccent,
                                 strokeWidth = 3.dp
                             )
                         }

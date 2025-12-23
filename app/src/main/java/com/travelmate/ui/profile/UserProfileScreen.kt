@@ -356,7 +356,7 @@ private fun UserProfileHeader(
                 color = if (isEditing) Color.White else Color.White.copy(alpha = 0.2f)
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                    modifier = Modifier.padding(start = 20.dp, top = 10.dp, end = 20.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(

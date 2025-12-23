@@ -257,7 +257,7 @@ fun GroupsListScreen(
                             ) {
                                 Text(
                                     "Trier par",
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
                                     fontSize = 12.sp,
                                     color = ColorTextSecondary,
                                     fontWeight = FontWeight.SemiBold
@@ -548,8 +548,13 @@ fun GroupsList(
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                            end = 16.dp,
+                top = 16.dp,
+                bottom = 96.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(groups, key = { it._id }) { group ->
                 AnimatedVisibility(

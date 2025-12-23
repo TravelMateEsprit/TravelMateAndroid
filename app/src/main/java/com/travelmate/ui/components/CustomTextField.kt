@@ -19,6 +19,7 @@ fun CustomTextField(
     modifier: Modifier = Modifier,
     isError: Boolean = false,
     errorMessage: String? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardType: KeyboardType = KeyboardType.Text,
@@ -39,6 +40,7 @@ fun CustomTextField(
                 Text(errorMessage)
             }
         },
+        leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         visualTransformation = visualTransformation,
         keyboardOptions = KeyboardOptions(

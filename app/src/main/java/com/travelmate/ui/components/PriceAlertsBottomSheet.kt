@@ -254,7 +254,7 @@ fun PriceAlertCard(
                                 AlertStatus.TRIGGERED -> "Déclenchée"
                             },
                             fontSize = 10.sp,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
                             color = when (alert.status) {
                                 AlertStatus.ACTIVE -> MaterialTheme.colorScheme.onPrimaryContainer
                                 AlertStatus.TRIGGERED -> MaterialTheme.colorScheme.onTertiaryContainer

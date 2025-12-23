@@ -4,6 +4,7 @@ object Constants {
     
     // Navigation Routes
     object Routes {
+        const val SPLASH = "splash"
         const val WELCOME = "welcome"
         const val USER_REGISTRATION = "user_registration"
         const val AGENCY_REGISTRATION = "agency_registration"

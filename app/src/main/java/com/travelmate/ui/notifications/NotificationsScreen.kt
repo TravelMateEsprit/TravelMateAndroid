@@ -75,7 +75,7 @@ fun NotificationsScreen(
                                 ) {
                                     Text(
                                         text = "$unreadCount",
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = Color.White,
                                         fontWeight = FontWeight.Bold
@@ -145,8 +145,13 @@ fun NotificationsScreen(
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 16.dp,
+                            bottom = 96.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(
                             items = notifications,
@@ -369,7 +374,7 @@ fun AnimatedNotificationItem(
                             ) {
                                 Text(
                                     text = getNotificationTypeLabel(notification.type),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = getNotificationColor(notification.type),
                                     fontWeight = FontWeight.SemiBold

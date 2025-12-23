@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
@@ -111,13 +112,13 @@ fun LoginScreen(
                 Text(
                     "Connexion réussie !",
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
                 Text(
                     "Bienvenue sur TravelMate.",
-                    color = ColorTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             },
@@ -133,7 +134,7 @@ fun LoginScreen(
                 )
             },
             shape = RoundedCornerShape(20.dp),
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
     
@@ -153,13 +154,13 @@ fun LoginScreen(
                 Text(
                     "Erreur de connexion",
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
                 Text(
                     errorMessage,
-                    color = ColorTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             },
@@ -175,7 +176,7 @@ fun LoginScreen(
                 )
             },
             shape = RoundedCornerShape(20.dp),
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
     
@@ -246,15 +247,16 @@ fun LoginScreen(
                         .padding(horizontal = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(id = com.travelmate.R.drawable.ic_launcher_foreground),
-                        contentDescription = "TravelMate logo",
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(RoundedCornerShape(60.dp))
-                            .background(Color.White)
-                            .padding(12.dp)
-                    )
+                    Box(
+                        modifier = Modifier.size(120.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = com.travelmate.R.drawable.logo_travelmate),
+                            contentDescription = "TravelMate logo",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
             
@@ -277,7 +279,7 @@ fun LoginScreen(
                         text = "Bon retour !",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
                     Spacer(modifier = Modifier.height(4.dp))
@@ -285,7 +287,7 @@ fun LoginScreen(
                     Text(
                         text = "Connectez-vous pour continuer",
                         fontSize = 14.sp,
-                        color = ColorTextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
                     Spacer(modifier = Modifier.height(32.dp))
