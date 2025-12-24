@@ -112,8 +112,15 @@ fun AgencyMainDashboard(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Navigation Items
-                DashboardSection.values().forEach { section ->
+                // Navigation Items - Seulement les sections développées
+                val availableSections = listOf(
+                    DashboardSection.OVERVIEW,
+                    DashboardSection.INSURANCES,
+                    DashboardSection.CLAIMS,
+                    DashboardSection.SETTINGS
+                )
+                
+                availableSections.forEach { section ->
                     NavigationDrawerItem(
                         icon = {
                             Icon(

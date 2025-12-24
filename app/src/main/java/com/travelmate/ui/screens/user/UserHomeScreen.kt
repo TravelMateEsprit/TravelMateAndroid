@@ -31,7 +31,6 @@ sealed class BottomNavItem(
     val icon: ImageVector,
     val label: String
 ) {
-    object Home : BottomNavItem("home", Icons.Default.Home, "Accueil")
     object Groups : BottomNavItem("groups", Icons.Default.Group, "Groupes")
     object Offers : BottomNavItem("offers", Icons.Default.LocalOffer, "Offres")
     object Insurances : BottomNavItem("insurances", Icons.Default.Security, "Assurances")
@@ -46,12 +45,11 @@ fun UserHomeScreen(
     onLogout: () -> Unit = {},
     notificationsViewModel: NotificationsViewModel = hiltViewModel()
 ) {
-    var selectedTab by remember { mutableStateOf(3) } // Default to Insurances tab
+    var selectedTab by remember { mutableStateOf(2) } // Default to Insurances tab (index 2)
     
     val unreadCount by notificationsViewModel.unreadCount.collectAsState()
     
     val navItems = listOf(
-        BottomNavItem.Home,
         BottomNavItem.Groups,
         BottomNavItem.Offers,
         BottomNavItem.Insurances,
@@ -144,20 +142,19 @@ fun UserHomeScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             when (selectedTab) {
-                0 -> PlaceholderScreen("Accueil", navController)
-                1 -> GroupsListScreen(
+                0 -> GroupsListScreen(
                     onNavigateToGroupDetails = { groupId ->
                         navController.navigate("groupDetails/$groupId")
                     }
                 )
-                2 -> OffresScreen(navController = navController)
-                3 -> InsurancesUserScreen(navController = navController)
-                4 -> com.travelmate.ui.notifications.NotificationsScreen(
+                1 -> OffresScreen(navController = navController)
+                2 -> InsurancesUserScreen(navController = navController)
+                3 -> com.travelmate.ui.notifications.NotificationsScreen(
                     viewModel = notificationsViewModel,
                     onNavigateToRequestDetails = { /* TODO */ },
                     onNavigateToPaymentDetails = { /* TODO */ }
                 )
-                5 -> UserProfileScreen(
+                4 -> UserProfileScreen(
                     navController = navController,
                     onLogout = onLogout
                 )
@@ -166,138 +163,3 @@ fun UserHomeScreen(
     }
 }
 
-@Composable
-fun PlaceholderScreen(title: String, navController: NavController? = null) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ColorBackground)
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // En-tête
-        Text(
-            text = "Bienvenue sur TravelMate",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
-
-        // Carte: Mes demandes d'assurance
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { navController?.navigate(com.travelmate.utils.Constants.Routes.MY_INSURANCE_REQUESTS) },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(ColorPrimary, ColorPrimary.copy(alpha = 0.8f))
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Assignment,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Mes demandes d'assurance",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Suivre vos demandes en cours",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        // Carte: Mes réclamations
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { navController?.navigate(com.travelmate.utils.Constants.Routes.MY_CLAIMS) },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(ColorSecondary, ColorSecondary.copy(alpha = 0.8f))
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Report,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Mes réclamations",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Gérer vos réclamations",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
