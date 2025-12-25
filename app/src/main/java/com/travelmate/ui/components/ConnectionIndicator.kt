@@ -19,6 +19,6 @@ fun ConnectionIndicator(
         modifier = modifier
             .size(12.dp)
             .clip(CircleShape)
-            .background(if (isConnected) Color(0xFF10B981) else Color(0xFFEF4444))
+            .background(if (isConnected) Color(0xFF10B981) else MaterialTheme.colorScheme.error)
     )
 }

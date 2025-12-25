@@ -1,6 +1,8 @@
 package com.travelmate.ui.screens.user
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -8,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,222 +29,683 @@ fun InsuranceUserCard(
     isInMySubscriptionsTab: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    ModernCard(
+    var showDetailsDialog by remember { mutableStateOf(false) }
+    
+    // Dialog détaillé
+    if (showDetailsDialog) {
+        InsuranceDetailsDialog(
+            insurance = insurance,
+            onDismiss = { showDetailsDialog = false },
+            onCreateRequest = {
+                showDetailsDialog = false
+                onCreateRequest(insurance._id)
+            },
+            onUnsubscribe = {
+                showDetailsDialog = false
+                onUnsubscribe(insurance._id)
+            },
+            onCreateClaim = onCreateClaim?.let { callback ->
+                {
+                    showDetailsDialog = false
+                    callback(insurance._id)
+                }
+            },
+            isInMySubscriptionsTab = isInMySubscriptionsTab
+        )
+    }
+    Card(
         modifier = modifier.fillMaxWidth(),
-        cornerRadius = 20.dp,
-        elevation = 4.dp
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
     ) {
-        // Header with name and agency
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            Column {
-                Text(
-                    insurance.name,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
-                )
-                Text(
-                    insurance.agencyName ?: "Agence",
-                    fontSize = 13.sp,
-                    color = ColorTextSecondary
-                )
-            }
-            
-            // Rating
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.Star,
-                    contentDescription = null,
-                    tint = ColorAccent,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    insurance.rating.toString(),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = ColorTextPrimary
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        // Price and Duration Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Price Badge
-            Surface(
-                color = ColorPrimary.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(12.dp)
+            // Header compact avec nom et rating
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                Row(
-                    modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "${insurance.price.toInt()} TND",
+                        insurance.name,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorPrimary
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2
                     )
+                    Text(
+                        insurance.agencyName ?: "Agence",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+                
+                // Rating badge moderne
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = ColorAccent.copy(alpha = 0.1f)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = null,
+                            tint = ColorAccent,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            insurance.rating.toString(),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
             
-            // Duration Badge
-            Surface(
-                color = ColorSecondary.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(12.dp)
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Prix en évidence
+            Text(
+                "${insurance.price.toInt()} TND",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = ColorPrimary
+            )
+            
+            Spacer(modifier = Modifier.height(10.dp))
+            
+            // Info chips compacts
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // Duration chip
                 Row(
-                    modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
                         Icons.Default.AccessTime,
                         contentDescription = null,
-                        tint = ColorSecondary,
-                        modifier = Modifier.size(16.dp)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         insurance.duration,
-                        fontSize = 13.sp,
-                        color = ColorSecondary
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            }
-            
-            // Destination Badge
-            insurance.conditions?.destination?.firstOrNull()?.let { dest ->
-                Surface(
-                    color = ColorAccent.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
+                
+                Text("•", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                
+                // Destination
+                insurance.conditions?.destination?.firstOrNull()?.let { dest ->
                     Row(
-                        modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
                             Icons.Default.Public,
                             contentDescription = null,
-                            tint = ColorAccent,
-                            modifier = Modifier.size(16.dp)
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(14.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             dest,
-                            fontSize = 13.sp,
-                            color = ColorTextPrimary
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
                         )
                     }
                 }
             }
-        }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        // Coverage Section
-        Text(
-            "Ce qui est inclus :",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            color = ColorTextPrimary
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        insurance.coverage.take(3).forEach { coverage ->
-            Row(
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier.padding(vertical = 2.dp)
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Coverage - Version compacte avec lien Voir plus
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Icon(
-                    Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = ColorSuccess,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    coverage,
-                    fontSize = 12.sp,
-                    color = ColorTextSecondary
-                )
-            }
-        }
-        
-        if (insurance.coverage.size > 3) {
-            TextButton(onClick = { /* Show more */ }) {
-                Text("Voir plus", fontSize = 12.sp, color = ColorPrimary)
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        // Action Buttons
-        when {
-            // Dans l'onglet "Mes inscriptions", afficher les boutons de réclamation et désinscription
-            isInMySubscriptionsTab -> {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Bouton Faire une réclamation
-                    onCreateClaim?.let { callback ->
-                        ModernButton(
-                            text = "Faire une réclamation",
-                            onClick = { callback(insurance._id) },
-                            backgroundColor = ColorPrimary,
-                            modifier = Modifier.fillMaxWidth(),
-                            icon = Icons.Default.Report
-                        )
-                    }
-                    
-                    // Bouton Se désinscrire
-                    OutlinedButton(
-                        onClick = { onUnsubscribe(insurance._id) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = ColorTextSecondary
-                        ),
-                        shape = RoundedCornerShape(12.dp)
+                insurance.coverage.take(2).forEach { coverage ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Icon(
-                            Icons.Default.ExitToApp,
+                            Icons.Default.CheckCircle,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            tint = ColorSuccess,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            coverage,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
+                    }
+                }
+                
+                // Bouton "Voir plus" moderne
+                TextButton(
+                    onClick = { showDetailsDialog = true },
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier.padding(start = 20.dp)
+                ) {
+                    Text(
+                        if (insurance.coverage.size > 2) 
+                            "+${insurance.coverage.size - 2} autres • Voir plus"
+                        else 
+                            "Voir les détails",
+                        fontSize = 12.sp,
+                        color = ColorPrimary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = ColorPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(14.dp))
+            
+            // Action Buttons modernes
+            when {
+                // Dans l'onglet "Mes inscriptions"
+                isInMySubscriptionsTab -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Bouton Réclamation
+                        onCreateClaim?.let { callback ->
+                            Button(
+                                onClick = { callback(insurance._id) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = ColorPrimary
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(vertical = 12.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Report,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    "Réclamation",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                        
+                        // Bouton Se désinscrire
+                        OutlinedButton(
+                            onClick = { onUnsubscribe(insurance._id) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = ColorError
+                            ),
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(vertical = 12.dp),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                ColorError.copy(alpha = 0.3f)
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.ExitToApp,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "Quitter",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+                // Déjà inscrit
+                insurance.isSubscribed -> {
+                    Button(
+                        onClick = { /* Aucune action */ },
+                        enabled = false,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = ColorSuccess.copy(alpha = 0.1f),
+                            contentColor = ColorSuccess,
+                            disabledContainerColor = ColorSuccess.copy(alpha = 0.1f),
+                            disabledContentColor = ColorSuccess
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(vertical = 12.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Se désinscrire",
+                            "Déjà inscrit",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+                // Faire une demande
+                else -> {
+                    Button(
+                        onClick = { onCreateRequest(insurance._id) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = ColorPrimary
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(vertical = 12.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Send,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Faire une demande",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
             }
-            // Dans l'onglet "Toutes les assurances", afficher selon le statut d'inscription
-            insurance.isSubscribed -> {
-                ModernButton(
-                    text = "Déjà inscrit",
-                    onClick = { /* Aucune action */ },
-                    backgroundColor = ColorSuccess.copy(alpha = 0.7f),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            else -> {
-                ModernButton(
-                    text = "Faire une demande",
-                    onClick = { onCreateRequest(insurance._id) },
-                    modifier = Modifier.fillMaxWidth()
-                )
+        }
+    }
+}
+
+@Composable
+fun InsuranceDetailsDialog(
+    insurance: Insurance,
+    onDismiss: () -> Unit,
+    onCreateRequest: () -> Unit,
+    onUnsubscribe: () -> Unit,
+    onCreateClaim: (() -> Unit)? = null,
+    isInMySubscriptionsTab: Boolean = false
+) {
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.9f),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.cardElevation(8.dp)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Header du dialog
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(ColorPrimary, ColorPrimary.copy(alpha = 0.9f))
+                            )
+                        )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    insurance.name,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    lineHeight = 26.sp
+                                )
+                                Text(
+                                    insurance.agencyName ?: "Agence",
+                                    fontSize = 13.sp,
+                                    color = Color.White.copy(alpha = 0.9f),
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
+                            
+                            IconButton(onClick = onDismiss) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Fermer",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Prix et rating
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "${insurance.price.toInt()} TND",
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color.White.copy(alpha = 0.2f)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = ColorAccent,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        insurance.rating.toString(),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Contenu scrollable
+                androidx.compose.foundation.lazy.LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentPadding = PaddingValues(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    // Section Informations générales
+                    item {
+                        DetailSection(
+                            title = "Informations générales",
+                            icon = Icons.Default.Info
+                        ) {
+                            DetailRow("Durée", insurance.duration)
+                            insurance.conditions?.destination?.firstOrNull()?.let {
+                                DetailRow("Destination", it)
+                            }
+                            DetailRow("Description", insurance.description)
+                        }
+                    }
+                    
+                    // Section Couverture complète
+                    item {
+                        DetailSection(
+                            title = "Couverture (${insurance.coverage.size})",
+                            icon = Icons.Default.Shield
+                        ) {
+                            insurance.coverage.forEach { coverage ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 6.dp),
+                                    verticalAlignment = Alignment.Top,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        tint = ColorSuccess,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Text(
+                                        coverage,
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Section Conditions
+                    item {
+                        insurance.conditions?.let { conditions ->
+                            DetailSection(
+                                title = "Conditions",
+                                icon = Icons.Default.Article
+                            ) {
+                                conditions.ageMin?.let {
+                                    DetailRow("Âge minimum", "$it ans")
+                                }
+                                conditions.ageMax?.let {
+                                    DetailRow("Âge maximum", "$it ans")
+                                }
+                                if (!conditions.destination.isNullOrEmpty()) {
+                                    DetailRow(
+                                        "Destinations couvertes",
+                                        conditions.destination?.joinToString(", ") ?: ""
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Actions en bas
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shadowElevation = 8.dp,
+                    color = Color.White
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        when {
+                            isInMySubscriptionsTab -> {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    onCreateClaim?.let { callback ->
+                                        Button(
+                                            onClick = callback,
+                                            modifier = Modifier.weight(1f),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = ColorPrimary
+                                            ),
+                                            shape = RoundedCornerShape(12.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Report,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text("Réclamation", fontWeight = FontWeight.SemiBold)
+                                        }
+                                    }
+                                    
+                                    OutlinedButton(
+                                        onClick = onUnsubscribe,
+                                        modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            contentColor = ColorError
+                                        ),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text("Se désinscrire", fontWeight = FontWeight.SemiBold)
+                                    }
+                                }
+                            }
+                            insurance.isSubscribed -> {
+                                Button(
+                                    onClick = { },
+                                    enabled = false,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = ColorSuccess.copy(alpha = 0.1f),
+                                        contentColor = ColorSuccess,
+                                        disabledContainerColor = ColorSuccess.copy(alpha = 0.1f),
+                                        disabledContentColor = ColorSuccess
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Déjà inscrit", fontWeight = FontWeight.SemiBold)
+                                }
+                            }
+                            else -> {
+                                Button(
+                                    onClick = onCreateRequest,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = ColorPrimary
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    contentPadding = PaddingValues(vertical = 14.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Send,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "Faire une demande d'inscription",
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 15.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+fun DetailSection(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = ColorPrimary.copy(alpha = 0.1f),
+                modifier = Modifier.size(32.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = ColorPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+            Text(
+                title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+fun DetailRow(label: String, value: String) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            label,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Medium
+        )
+        Text(
+            value,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            lineHeight = 20.sp
+        )
     }
 }

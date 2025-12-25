@@ -133,7 +133,7 @@ fun UserRegistrationScreen(
                 )
             },
             shape = RoundedCornerShape(20.dp),
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
     
@@ -175,7 +175,7 @@ fun UserRegistrationScreen(
                 )
             },
             shape = RoundedCornerShape(20.dp),
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
     

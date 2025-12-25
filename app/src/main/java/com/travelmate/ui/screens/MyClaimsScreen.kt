@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.travelmate.data.models.Claim
 import com.travelmate.ui.components.*
+import com.travelmate.ui.theme.ColorSuccess
 import com.travelmate.utils.Constants
 import com.travelmate.viewmodel.ClaimViewModel
 import java.text.SimpleDateFormat
@@ -41,6 +42,7 @@ fun MyClaimsScreen(
     val claims by viewModel.myClaims.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
     
     var selectedFilter by remember { mutableStateOf("TOUS") }
     
@@ -60,19 +62,12 @@ fun MyClaimsScreen(
         topBar = {
             Surface(
                 shadowElevation = 4.dp,
-                tonalElevation = 0.dp
+                tonalElevation = 0.dp,
+                color = colorScheme.primary
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFF1E88E5),
-                                    Color(0xFF1976D2)
-                                )
-                            )
-                        )
                         .padding(16.dp)
                 ) {
                     Row(
@@ -119,8 +114,8 @@ fun MyClaimsScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { navController.navigate(Constants.Routes.CREATE_CLAIM) },
-                containerColor = Color(0xFF1976D2),
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
                 text = { Text("Nouveau Ticket", fontWeight = FontWeight.SemiBold) },
                 elevation = FloatingActionButtonDefaults.elevation(
@@ -135,13 +130,13 @@ fun MyClaimsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF5F7FA))
+                .background(MaterialTheme.colorScheme.background)
         ) {
             // Filtres modernes
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shadowElevation = 2.dp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier = Modifier
@@ -154,28 +149,32 @@ fun MyClaimsScreen(
                         count = claims.size,
                         selected = selectedFilter == "TOUS",
                         onClick = { selectedFilter = "TOUS" },
-                        color = Color(0xFF1976D2)
+                        color = colorScheme.primary,
+                        colorScheme = colorScheme
                     )
                     FilterChipModern(
                         label = "Ouverts",
                         count = claims.count { it.status == "OUVERT" },
                         selected = selectedFilter == "OUVERT",
                         onClick = { selectedFilter = "OUVERT" },
-                        color = Color(0xFFFF9800)
+                        color = Color(0xFFFF9800),
+                        colorScheme = colorScheme
                     )
                     FilterChipModern(
                         label = "En cours",
                         count = claims.count { it.status == "EN_COURS" },
                         selected = selectedFilter == "EN_COURS",
                         onClick = { selectedFilter = "EN_COURS" },
-                        color = Color(0xFF2196F3)
+                        color = Color(0xFF2196F3),
+                        colorScheme = colorScheme
                     )
                     FilterChipModern(
                         label = "Résolus",
                         count = claims.count { it.status == "RESOLU" || it.status == "FERME" },
                         selected = selectedFilter == "RESOLU",
                         onClick = { selectedFilter = "RESOLU" },
-                        color = Color(0xFF4CAF50)
+                        color = Color(0xFF4CAF50),
+                        colorScheme = colorScheme
                     )
                 }
             }
@@ -187,11 +186,11 @@ fun MyClaimsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = Color(0xFF1976D2))
+                            CircularProgressIndicator(color = colorScheme.primary)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = "Chargement des tickets...",
-                                color = Color.Gray,
+                                color = colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp
                             )
                         }
@@ -204,7 +203,8 @@ fun MyClaimsScreen(
                         message = error ?: "Une erreur est survenue",
                         actionLabel = "Réessayer",
                         onAction = { viewModel.loadMyClaims() },
-                        color = Color(0xFFF44336)
+                        color = colorScheme.error,
+                        colorScheme = colorScheme
                     )
                 }
                 filteredClaims.isEmpty() -> {
@@ -219,7 +219,8 @@ fun MyClaimsScreen(
                         onAction = if (selectedFilter == "TOUS") {
                             { navController.navigate(Constants.Routes.CREATE_CLAIM) }
                         } else null,
-                        color = Color(0xFF1976D2)
+                        color = colorScheme.primary,
+                        colorScheme = colorScheme
                     )
                 }
                 else -> {
@@ -236,7 +237,8 @@ fun MyClaimsScreen(
                         items(filteredClaims) { claim ->
                             ModernTicketCard(
                                 claim = claim,
-                                onClick = { navController.navigate("${Constants.Routes.CLAIM_DETAIL}/${claim._id}") }
+                                onClick = { navController.navigate("${Constants.Routes.CLAIM_DETAIL}/${claim._id}") },
+                                colorScheme = colorScheme
                             )
                         }
                         
@@ -256,13 +258,14 @@ fun FilterChipModern(
     count: Int,
     selected: Boolean,
     onClick: () -> Unit,
-    color: Color
+    color: Color,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        color = if (selected) color else Color.White,
-        border = if (!selected) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)) else null,
+        color = if (selected) color else colorScheme.surface,
+        border = if (!selected) androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outline.copy(alpha = 0.5f)) else null,
         shadowElevation = if (selected) 4.dp else 0.dp
     ) {
         Row(
@@ -274,7 +277,7 @@ fun FilterChipModern(
                 text = label,
                 fontSize = 14.sp,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                color = if (selected) Color.White else Color(0xFF424242)
+                color = if (selected) Color.White else colorScheme.onSurface
             )
             if (count > 0) {
                 Surface(
@@ -297,13 +300,17 @@ fun FilterChipModern(
 }
 
 @Composable
-fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
+fun ModernTicketCard(
+    claim: Claim, 
+    onClick: () -> Unit,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(
@@ -325,20 +332,20 @@ fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
                         Icons.Outlined.ConfirmationNumber,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = Color(0xFF1976D2)
+                        tint = colorScheme.primary
                     )
                     Text(
                         text = claim.ticketNumber ?: "#${claim._id.take(8)}",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1976D2)
+                        color = colorScheme.primary
                     )
                 }
                 
                 if (!claim.isReadByUser) {
                     Surface(
                         shape = CircleShape,
-                        color = Color(0xFFF44336)
+                        color = colorScheme.error
                     ) {
                         Box(
                             modifier = Modifier
@@ -356,7 +363,7 @@ fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
                 text = claim.subject,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF212121),
+                color = colorScheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -367,7 +374,7 @@ fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
             Text(
                 text = claim.description,
                 fontSize = 14.sp,
-                color = Color(0xFF757575),
+                color = colorScheme.onSurfaceVariant,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 lineHeight = 20.sp
@@ -381,16 +388,16 @@ fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ModernStatusBadge(status = claim.status)
+                ModernStatusBadge(status = claim.status, colorScheme = colorScheme)
                 
                 if (claim.priority != "BASSE") {
-                    ModernPriorityBadge(priority = claim.priority)
+                    ModernPriorityBadge(priority = claim.priority, colorScheme = colorScheme)
                 }
             }
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            Divider(color = Color(0xFFEEEEEE))
+            Divider(color = colorScheme.outline.copy(alpha = 0.3f))
             
             Spacer(modifier = Modifier.height(12.dp))
             
@@ -408,12 +415,12 @@ fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
                         Icons.Outlined.Schedule,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = Color(0xFF9E9E9E)
+                        tint = colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = formatRelativeTime(claim.createdAt),
                         fontSize = 12.sp,
-                        color = Color(0xFF9E9E9E)
+                        color = colorScheme.onSurfaceVariant
                     )
                 }
                 
@@ -423,7 +430,7 @@ fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier
                             .background(
-                                Color(0xFF4CAF50).copy(alpha = 0.1f),
+                                ColorSuccess.copy(alpha = 0.1f),
                                 RoundedCornerShape(12.dp)
                             )
                             .padding(start = 10.dp, top = 4.dp, end = 10.dp, bottom = 4.dp)
@@ -432,13 +439,13 @@ fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
                             Icons.Default.CheckCircle,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = Color(0xFF4CAF50)
+                            tint = ColorSuccess
                         )
                         Text(
                             text = "Répondu",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF4CAF50)
+                            color = ColorSuccess
                         )
                     }
                 }
@@ -448,7 +455,10 @@ fun ModernTicketCard(claim: Claim, onClick: () -> Unit) {
 }
 
 @Composable
-fun ModernStatusBadge(status: String) {
+fun ModernStatusBadge(
+    status: String,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
+) {
     val (icon, backgroundColor, textColor, label) = when (status) {
         "OUVERT" -> Quadruple(
             Icons.Outlined.WatchLater,
@@ -514,7 +524,10 @@ fun ModernStatusBadge(status: String) {
 }
 
 @Composable
-fun ModernPriorityBadge(priority: String) {
+fun ModernPriorityBadge(
+    priority: String,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
+) {
     val (icon, backgroundColor, textColor, label) = when (priority) {
         "BASSE" -> Quadruple(
             Icons.Outlined.KeyboardArrowDown,
@@ -580,7 +593,8 @@ fun EmptyStateView(
     message: String,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
-    color: Color
+    color: Color,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Column(
         modifier = Modifier
@@ -610,7 +624,7 @@ fun EmptyStateView(
             text = title,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF212121)
+            color = colorScheme.onSurface
         )
         
         Spacer(modifier = Modifier.height(8.dp))
@@ -618,7 +632,7 @@ fun EmptyStateView(
         Text(
             text = message,
             fontSize = 14.sp,
-            color = Color(0xFF757575),
+            color = colorScheme.onSurfaceVariant,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
         

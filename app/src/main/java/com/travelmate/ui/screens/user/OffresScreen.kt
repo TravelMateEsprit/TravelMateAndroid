@@ -107,7 +107,9 @@ fun OffresScreen(navController: NavController? = null) {
     Scaffold(
         floatingActionButton = {
             Row(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .navigationBarsPadding(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Price alerts FAB (visible only after a search with results)
@@ -132,7 +134,7 @@ fun OffresScreen(navController: NavController? = null) {
                             Icon(
                                 Icons.Default.Notifications,
                                 contentDescription = "Gérer les alertes de prix",
-                                tint = Color.White
+                                tint = MaterialTheme.colorScheme.onSecondary
                             )
                         }
                     }
@@ -147,13 +149,13 @@ fun OffresScreen(navController: NavController? = null) {
                             Icon(
                                 Icons.Default.SwapHoriz,
                                 contentDescription = "Comparer",
-                                tint = Color.White
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
                         },
                         text = {
                             Text(
                                 text = "Comparer (${selectedFlights.size})",
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
@@ -167,13 +169,14 @@ fun OffresScreen(navController: NavController? = null) {
                 title = {
                     Text(
                         "Recherche de vols",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ColorPrimary
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -182,8 +185,8 @@ fun OffresScreen(navController: NavController? = null) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(ColorBackground),
-            contentPadding = PaddingValues(bottom = 96.dp),
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(bottom = 76.dp),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             // SECTION 1: AI RECOMMENDATIONS (TOP - Shows FIRST)
@@ -262,7 +265,7 @@ fun OffresScreen(navController: NavController? = null) {
                                         Icon(
                                             Icons.Default.AutoAwesome,
                                             contentDescription = null,
-                                            tint = Color.White,
+                                            tint = MaterialTheme.colorScheme.onPrimary,
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -321,19 +324,19 @@ fun OffresScreen(navController: NavController? = null) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Divider(
-                            color = ColorTextSecondary.copy(alpha = 0.2f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                             thickness = 1.dp,
                             modifier = Modifier.weight(1f)
                         )
                         Text(
                             text = "Recherche manuelle",
                             fontSize = 14.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(horizontal = 8.dp)
                         )
                         Divider(
-                            color = ColorTextSecondary.copy(alpha = 0.2f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                             thickness = 1.dp,
                             modifier = Modifier.weight(1f)
                         )
@@ -351,19 +354,19 @@ fun OffresScreen(navController: NavController? = null) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Divider(
-                            color = ColorTextSecondary.copy(alpha = 0.2f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                             thickness = 1.dp,
                             modifier = Modifier.weight(1f)
                         )
                         Text(
                             text = "Recherche manuelle",
                             fontSize = 14.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(horizontal = 8.dp)
                         )
                         Divider(
-                            color = ColorTextSecondary.copy(alpha = 0.2f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                             thickness = 1.dp,
                             modifier = Modifier.weight(1f)
                         )
@@ -391,7 +394,7 @@ fun OffresScreen(navController: NavController? = null) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
-                        color = Color.Transparent
+                        color = MaterialTheme.colorScheme.surface
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -401,7 +404,7 @@ fun OffresScreen(navController: NavController? = null) {
                             Text(
                                 text = "${offers.size} ${if (offers.size == 1) "vol trouvé" else "vols trouvés"}",
                                 fontSize = 14.sp,
-                                color = ColorTextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.Medium
                             )
                             if (sortBy != null) {
@@ -455,7 +458,7 @@ fun OffresScreen(navController: NavController? = null) {
                             )
                             Text(
                                 text = "Recherche de vols...",
-                                color = ColorTextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp
                             )
                         }
@@ -522,17 +525,17 @@ fun OffresScreen(navController: NavController? = null) {
                                 Icons.Default.Flight,
                                 null,
                                 modifier = Modifier.size(64.dp),
-                                tint = ColorTextSecondary.copy(alpha = 0.5f)
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                             )
                             Text(
                                 text = "Aucun vol trouvé",
-                                color = ColorTextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
                                 text = "Essayez de modifier vos critères de recherche",
-                                color = ColorTextSecondary.copy(alpha = 0.7f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                 fontSize = 14.sp,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.padding(horizontal = 32.dp)
@@ -665,7 +668,7 @@ fun AmadeusSearchForm(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Box(
             modifier = Modifier
@@ -708,10 +711,10 @@ fun AmadeusSearchForm(
                 Text(
                     "Recherchez des vols réels avec Amadeus",
                     fontSize = 12.sp,
-                    color = ColorTextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
-                Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+                Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
                 
                 // Error Message (from validation or API)
                 if (errorMessage != null || error != null) {
@@ -765,7 +768,7 @@ fun AmadeusSearchForm(
                         Text(
                             text = "D'où partez-vous?",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -789,7 +792,7 @@ fun AmadeusSearchForm(
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = ColorPrimary,
-                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             enabled = !isLoading
                         )
@@ -835,7 +838,7 @@ fun AmadeusSearchForm(
                         Text(
                             text = "Où allez-vous?",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -859,7 +862,7 @@ fun AmadeusSearchForm(
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = ColorPrimary,
-                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             enabled = !isLoading
                         )
@@ -884,7 +887,7 @@ fun AmadeusSearchForm(
                         Text(
                             text = "Date de départ",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -908,7 +911,7 @@ fun AmadeusSearchForm(
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = ColorPrimary,
-                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             enabled = !isLoading
                         )
@@ -920,7 +923,7 @@ fun AmadeusSearchForm(
                             Text(
                                 text = "Date de retour",
                                 fontSize = 12.sp,
-                                color = ColorTextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.Medium,
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
@@ -944,7 +947,7 @@ fun AmadeusSearchForm(
                                 shape = RoundedCornerShape(12.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = ColorPrimary,
-                                    unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                                 ),
                                 enabled = !isLoading
                             )
@@ -961,7 +964,7 @@ fun AmadeusSearchForm(
                     Text(
                         "Aller-retour",
                         fontSize = 14.sp,
-                        color = ColorTextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Medium
                     )
                     Switch(
@@ -987,7 +990,7 @@ fun AmadeusSearchForm(
                         Text(
                             text = "Nombre de passagers",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -1013,7 +1016,7 @@ fun AmadeusSearchForm(
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = ColorPrimary,
-                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             enabled = !isLoading
                         )
@@ -1024,7 +1027,7 @@ fun AmadeusSearchForm(
                         Text(
                             text = "Trier par",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -1049,7 +1052,7 @@ fun AmadeusSearchForm(
                                 shape = RoundedCornerShape(12.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = ColorPrimary,
-                                    unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                                 ),
                                 enabled = !isLoading
                             )
@@ -1109,7 +1112,7 @@ fun AmadeusSearchForm(
                         Text(
                             text = "Vols directs uniquement",
                             fontSize = 14.sp,
-                            color = ColorTextPrimary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -1378,7 +1381,7 @@ fun UnifiedFlightSearchForm(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Box(
             modifier = Modifier
@@ -1460,14 +1463,14 @@ fun UnifiedFlightSearchForm(
                     }
                 }
                 
-                Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+                Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
                 
                 // Type de voyage
                 Column {
                     Text(
                         text = "Type de voyage",
                         fontSize = 12.sp,
-                        color = ColorTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
@@ -1486,8 +1489,8 @@ fun UnifiedFlightSearchForm(
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = ColorPrimary,
                                 selectedLabelColor = Color.White,
-                                containerColor = Color.White,
-                                labelColor = ColorTextSecondary
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                         FilterChip(
@@ -1498,8 +1501,8 @@ fun UnifiedFlightSearchForm(
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = ColorPrimary,
                                 selectedLabelColor = Color.White,
-                                containerColor = Color.White,
-                                labelColor = ColorTextSecondary
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                     }
@@ -1646,7 +1649,7 @@ fun UnifiedFlightSearchForm(
                             Icon(
                                 if (showAdvancedFilters) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                                 null,
-                                tint = ColorTextSecondary
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         
@@ -1676,7 +1679,7 @@ fun UnifiedFlightSearchForm(
                                         Text(
                                             text = "Vols directs uniquement",
                                             fontSize = 14.sp,
-                                            color = ColorTextPrimary,
+                                            color = MaterialTheme.colorScheme.onSurface,
                                             fontWeight = FontWeight.Medium
                                         )
                                     }
@@ -1695,7 +1698,7 @@ fun UnifiedFlightSearchForm(
                                     Text(
                                         text = "Trier par",
                                         fontSize = 12.sp,
-                                        color = ColorTextSecondary,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontWeight = FontWeight.Medium,
                                         modifier = Modifier.padding(bottom = 4.dp)
                                     )
@@ -1720,7 +1723,7 @@ fun UnifiedFlightSearchForm(
                                             shape = RoundedCornerShape(12.dp),
                                             colors = OutlinedTextFieldDefaults.colors(
                                                 focusedBorderColor = ColorPrimary,
-                                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                                             ),
                                             enabled = !isLoading
                                         )
@@ -1920,7 +1923,7 @@ fun FiltersCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Box(
             modifier = Modifier
@@ -1955,14 +1958,14 @@ fun FiltersCard(
                 }
             }
 
-            Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+            Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
             // Flight Type Selection
             Column {
                 Text(
                     text = "Type de vol",
                     fontSize = 12.sp,
-                    color = ColorTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -1995,7 +1998,7 @@ fun FiltersCard(
                     Text(
                         text = "Départ",
                         fontSize = 12.sp,
-                        color = ColorTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
@@ -2016,7 +2019,7 @@ fun FiltersCard(
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = ColorPrimary,
-                            unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                         )
                     )
                 }
@@ -2053,7 +2056,7 @@ fun FiltersCard(
                     Text(
                         text = "Arrivée",
                         fontSize = 12.sp,
-                        color = ColorTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
@@ -2074,7 +2077,7 @@ fun FiltersCard(
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = ColorPrimary,
-                            unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                         )
                     )
                 }
@@ -2090,7 +2093,7 @@ fun FiltersCard(
                     Text(
                         text = "Date départ",
                         fontSize = 12.sp,
-                        color = ColorTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
@@ -2111,7 +2114,7 @@ fun FiltersCard(
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = ColorPrimary,
-                            unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                         )
                     )
                 }
@@ -2122,7 +2125,7 @@ fun FiltersCard(
                         Text(
                             text = "Date retour",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -2143,7 +2146,7 @@ fun FiltersCard(
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = ColorPrimary,
-                                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             )
                         )
                     }
@@ -2169,7 +2172,7 @@ fun FiltersCard(
                     Text(
                         text = "Vols directs uniquement",
                         fontSize = 14.sp,
-                        color = ColorTextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -2238,14 +2241,14 @@ fun FlightTypeChip(
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = ColorPrimary,
             selectedLabelColor = Color.White,
-            containerColor = Color.White,
-            labelColor = ColorTextSecondary
+            containerColor = MaterialTheme.colorScheme.surface,
+            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         border = FilterChipDefaults.filterChipBorder(
             enabled = true,
             selected = selected,
             selectedBorderColor = ColorPrimary,
-            borderColor = ColorTextSecondary.copy(alpha = 0.3f),
+            borderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
             selectedBorderWidth = 2.dp,
             borderWidth = 1.dp
         )
@@ -2260,7 +2263,7 @@ fun SortOptionsPanel(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -2306,7 +2309,7 @@ fun SortOptionItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(label, fontSize = 14.sp, color = if (selectedSort == value) ColorPrimary else ColorTextPrimary)
+            Text(label, fontSize = 14.sp, color = if (selectedSort == value) ColorPrimary else MaterialTheme.colorScheme.onSurface)
             if (selectedSort == value) {
                 Icon(Icons.Default.Check, null, tint = ColorPrimary, modifier = Modifier.size(20.dp))
             }
@@ -2330,7 +2333,7 @@ fun ProfessionalFlightCard(
             .clickable(onClick = onClick)
             .border(
                 width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) Color(0xFF2196F3) else Color.Transparent,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                 shape = RoundedCornerShape(16.dp)
             ),
         shape = RoundedCornerShape(16.dp),
@@ -2341,7 +2344,7 @@ fun ProfessionalFlightCard(
             hoveredElevation = if (isSelected) 0.dp else 3.dp
         ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Box(
@@ -2382,13 +2385,13 @@ fun ProfessionalFlightCard(
                         },
                         colors = CheckboxDefaults.colors(
                             checkedColor = ColorPrimary,
-                            uncheckedColor = ColorTextSecondary.copy(alpha = 0.5f)
+                            uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                     )
                     Text(
                         text = if (isSelected) "Sélectionné pour comparaison" else "Sélectionner pour comparer",
                         fontSize = 12.sp,
-                        color = if (isSelected) ColorPrimary else ColorTextSecondary,
+                        color = if (isSelected) ColorPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                     )
                 }
@@ -2443,13 +2446,13 @@ fun ProfessionalFlightCard(
                             text = offer.getAirlineName().ifEmpty { "Compagnie aérienne" },
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         offer.flightNumber?.let {
                             Text(
                                 text = "Vol $it",
                                 fontSize = 12.sp,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         // Destination
@@ -2509,7 +2512,7 @@ fun ProfessionalFlightCard(
                     Text(
                         text = "par personne",
                         fontSize = 11.sp,
-                        color = ColorTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -2544,7 +2547,7 @@ fun ProfessionalFlightCard(
                         Text(
                             text = "De",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -2563,14 +2566,14 @@ fun ProfessionalFlightCard(
                         Text(
                             text = fromAirport.name,
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1
                         )
                     } else if (!fromAirport.code.isBlank() && fromAirport.city != null) {
                         Text(
                             text = fromAirport.city,
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1
                         )
                     }
@@ -2595,7 +2598,7 @@ fun ProfessionalFlightCard(
                         Text(
                             text = "Vers",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium
                         )
                         Icon(
@@ -2623,7 +2626,7 @@ fun ProfessionalFlightCard(
                         Text(
                             text = toAirport.name,
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.End,
                             modifier = Modifier.fillMaxWidth(),
                             maxLines = 1
@@ -2632,7 +2635,7 @@ fun ProfessionalFlightCard(
                         Text(
                             text = toAirport.city,
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.End,
                             modifier = Modifier.fillMaxWidth(),
                             maxLines = 1
@@ -2657,20 +2660,20 @@ fun ProfessionalFlightCard(
                         Icons.Default.Schedule,
                         null,
                         modifier = Modifier.size(18.dp),
-                        tint = ColorTextSecondary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Column {
                         Text(
                             text = "Durée",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
                             text = offer.duration ?: offer.getDepartureSegment()?.getDurationValue() ?: "N/A",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -2689,12 +2692,12 @@ fun ProfessionalFlightCard(
                             text = departureDetails.getTimeValue().ifEmpty { "--:--" },
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Départ",
                             fontSize = 11.sp,
-                            color = ColorTextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -2707,12 +2710,12 @@ fun ProfessionalFlightCard(
                             Icons.Default.Schedule,
                             null,
                             modifier = Modifier.size(16.dp),
-                            tint = ColorTextSecondary
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = departureSegment.getDurationValue().ifEmpty { "N/A" },
                             fontSize = 13.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium
                         )
                         if (departureSegment.isDirect()) {
@@ -2751,13 +2754,13 @@ fun ProfessionalFlightCard(
                             text = arrivalDetails.getTimeValue().ifEmpty { "--:--" },
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.End
                         )
                         Text(
                             text = "Arrivée",
                             fontSize = 11.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.End
                         )
                     }
@@ -2783,12 +2786,12 @@ fun ProfessionalFlightCard(
                                 Icons.Default.EventSeat,
                                 null,
                                 modifier = Modifier.size(14.dp),
-                                tint = ColorTextSecondary
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
                                 text = "${offer.availableSeats} places",
                                 fontSize = 11.sp,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -2876,7 +2879,7 @@ fun FlightComparisonDialog(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = null,
         modifier = Modifier.fillMaxHeight(0.95f)
     ) {
@@ -2945,7 +2948,7 @@ fun FlightComparisonDialog(
                 ) {
                     Text(
                         text = "Aucun vol à comparer",
-                        color = ColorTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
                 }
@@ -3137,7 +3140,7 @@ fun ComparisonRow(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -3159,11 +3162,11 @@ fun ComparisonRow(
                     text = label,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+            Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
             // Flight Values
             Row(
@@ -3216,7 +3219,7 @@ fun ComparisonRow(
                                 text = value,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isBestValue) ColorSuccess else ColorTextPrimary,
+                                color = if (isBestValue) ColorSuccess else MaterialTheme.colorScheme.onSurface,
                                 textAlign = TextAlign.Center,
                                 maxLines = 3,
                                 lineHeight = 16.sp
@@ -3224,7 +3227,7 @@ fun ComparisonRow(
                             Text(
                                 text = "Vol ${index + 1}",
                                 fontSize = 10.sp,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -3255,7 +3258,7 @@ fun PreferencesBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = null,
         modifier = Modifier.fillMaxHeight(0.9f)
     ) {
@@ -3282,14 +3285,14 @@ fun PreferencesBottomSheet(
                     Text(
                         text = "Répondez à quelques questions",
                         fontSize = 14.sp,
-                        color = ColorTextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 IconButton(onClick = onDismiss) {
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Fermer",
-                        tint = ColorTextSecondary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -3389,7 +3392,7 @@ fun PreferencesBottomSheet(
                         Text(
                             text = "Ne montrer que les vols sans escale",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Switch(
@@ -3526,7 +3529,7 @@ fun RecommendedFlightCard(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -3682,7 +3685,7 @@ fun RecommendedFlightCard(
                     Text(
                         text = fromAirport.city ?: fromAirport.name ?: "",
                         fontSize = 12.sp,
-                        color = ColorTextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 
@@ -3707,7 +3710,7 @@ fun RecommendedFlightCard(
                     Text(
                         text = toAirport.city ?: toAirport.name ?: "",
                         fontSize = 12.sp,
-                        color = ColorTextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -3744,7 +3747,7 @@ fun RecommendedFlightCard(
                     Text(
                         text = recommendedOffer.getExplanation(),
                         fontSize = 13.sp,
-                        color = ColorTextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 18.sp
                     )
                 }

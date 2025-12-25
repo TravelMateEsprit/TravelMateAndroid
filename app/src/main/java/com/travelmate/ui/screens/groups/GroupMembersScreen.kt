@@ -23,8 +23,6 @@ import coil.compose.AsyncImage
 import com.travelmate.data.models.GroupMember
 import com.travelmate.ui.theme.ColorError
 import com.travelmate.ui.theme.ColorPrimary
-import com.travelmate.ui.theme.ColorTextPrimary
-import com.travelmate.ui.theme.ColorTextSecondary
 import com.travelmate.viewmodel.GroupsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -79,8 +77,8 @@ fun GroupMembersScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
+                .padding(padding),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(members) { member ->
@@ -162,7 +160,7 @@ private fun MemberCard(
                         text = member.userName,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -178,14 +176,14 @@ private fun MemberCard(
                             color = if (member.role == "creator" || member.role == "admin") {
                                 ColorPrimary
                             } else {
-                                ColorTextSecondary
+                                MaterialTheme.colorScheme.onSurfaceVariant
                             }
                         )
                         if (member.status == "pending") {
                             Text(
                                 text = "• En attente",
                                 fontSize = 14.sp,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -199,7 +197,7 @@ private fun MemberCard(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "Actions",
-                            tint = ColorTextSecondary
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 

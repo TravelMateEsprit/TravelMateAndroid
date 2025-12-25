@@ -21,13 +21,13 @@ fun NotificationBadge(
         badge = {
             if (count > 0) {
                 Badge(
-                    containerColor = ColorError,
+                    containerColor = MaterialTheme.colorScheme.error,
                     modifier = Modifier.offset(x = (-4).dp, y = 4.dp)
                 ) {
                     Text(
                         if (count > 9) "9+" else count.toString(),
                         fontSize = 10.sp,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onError
                     )
                 }
             }
@@ -38,7 +38,7 @@ fun NotificationBadge(
             Icon(
                 Icons.Default.Notifications,
                 contentDescription = "Notifications",
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(28.dp)
             )
         }

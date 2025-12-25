@@ -37,6 +37,7 @@ fun MyInsuranceRequestsScreen(
     val state by viewModel.state.collectAsState()
     var showFilterMenu by remember { mutableStateOf(false) }
     val selectedStatus by viewModel.selectedStatus.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
     
     LaunchedEffect(Unit) {
         viewModel.loadRequests()
@@ -60,7 +61,7 @@ fun MyInsuranceRequestsScreen(
                     Box {
                         IconButton(onClick = { showFilterMenu = true }) {
                             Badge(
-                                containerColor = if (selectedStatus != null) ColorPrimary else Color.Transparent
+                                containerColor = if (selectedStatus != null) colorScheme.primary else Color.Transparent
                             ) {
                                 Icon(Icons.Default.FilterList, "Filtrer")
                             }
@@ -68,7 +69,8 @@ fun MyInsuranceRequestsScreen(
                         
                         DropdownMenu(
                             expanded = showFilterMenu,
-                            onDismissRequest = { showFilterMenu = false }
+                            onDismissRequest = { showFilterMenu = false },
+                            containerColor = colorScheme.surface
                         ) {
                             FilterMenuItem(
                                 text = "Toutes",
@@ -77,9 +79,10 @@ fun MyInsuranceRequestsScreen(
                                 onClick = {
                                     viewModel.filterByStatus(null)
                                     showFilterMenu = false
-                                }
+                                },
+                                colorScheme = colorScheme
                             )
-                            Divider()
+                            Divider(color = colorScheme.outline.copy(alpha = 0.3f))
                             FilterMenuItem(
                                 text = "En attente",
                                 icon = Icons.Default.HourglassEmpty,
@@ -87,7 +90,8 @@ fun MyInsuranceRequestsScreen(
                                 onClick = {
                                     viewModel.filterByStatus(RequestStatus.PENDING)
                                     showFilterMenu = false
-                                }
+                                },
+                                colorScheme = colorScheme
                             )
                             FilterMenuItem(
                                 text = "Approuvées",
@@ -96,7 +100,8 @@ fun MyInsuranceRequestsScreen(
                                 onClick = {
                                     viewModel.filterByStatus(RequestStatus.APPROVED)
                                     showFilterMenu = false
-                                }
+                                },
+                                colorScheme = colorScheme
                             )
                             FilterMenuItem(
                                 text = "Rejetées",
@@ -105,7 +110,8 @@ fun MyInsuranceRequestsScreen(
                                 onClick = {
                                     viewModel.filterByStatus(RequestStatus.REJECTED)
                                     showFilterMenu = false
-                                }
+                                },
+                                colorScheme = colorScheme
                             )
                             FilterMenuItem(
                                 text = "Annulées",
@@ -114,25 +120,27 @@ fun MyInsuranceRequestsScreen(
                                 onClick = {
                                     viewModel.filterByStatus(RequestStatus.CANCELLED)
                                     showFilterMenu = false
-                                }
+                                },
+                                colorScheme = colorScheme
                             )
                         }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ColorPrimary,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    containerColor = colorScheme.primary,
+                    titleContentColor = colorScheme.onPrimary,
+                    navigationIconContentColor = colorScheme.onPrimary,
+                    actionIconContentColor = colorScheme.onPrimary
                 )
             )
-        }
+        },
+        containerColor = colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(ColorBackground)
+                .background(colorScheme.background)
         ) {
             // Filtre actif badge
             AnimatedVisibility(
@@ -145,7 +153,7 @@ fun MyInsuranceRequestsScreen(
                         .fillMaxWidth()
                         .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = ColorPrimary.copy(alpha = 0.1f)
+                        containerColor = colorScheme.primaryContainer.copy(alpha = 0.3f)
                     )
                 ) {
                     Row(
@@ -159,13 +167,13 @@ fun MyInsuranceRequestsScreen(
                             Icon(
                                 Icons.Default.FilterList,
                                 contentDescription = null,
-                                tint = ColorPrimary,
+                                tint = colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 "Filtre actif: ${getStatusText(selectedStatus)}",
-                                color = ColorPrimary,
+                                color = colorScheme.onSurface,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -177,7 +185,7 @@ fun MyInsuranceRequestsScreen(
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = "Supprimer le filtre",
-                                tint = ColorPrimary,
+                                tint = colorScheme.onSurface,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -197,10 +205,10 @@ fun MyInsuranceRequestsScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            CircularProgressIndicator(color = ColorPrimary)
+                            CircularProgressIndicator(color = colorScheme.primary)
                             Text(
                                 "Chargement...",
-                                color = ColorTextSecondary,
+                                color = colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp
                             )
                         }
@@ -225,7 +233,7 @@ fun MyInsuranceRequestsScreen(
                                     Icons.Default.Assignment,
                                     contentDescription = null,
                                     modifier = Modifier.size(80.dp),
-                                    tint = ColorTextSecondary.copy(alpha = 0.3f)
+                                    tint = colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                                 )
                                 Text(
                                     text = if (selectedStatus != null) {
@@ -234,12 +242,12 @@ fun MyInsuranceRequestsScreen(
                                         "Aucune demande"
                                     },
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = ColorTextSecondary
+                                    color = colorScheme.onSurface
                                 )
                                 Text(
                                     text = "Vos demandes d'assurance apparaîtront ici",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = ColorTextSecondary.copy(alpha = 0.7f)
+                                    color = colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -264,7 +272,8 @@ fun MyInsuranceRequestsScreen(
                                         request = request,
                                         onClick = {
                                             navController.navigate("request_details/${request.id}")
-                                        }
+                                        },
+                                        colorScheme = colorScheme
                                     )
                                 }
                             }
@@ -287,11 +296,11 @@ fun MyInsuranceRequestsScreen(
                                 Icons.Default.Error,
                                 contentDescription = null,
                                 modifier = Modifier.size(64.dp),
-                                tint = ColorError
+                                tint = colorScheme.error
                             )
                             Text(
                                 text = (state as MyRequestsState.Error).message,
-                                color = ColorError,
+                                color = colorScheme.error,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -307,7 +316,8 @@ private fun FilterMenuItem(
     text: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    colorScheme: ColorScheme
 ) {
     DropdownMenuItem(
         text = {
@@ -319,19 +329,19 @@ private fun FilterMenuItem(
                     icon,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = if (isSelected) ColorPrimary else ColorTextSecondary
+                    tint = if (isSelected) colorScheme.primary else colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isSelected) ColorPrimary else ColorTextPrimary
+                    color = if (isSelected) colorScheme.primary else colorScheme.onSurface
                 )
             }
         },
         onClick = onClick,
         colors = MenuDefaults.itemColors(
-            textColor = if (isSelected) ColorPrimary else ColorTextPrimary
+            textColor = if (isSelected) colorScheme.primary else colorScheme.onSurface
         )
     )
 }
@@ -349,7 +359,8 @@ private fun getStatusText(status: RequestStatus?): String {
 @Composable
 fun EnhancedRequestCard(
     request: InsuranceRequest,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Card(
         modifier = Modifier
@@ -378,13 +389,13 @@ fun EnhancedRequestCard(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(ColorPrimary.copy(alpha = 0.1f)),
+                            .background(colorScheme.primary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Person,
                             contentDescription = null,
-                            tint = ColorPrimary,
+                            tint = colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -394,18 +405,18 @@ fun EnhancedRequestCard(
                             text = request.travelerName,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = colorScheme.onSurface
                         )
                         Text(
                             text = formatDate(request.createdAt),
                             style = MaterialTheme.typography.bodySmall,
-                            color = ColorTextSecondary,
+                            color = colorScheme.onSurfaceVariant,
                             fontSize = 12.sp
                         )
                     }
                 }
                 
-                EnhancedStatusChip(status = request.status)
+                EnhancedStatusChip(status = request.status, colorScheme = colorScheme)
             }
             
             Divider(modifier = Modifier.padding(vertical = 12.dp))
@@ -415,20 +426,23 @@ fun EnhancedRequestCard(
                 InfoRow(
                     icon = Icons.Default.Public,
                     label = "Destination",
-                    value = request.destination
+                    value = request.destination,
+                    colorScheme = colorScheme
                 )
                 
                 InfoRow(
                     icon = Icons.Default.DateRange,
                     label = "Période",
-                    value = "${formatDate(request.departureDate)} - ${formatDate(request.returnDate)}"
+                    value = "${formatDate(request.departureDate)} - ${formatDate(request.returnDate)}",
+                    colorScheme = colorScheme
                 )
                 
                 request.travelPurpose?.let { purpose ->
                     InfoRow(
                         icon = Icons.Default.WorkOutline,
                         label = "Motif",
-                        value = purpose
+                        value = purpose,
+                        colorScheme = colorScheme
                     )
                 }
             }
@@ -452,9 +466,9 @@ fun EnhancedRequestCard(
                                 )
                             },
                             colors = AssistChipDefaults.assistChipColors(
-                                containerColor = ColorPrimary.copy(alpha = 0.1f),
-                                labelColor = ColorPrimary,
-                                leadingIconContentColor = ColorPrimary
+                                containerColor = colorScheme.primaryContainer.copy(alpha = 0.3f),
+                                labelColor = colorScheme.primary,
+                                leadingIconContentColor = colorScheme.primary
                             )
                         )
                     }
@@ -471,7 +485,8 @@ fun EnhancedRequestCard(
 private fun InfoRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-    value: String
+    value: String,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -481,20 +496,20 @@ private fun InfoRow(
             icon,
             contentDescription = null,
             modifier = Modifier.size(18.dp),
-            tint = ColorTextSecondary
+            tint = colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = ColorTextSecondary,
+                color = colorScheme.onSurfaceVariant,
                 fontSize = 11.sp
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium,
-                color = ColorTextPrimary,
+                color = colorScheme.onSurface,
                 fontSize = 14.sp
             )
         }
@@ -507,13 +522,16 @@ fun StatusChip(status: RequestStatus) {
 }
 
 @Composable
-fun EnhancedStatusChip(status: RequestStatus) {
+fun EnhancedStatusChip(
+    status: RequestStatus,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
+) {
     val (text, icon, containerColor, contentColor) = when (status) {
         RequestStatus.PENDING -> Quadruple(
             "En attente",
             Icons.Default.HourglassEmpty,
-            ColorPrimary.copy(alpha = 0.15f),
-            ColorPrimary
+            colorScheme.primary.copy(alpha = 0.15f),
+            colorScheme.primary
         )
         RequestStatus.APPROVED -> Quadruple(
             "Approuvée",
@@ -524,14 +542,14 @@ fun EnhancedStatusChip(status: RequestStatus) {
         RequestStatus.REJECTED -> Quadruple(
             "Rejetée",
             Icons.Default.Cancel,
-            ColorError.copy(alpha = 0.15f),
-            ColorError
+            colorScheme.error.copy(alpha = 0.15f),
+            colorScheme.error
         )
         RequestStatus.CANCELLED -> Quadruple(
             "Annulée",
             Icons.Default.Block,
-            ColorTextSecondary.copy(alpha = 0.15f),
-            ColorTextSecondary
+            colorScheme.onSurfaceVariant.copy(alpha = 0.15f),
+            colorScheme.onSurfaceVariant
         )
     }
     

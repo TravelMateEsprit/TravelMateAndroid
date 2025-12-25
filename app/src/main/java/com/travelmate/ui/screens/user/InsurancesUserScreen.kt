@@ -1,10 +1,12 @@
 package com.travelmate.ui.screens.user
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -26,6 +29,7 @@ import com.travelmate.ui.components.ModernCard
 import com.travelmate.ui.theme.*
 import com.travelmate.utils.Constants
 import com.travelmate.viewmodel.InsurancesUserViewModel
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,221 +109,196 @@ fun InsurancesUserScreen(
         }
     }
     
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Content
+    // Animation states
+    var headerVisible by remember { mutableStateOf(false) }
+    var contentVisible by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(Unit) {
+        headerVisible = true
+        delay(100)
+        contentVisible = true
+    }
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                bottom = 96.dp
-            ),
+            contentPadding = PaddingValues(bottom = 76.dp),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            // Header artistique avec gradient diagonal
+            // Header moderne, simple et compact
             item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(
-                                    ColorPrimary,
-                                    ColorPrimary.copy(alpha = 0.85f),
-                                    ColorPrimary.copy(alpha = 0.7f)
-                                ),
-                                start = Offset(0f, 0f),
-                                end = Offset(1000f, 1000f)
-                            )
-                        )
+                AnimatedVisibility(
+                    visible = headerVisible,
+                    enter = fadeIn(animationSpec = tween(400)) + slideInVertically(
+                        animationSpec = tween(400),
+                        initialOffsetY = { -it / 2 }
+                    )
                 ) {
-                    // Pattern décoratif en arrière-plan
-                    Box(
-                        modifier = Modifier
-                            .size(200.dp)
-                            .offset(x = (-50).dp, y = (-50).dp)
-                            .background(
-                                Color.White.copy(alpha = 0.05f),
-                                shape = CircleShape
-                            )
-                    )
-                    Box(
-                        modifier = Modifier
-                            .size(150.dp)
-                            .align(Alignment.TopEnd)
-                            .offset(x = 50.dp, y = (-30).dp)
-                            .background(
-                                Color.White.copy(alpha = 0.08f),
-                                shape = CircleShape
-                            )
-                    )
-                    
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp, vertical = 16.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = ColorPrimary,
+                        shadowElevation = 4.dp
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .statusBarsPadding()
+                                .padding(horizontal = 20.dp, vertical = 16.dp)
                         ) {
-                            Column {
-                                Text(
-                                    "Découvrez",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Normal,
-                                    color = Color.White.copy(alpha = 0.9f)
-                                )
-                                Text(
-                                    "Nos Assurances",
-                                    fontSize = 28.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = Color.White,
-                                    letterSpacing = 0.5.sp
-                                )
-                            }
-                            Surface(
-                                shape = CircleShape,
-                                color = Color.White.copy(alpha = 0.2f),
-                                modifier = Modifier.size(48.dp),
-                                onClick = { navController.navigate(Constants.Routes.MY_INSURANCE_REQUESTS) }
+                            // Titre simple et moderne
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    "Assurances",
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                
+                                // Bouton d'action compact
+                                FilledTonalIconButton(
+                                    onClick = { navController.navigate(Constants.Routes.MY_INSURANCE_REQUESTS) },
+                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                        containerColor = Color.White.copy(alpha = 0.2f),
+                                        contentColor = Color.White
+                                    ),
+                                    modifier = Modifier.size(40.dp)
+                                ) {
                                     Icon(
                                         Icons.Default.Assignment,
-                                        "Mes demandes",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(24.dp)
+                                        contentDescription = "Mes demandes",
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
-                        }
-                        
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            InfoChip(
-                                icon = Icons.Default.Security,
-                                text = "${insurances.size} produits"
-                            )
-                            InfoChip(
-                                icon = Icons.Default.CheckCircle,
-                                text = "${mySubscriptions.size} inscriptions"
-                            )
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            // Stats minimalistes inline
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CompactStatChip(
+                                    icon = Icons.Default.Security,
+                                    count = insurances.size,
+                                    label = "disponibles"
+                                )
+                                CompactStatChip(
+                                    icon = Icons.Default.CheckCircle,
+                                    count = mySubscriptions.size,
+                                    label = "inscrites"
+                                )
+                            }
                         }
                     }
                 }
             }
             
-            // Barre de recherche moderne avec filtres
+            // Barre de recherche moderne et épurée avec animation
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                AnimatedVisibility(
+                    visible = contentVisible,
+                    enter = fadeIn(animationSpec = tween(400, delayMillis = 100)) + 
+                            slideInVertically(
+                                animationSpec = tween(400, delayMillis = 100),
+                                initialOffsetY = { it / 4 }
+                            )
                 ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 16.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedTextField(
-                                value = searchTerm,
-                                onValueChange = { searchTerm = it },
-                                modifier = Modifier.weight(1f),
-                                placeholder = { 
-                                    Text(
-                                        "Rechercher...",
-                                        color = ColorTextSecondary.copy(alpha = 0.6f)
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Search,
-                                        contentDescription = "Rechercher",
-                                        tint = ColorPrimary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (searchTerm.isNotEmpty()) {
+                        // Barre de recherche simple
+                        OutlinedTextField(
+                            value = searchTerm,
+                            onValueChange = { searchTerm = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { 
+                                Text(
+                                    "Rechercher une assurance...",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = "Rechercher",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            },
+                            trailingIcon = {
+                                Row {
+                                    AnimatedVisibility(
+                                        visible = searchTerm.isNotEmpty(),
+                                        enter = fadeIn() + scaleIn(),
+                                        exit = fadeOut() + scaleOut()
+                                    ) {
                                         IconButton(onClick = { searchTerm = "" }) {
                                             Icon(
                                                 Icons.Default.Close,
                                                 contentDescription = "Effacer",
-                                                tint = ColorTextSecondary,
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
+                                    
+                                    // Bouton filtres minimaliste
+                                    val activeFiltersCount = listOf(
+                                        selectedPriceRange != 0f..2000f,
+                                        selectedDestination != null,
+                                        selectedDuration != null
+                                    ).count { it }
+                                    
+                                    IconButton(onClick = { showFilters = !showFilters }) {
+                                        BadgedBox(
+                                            badge = {
+                                                if (activeFiltersCount > 0) {
+                                                    Badge(
+                                                        containerColor = MaterialTheme.colorScheme.primary,
+                                                        modifier = Modifier.offset(x = 4.dp, y = (-4).dp)
+                                                    ) {
+                                                        Text(
+                                                            "$activeFiltersCount",
+                                                            fontSize = 10.sp,
+                                                            color = MaterialTheme.colorScheme.onPrimary
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Tune,
+                                                contentDescription = "Filtres",
+                                                tint = if (showFilters) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                 modifier = Modifier.size(20.dp)
                                             )
                                         }
                                     }
-                                },
-                                shape = RoundedCornerShape(16.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color.Transparent,
-                                    unfocusedBorderColor = Color.Transparent,
-                                    cursorColor = ColorPrimary,
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent
-                                ),
-                                singleLine = true
-                            )
-                            
-                            // Bouton filtres avec badge
-                            val activeFiltersCount = listOf(
-                                selectedPriceRange != 0f..2000f,
-                                selectedDestination != null,
-                                selectedDuration != null
-                            ).count { it }
-                            
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = if (showFilters) ColorPrimary else ColorPrimary.copy(alpha = 0.1f),
-                                onClick = { showFilters = !showFilters },
-                                modifier = Modifier.padding(start = 8.dp)
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.size(48.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.FilterList,
-                                        contentDescription = "Filtres",
-                                        tint = if (showFilters) Color.White else ColorPrimary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    if (activeFiltersCount > 0) {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = ColorSuccess,
-                                            modifier = Modifier
-                                                .size(18.dp)
-                                                .align(Alignment.TopEnd)
-                                                .offset(x = 4.dp, y = (-4).dp)
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Text(
-                                                    "$activeFiltersCount",
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = Color.White
-                                                )
-                                            }
-                                        }
-                                    }
                                 }
-                            }
-                        }
+                            },
+                            shape = RoundedCornerShape(14.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                cursorColor = MaterialTheme.colorScheme.primary,
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            singleLine = true
+                        )
                     }
                 }
             }
@@ -352,7 +331,7 @@ fun InsurancesUserScreen(
                                     "Filtres",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = ColorTextPrimary
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 TextButton(
                                     onClick = {
@@ -365,13 +344,13 @@ fun InsurancesUserScreen(
                                         Icons.Default.Refresh,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp),
-                                        tint = ColorPrimary
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         "Réinitialiser",
                                         fontSize = 13.sp,
-                                        color = ColorPrimary
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -383,7 +362,7 @@ fun InsurancesUserScreen(
                                 "Budget",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = ColorTextPrimary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             
@@ -395,13 +374,13 @@ fun InsurancesUserScreen(
                                     "${selectedPriceRange.start.toInt()} TND",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = ColorPrimary
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
                                     "${selectedPriceRange.endInclusive.toInt()} TND",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = ColorPrimary
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                             
@@ -411,9 +390,9 @@ fun InsurancesUserScreen(
                                 valueRange = 0f..2000f,
                                 steps = 39,
                                 colors = SliderDefaults.colors(
-                                    thumbColor = ColorPrimary,
-                                    activeTrackColor = ColorPrimary,
-                                    inactiveTrackColor = ColorPrimary.copy(alpha = 0.2f)
+                                    thumbColor = MaterialTheme.colorScheme.primary,
+                                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                                    inactiveTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                                 )
                             )
                             
@@ -424,7 +403,7 @@ fun InsurancesUserScreen(
                                 "Destination",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = ColorTextPrimary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             
@@ -453,8 +432,8 @@ fun InsurancesUserScreen(
                                         }
                                     } else null,
                                     colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = ColorPrimary,
-                                        selectedLabelColor = Color.White
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                     )
                                 )
                                 destinations.take(3).forEach { dest ->
@@ -478,8 +457,8 @@ fun InsurancesUserScreen(
                                             }
                                         } else null,
                                         colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = ColorPrimary,
-                                            selectedLabelColor = Color.White
+                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                         )
                                     )
                                 }
@@ -492,7 +471,7 @@ fun InsurancesUserScreen(
                                 "Durée",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = ColorTextPrimary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             
@@ -524,8 +503,8 @@ fun InsurancesUserScreen(
                                             }
                                         } else null,
                                         colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = ColorPrimary,
-                                            selectedLabelColor = Color.White
+                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                         )
                                     )
                                     durations.take(2).forEach { dur ->
@@ -549,8 +528,8 @@ fun InsurancesUserScreen(
                                                 }
                                             } else null,
                                             colors = FilterChipDefaults.filterChipColors(
-                                                selectedContainerColor = ColorPrimary,
-                                                selectedLabelColor = Color.White
+                                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                             )
                                         )
                                     }
@@ -580,8 +559,8 @@ fun InsurancesUserScreen(
                                                 }
                                             } else null,
                                             colors = FilterChipDefaults.filterChipColors(
-                                                selectedContainerColor = ColorPrimary,
-                                                selectedLabelColor = Color.White
+                                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                             )
                                         )
                                     }
@@ -594,82 +573,86 @@ fun InsurancesUserScreen(
                 }
             }
             
-            // Tabs - Simple et épuré
+            // Tabs modernes et minimalistes
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    tabs.forEachIndexed { index, title ->
-                        Surface(
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (selectedTabIndex == index) ColorPrimary else MaterialTheme.colorScheme.surface,
-                            onClick = { selectedTabIndex = index },
-                            shadowElevation = if (selectedTabIndex == index) 4.dp else 1.dp
-                        ) {
-                            Text(
-                                title,
-                                fontSize = 14.sp,
-                                fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Medium,
-                                color = if (selectedTabIndex == index) Color.White else ColorTextSecondary,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                modifier = Modifier.padding(vertical = 12.dp)
+                AnimatedVisibility(
+                    visible = contentVisible,
+                    enter = fadeIn(animationSpec = tween(400, delayMillis = 150)) + 
+                            slideInVertically(
+                                animationSpec = tween(400, delayMillis = 150),
+                                initialOffsetY = { it / 4 }
                             )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        tabs.forEachIndexed { index, title ->
+                            val scale by animateFloatAsState(
+                                targetValue = if (selectedTabIndex == index) 1.02f else 1f,
+                                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                                label = "tab_scale"
+                            )
+                            
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .scale(scale),
+                                shape = RoundedCornerShape(12.dp),
+                                color = if (selectedTabIndex == index) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                onClick = { selectedTabIndex = index },
+                                border = if (selectedTabIndex == index) null else androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                                )
+                            ) {
+                                Text(
+                                    title,
+                                    fontSize = 13.sp,
+                                    fontWeight = if (selectedTabIndex == index) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (selectedTabIndex == index) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 10.dp),
+                                    maxLines = 1
+                                )
+                            }
                         }
                     }
                 }
             }
             
-            // Insurance List Header avec compteur
+            // Section titre avec compteur moderne
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        if (selectedTabIndex == 0) "Nos produits" else "Mes inscriptions",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        if (selectedTabIndex == 0) "Tous les produits" else "Mes inscriptions",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
-                    // Compteur de résultats avec design moderne
-                    val hasActiveFilters = selectedTabIndex == 0 && (
-                        searchTerm.isNotEmpty() || 
-                        selectedPriceRange != 0f..2000f || 
-                        selectedDestination != null || 
-                        selectedDuration != null
-                    )
-                    
-                    if (hasActiveFilters || selectedTabIndex == 1) {
+                    // Compteur minimaliste
+                    val count = if (selectedTabIndex == 0) filteredInsurances.size else filteredSubscriptions.size
+                    if (count > 0) {
                         Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = ColorPrimary.copy(alpha = 0.12f)
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         ) {
-                            Row(
-                                modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    if (selectedTabIndex == 0) Icons.Default.FilterList else Icons.Default.CheckCircle,
-                                    contentDescription = null,
-                                    tint = ColorPrimary,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Text(
-                                    "${if (selectedTabIndex == 0) filteredInsurances.size else filteredSubscriptions.size} ${if ((if (selectedTabIndex == 0) filteredInsurances.size else filteredSubscriptions.size) > 1) "résultats" else "résultat"}",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = ColorPrimary
-                                )
-                            }
+                            Text(
+                                "$count",
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
@@ -683,7 +666,7 @@ fun InsurancesUserScreen(
                             .height(200.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = ColorPrimary)
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
             } else {
@@ -691,117 +674,118 @@ fun InsurancesUserScreen(
                 
                 if (displayList.isEmpty()) {
                     item {
-                        Card(
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 16.dp),
-                            shape = RoundedCornerShape(24.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
-                            )
+                                .padding(horizontal = 20.dp, vertical = 40.dp)
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(32.dp)
+                            // Icône moderne
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                modifier = Modifier.size(100.dp)
                             ) {
-                                // Icône avec fond circulaire
-                                Surface(
-                                    shape = CircleShape,
-                                    color = ColorPrimary.copy(alpha = 0.1f),
-                                    modifier = Modifier.size(80.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            if (searchTerm.isNotEmpty() || selectedDestination != null || selectedDuration != null || selectedPriceRange != 0f..2000f) 
-                                                Icons.Default.Search 
-                                            else Icons.Default.Info,
-                                            contentDescription = null,
-                                            tint = ColorPrimary,
-                                            modifier = Modifier.size(40.dp)
-                                        )
-                                    }
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        if (searchTerm.isNotEmpty() || selectedDestination != null || selectedDuration != null || selectedPriceRange != 0f..2000f) 
+                                            Icons.Default.SearchOff 
+                                        else Icons.Default.AssignmentLate,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(48.dp)
+                                    )
                                 }
-                                
+                            }
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
+                            
+                            Text(
+                                if (searchTerm.isNotEmpty() || selectedDestination != null || selectedDuration != null || selectedPriceRange != 0f..2000f) 
+                                    "Aucun résultat"
+                                else if (selectedTabIndex == 0) "Aucune assurance"
+                                else "Aucune inscription",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Text(
+                                if (searchTerm.isNotEmpty() || selectedDestination != null || selectedDuration != null || selectedPriceRange != 0f..2000f)
+                                    "Ajustez vos critères de recherche"
+                                else if (selectedTabIndex == 0) 
+                                    "Les assurances apparaîtront ici"
+                                else 
+                                    "Vous n'avez aucune inscription",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                            
+                            if (searchTerm.isNotEmpty() || selectedDestination != null || selectedDuration != null || selectedPriceRange != 0f..2000f) {
                                 Spacer(modifier = Modifier.height(20.dp))
                                 
-                                Text(
-                                    if (searchTerm.isNotEmpty() || selectedDestination != null || selectedDuration != null || selectedPriceRange != 0f..2000f) 
-                                        "Aucun résultat trouvé"
-                                    else if (selectedTabIndex == 0) "Aucune assurance disponible"
-                                    else "Aucune inscription",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = ColorTextPrimary,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                                
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                Text(
-                                    if (searchTerm.isNotEmpty() || selectedDestination != null || selectedDuration != null || selectedPriceRange != 0f..2000f)
-                                        "Essayez d'ajuster vos critères de recherche\nou vos filtres"
-                                    else if (selectedTabIndex == 0) 
-                                        "Les assurances créées par les agences\napparaîtront ici"
-                                    else 
-                                        "Vous n'êtes inscrit à aucune assurance\npour le moment",
-                                    fontSize = 14.sp,
-                                    color = ColorTextSecondary,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    lineHeight = 20.sp
-                                )
-                                
-                                if (searchTerm.isNotEmpty() || selectedDestination != null || selectedDuration != null || selectedPriceRange != 0f..2000f) {
-                                    Spacer(modifier = Modifier.height(24.dp))
-                                    
-                                    Button(
-                                        onClick = {
-                                            searchTerm = ""
-                                            selectedPriceRange = 0f..2000f
-                                            selectedDestination = null
-                                            selectedDuration = null
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = ColorPrimary,
-                                            contentColor = Color.White
-                                        ),
-                                        shape = RoundedCornerShape(12.dp),
-                                        contentPadding = PaddingValues(start = 24.dp, top = 12.dp, end = 24.dp, bottom = 12.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Refresh,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(18.dp),
-                                            tint = Color.White
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            "Réinitialiser les filtres",
-                                            fontWeight = FontWeight.SemiBold
-                                        )
+                                TextButton(
+                                    onClick = {
+                                        searchTerm = ""
+                                        selectedPriceRange = 0f..2000f
+                                        selectedDestination = null
+                                        selectedDuration = null
                                     }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        "Réinitialiser",
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 14.sp
+                                    )
                                 }
                             }
                         }
                     }
                 } else {
-                    items(displayList) { insurance ->
-                        InsuranceUserCard(
-                            insurance = insurance,
-                            onCreateRequest = { insuranceId ->
-                                navController.navigate("${Constants.Routes.CREATE_INSURANCE_REQUEST}/$insuranceId")
-                            },
-                            onUnsubscribe = { viewModel.unsubscribeFromInsurance(it) },
-                            onCreateClaim = if (selectedTabIndex == 1) {
-                                { insuranceId ->
-                                    navController.navigate("${Constants.Routes.CREATE_CLAIM}?insuranceId=$insuranceId")
-                                }
-                            } else null,
-                            isInMySubscriptionsTab = selectedTabIndex == 1,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
+                    itemsIndexed(displayList) { index, insurance ->
+                        // Animation avec délai progressif pour chaque item
+                        var itemVisible by remember { mutableStateOf(false) }
+                        LaunchedEffect(Unit) {
+                            delay((index * 50L).coerceAtMost(500L))
+                            itemVisible = true
+                        }
+                        
+                        AnimatedVisibility(
+                            visible = itemVisible,
+                            enter = fadeIn(animationSpec = tween(300)) + 
+                                    slideInVertically(
+                                        animationSpec = tween(300),
+                                        initialOffsetY = { it / 3 }
+                                    ) + 
+                                    scaleIn(
+                                        animationSpec = tween(300),
+                                        initialScale = 0.9f
+                                    )
+                        ) {
+                            InsuranceUserCard(
+                                insurance = insurance,
+                                onCreateRequest = { insuranceId ->
+                                    navController.navigate("${Constants.Routes.CREATE_INSURANCE_REQUEST}/$insuranceId")
+                                },
+                                onUnsubscribe = { viewModel.unsubscribeFromInsurance(it) },
+                                onCreateClaim = if (selectedTabIndex == 1) {
+                                    { insuranceId ->
+                                        navController.navigate("${Constants.Routes.CREATE_CLAIM}?insuranceId=$insuranceId")
+                                    }
+                                } else null,
+                                isInMySubscriptionsTab = selectedTabIndex == 1,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -810,37 +794,60 @@ fun InsurancesUserScreen(
         // Snackbar for errors
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
         )
     }
 }
 
 @Composable
-fun InfoChip(
+fun ModernStatCard(
+    count: Int,
+    label: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String
+    modifier: Modifier = Modifier
 ) {
     Surface(
+        modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        color = Color.White.copy(alpha = 0.2f)
+        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f)
     ) {
         Row(
-            modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                text,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.White
-            )
+            // Icône avec fond
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f),
+                modifier = Modifier.size(36.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+            
+            // Texte
+            Column {
+                Text(
+                    count.toString(),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    label,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+            }
         }
     }
 }
@@ -871,7 +878,7 @@ fun BenefitCard(
             ) {
                 Surface(
                     shape = CircleShape,
-                    color = ColorPrimary.copy(alpha = 0.15f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                     modifier = Modifier.size(48.dp)
                 ) {
                     Box(
@@ -880,7 +887,7 @@ fun BenefitCard(
                         Icon(
                             icon,
                             contentDescription = null,
-                            tint = ColorPrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -889,12 +896,37 @@ fun BenefitCard(
                 Text(
                     title,
                     fontSize = 13.sp,
-                    color = ColorTextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     lineHeight = 16.sp
                 )
             }
         }
+    }
+}
+
+@Composable
+fun CompactStatChip(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    count: Int,
+    label: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = Color.White.copy(alpha = 0.9f),
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            "$count $label",
+            fontSize = 13.sp,
+            color = Color.White.copy(alpha = 0.9f),
+            fontWeight = FontWeight.Medium
+        )
     }
 }

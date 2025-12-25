@@ -26,7 +26,7 @@ fun ReactionPicker(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
         shadowElevation = 8.dp,
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         Row(
             modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),

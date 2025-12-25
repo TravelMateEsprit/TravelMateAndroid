@@ -249,13 +249,13 @@ fun LoginScreen(
                 ) {
                     Box(
                         modifier = Modifier.size(120.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
                             painter = painterResource(id = com.travelmate.R.drawable.logo_travelmate),
-                            contentDescription = "TravelMate logo",
+                        contentDescription = "TravelMate logo",
                             modifier = Modifier.fillMaxSize()
-                        )
+                    )
                     }
                 }
             }

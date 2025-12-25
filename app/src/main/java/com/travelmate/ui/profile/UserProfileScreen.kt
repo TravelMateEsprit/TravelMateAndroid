@@ -84,7 +84,7 @@ fun UserProfileScreen(
     LaunchedEffect(error) {
         error?.let {
             scope.launch {
-                snackbarHostState.showSnackbar(it)
+            snackbarHostState.showSnackbar(it)
             }
         }
     }
@@ -113,13 +113,13 @@ fun UserProfileScreen(
     ) { paddingValues ->
         if (isLoading && user == null) {
             ModernProfileSkeleton(colorScheme = colorScheme)
-        } else {
+            } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
                     .padding(paddingValues),
                 contentPadding = PaddingValues(bottom = 24.dp)
-            ) {
+                ) {
                 // Header moderne avec avatar éditable
                 item {
                     ModernProfileHeader(
@@ -142,7 +142,7 @@ fun UserProfileScreen(
                         items = listOf(
                             ProfileField(
                                 key = "name",
-                                label = "Nom complet",
+                                    label = "Nom complet",
                                 value = name.ifEmpty { "Non renseigné" },
                                 icon = Icons.Outlined.Person,
                                 isEditable = true,
@@ -200,9 +200,9 @@ fun UserProfileScreen(
                         items = listOf(
                             ProfileField(
                                 key = "bio",
-                                label = "Bio",
+                                    label = "Bio",
                                 value = bio.ifEmpty { "Ajoutez une description de vous" },
-                                icon = Icons.Outlined.Info,
+                                    icon = Icons.Outlined.Info,
                                 isEditable = true,
                                 isMultiline = true,
                                 onEdit = { editingField = "bio" },
@@ -218,17 +218,17 @@ fun UserProfileScreen(
                         isSaving = isSaving && editingField == "bio",
                         colorScheme = colorScheme
                     )
-                }
-                
-                // Section Adresse
+                        }
+
+                        // Section Adresse
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
                     ModernInfoSection(
-                        title = "Adresse",
+                            title = "Adresse",
                         items = listOf(
                             ProfileField(
                                 key = "address",
-                                label = "Adresse",
+                                    label = "Adresse",
                                 value = address.ifEmpty { "Non renseigné" },
                                 icon = Icons.Outlined.Home,
                                 isEditable = true,
@@ -242,7 +242,7 @@ fun UserProfileScreen(
                             ),
                             ProfileField(
                                 key = "city",
-                                label = "Ville",
+                                            label = "Ville",
                                 value = city.ifEmpty { "Non renseigné" },
                                 icon = Icons.Outlined.LocationCity,
                                 isEditable = true,
@@ -300,8 +300,8 @@ fun UserProfileScreen(
                         modifier = Modifier.padding(horizontal = 20.dp),
                         colorScheme = colorScheme
                     )
-                }
-                
+                        }
+
                 // Espace final
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
@@ -318,7 +318,7 @@ fun UserProfileScreen(
     // Toast pour copie
     if (showCopyToast) {
         Box(
-            modifier = Modifier
+                            modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
             contentAlignment = Alignment.BottomCenter
@@ -332,7 +332,7 @@ fun UserProfileScreen(
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+                        ) {
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = null,
@@ -344,26 +344,26 @@ fun UserProfileScreen(
                         color = Color.White,
                         fontWeight = FontWeight.Medium
                     )
+                        }
+                    }
                 }
             }
-        }
-    }
-    
+
     // Dialog de confirmation de déconnexion
-    if (showLogoutDialog) {
+            if (showLogoutDialog) {
         ModernAlertDialog(
             onDismiss = { showLogoutDialog = false },
             onConfirm = {
-                showLogoutDialog = false
-                onLogout()
-            },
+                                showLogoutDialog = false
+                                onLogout()
+                            },
             title = "Déconnexion",
             message = "Êtes-vous sûr de vouloir vous déconnecter ?",
             confirmText = "Se déconnecter",
             isDestructive = true,
             colorScheme = colorScheme
         )
-    }
+                        }
 }
 
 /**
@@ -399,12 +399,12 @@ private fun ModernProfileHeader(
         .joinToString("")
         .ifEmpty { "U" }
     
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
             .background(colorScheme.surface),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
         // Espace pour la status bar
         Spacer(modifier = Modifier.height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding()))
         
@@ -424,12 +424,12 @@ private fun ModernProfileHeader(
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
                         text = initials,
                         fontSize = 48.sp,
-                        fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold,
                         color = colorScheme.primary
                     )
                 }
@@ -456,15 +456,15 @@ private fun ModernProfileHeader(
                     )
                 }
             }
-        }
-        
+            }
+
         Spacer(modifier = Modifier.height(20.dp))
-        
+
         // Nom
-        Text(
-            text = name.ifEmpty { "Utilisateur" },
+            Text(
+                text = name.ifEmpty { "Utilisateur" },
             fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Bold,
             color = colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
@@ -494,30 +494,30 @@ private fun ModernProfileHeader(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(12.dp))
-        
+
         // Badge type utilisateur
-        Surface(
+            Surface(
             shape = RoundedCornerShape(20.dp),
             color = if (userType.lowercase() == "agence") {
                 colorScheme.tertiary.copy(alpha = 0.15f)
             } else {
                 colorScheme.primary.copy(alpha = 0.15f)
             }
-        ) {
-            Row(
+            ) {
+                Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
+                ) {
+                    Icon(
                     if (userType.lowercase() == "agence") Icons.Default.Business else Icons.Default.Person,
-                    contentDescription = null,
+                        contentDescription = null,
                     tint = if (userType.lowercase() == "agence") colorScheme.tertiary else colorScheme.primary,
                     modifier = Modifier.size(16.dp)
-                )
-                Text(
+                    )
+                    Text(
                     text = if (userType.lowercase() == "agence") "Agence" else "Utilisateur",
                     fontSize = 13.sp,
                     color = if (userType.lowercase() == "agence") colorScheme.tertiary else colorScheme.primary,
@@ -527,8 +527,8 @@ private fun ModernProfileHeader(
         }
         
         Spacer(modifier = Modifier.height(32.dp))
-    }
-}
+                }
+            }
 
 /**
  * Section d'informations moderne avec édition inline
@@ -626,23 +626,23 @@ private fun ModernProfileFieldItem(
             
             if (isEditing) {
                 // Mode édition
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Icon(
+                Icon(
                             imageVector = field.icon,
-                            contentDescription = null,
+                    contentDescription = null,
                             tint = colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Text(
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
                             text = field.label,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -722,9 +722,9 @@ private fun ModernProfileFieldItem(
                 }
             } else {
                 // Mode affichage
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
                         .padding(20.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -738,33 +738,33 @@ private fun ModernProfileFieldItem(
                             modifier = Modifier.size(40.dp),
                             shape = RoundedCornerShape(10.dp),
                             color = colorScheme.primary.copy(alpha = 0.1f)
-                        ) {
-                            Box(
+    ) {
+        Box(
                                 modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
                                     imageVector = field.icon,
-                                    contentDescription = null,
+                contentDescription = null,
                                     tint = colorScheme.primary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                modifier = Modifier.size(20.dp)
+            )
+        }
                         }
                         
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(
+            Text(
                                 text = field.label,
                                 fontSize = 13.sp,
                                 color = colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.Medium
-                            )
+            )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(
+            Text(
                                 text = field.value,
-                                fontSize = 16.sp,
+                fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = if (field.value == "Non renseigné" || field.value.contains("Ajoutez")) {
                                     colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -799,7 +799,7 @@ private fun ModernProfileFieldItem(
                                 onClick = { field.onEdit?.invoke() },
                                 modifier = Modifier.size(40.dp)
                             ) {
-                                Icon(
+            Icon(
                                     Icons.Outlined.Edit,
                                     contentDescription = "Modifier",
                                     tint = colorScheme.primary,
@@ -839,7 +839,7 @@ private fun RedesignedQuickActions(
         
         // Design horizontal avec icônes et flèches
         Card(
-            modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = colorScheme.surface
@@ -880,8 +880,8 @@ private fun RedesignedQuickActions(
                                         contentDescription = null,
                                         tint = colorScheme.primary,
                                         modifier = Modifier.size(24.dp)
-                                    )
-                                }
+    )
+}
                             }
                             
                             Column {
@@ -919,10 +919,10 @@ private fun RedesignedQuickActions(
                     onClick = onMyClaims,
                     color = Color.Transparent,
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
                             .padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -935,43 +935,43 @@ private fun RedesignedQuickActions(
                                 modifier = Modifier.size(48.dp),
                                 shape = RoundedCornerShape(12.dp),
                                 color = colorScheme.tertiary.copy(alpha = 0.1f)
-                            ) {
-                                Box(
+    ) {
+        Box(
                                     modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
                                         Icons.Outlined.Report,
-                                        contentDescription = null,
+                contentDescription = null,
                                         tint = colorScheme.tertiary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
+                modifier = Modifier.size(24.dp)
+            )
+        }
                             }
                             
                             Column {
-                                Text(
+            Text(
                                     text = "Mes réclamations",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
                                     color = colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
                                     text = "Gérer vos réclamations",
-                                    fontSize = 13.sp,
+                fontSize = 13.sp,
                                     color = colorScheme.onSurfaceVariant
-                                )
-                            }
+            )
+        }
                         }
                         
-                        Icon(
+        Icon(
                             Icons.Default.ChevronRight,
                             contentDescription = "Ouvrir",
                             tint = colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+            modifier = Modifier.size(24.dp)
+        )
+    }
                 }
             }
         }

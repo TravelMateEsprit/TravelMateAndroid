@@ -341,7 +341,7 @@ fun FlightDetailsScreen(
                         title = {
                             Text(
                                     "Détails du vol",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontWeight = FontWeight.Bold
                             )
                         },

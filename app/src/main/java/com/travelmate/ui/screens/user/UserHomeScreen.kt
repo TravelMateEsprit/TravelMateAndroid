@@ -8,10 +8,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -59,79 +63,48 @@ fun UserHomeScreen(
     
     Scaffold(
         bottomBar = {
-            // Nouvelle NavigationBar moderne et épurée
-            Surface(
-                shadowElevation = 12.dp,
-                tonalElevation = 0.dp,
-                color = MaterialTheme.colorScheme.surface
+            // Glassmorphism Navigation Bar - Compact et moderne
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
             ) {
-                Row(
+                // Fond glassmorphism
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
-                        .padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f),
+                    shadowElevation = 0.dp,
+                    tonalElevation = 0.dp,
+                    shape = RoundedCornerShape(20.dp)
                 ) {
-                    navItems.forEachIndexed { index, item ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { selectedTab = index }
-                                .then(
-                                    if (selectedTab == index) {
-                                        Modifier.background(
-                                            brush = Brush.verticalGradient(
-                                                colors = listOf(
-                                                    ColorPrimary.copy(alpha = 0.15f),
-                                                    ColorPrimary.copy(alpha = 0.08f)
-                                                )
-                                            )
-                                        )
-                                    } else Modifier
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                // Badge pour les notifications non lues
-                                BadgedBox(
-                                    badge = {
-                                        if (item is BottomNavItem.Notifications && unreadCount > 0) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(16.dp)
-                                                    .clip(CircleShape)
-                                                    .background(ColorError),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = if (unreadCount > 9) "9+" else "$unreadCount",
-                                                    color = Color.White,
-                                                    fontSize = 8.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = item.icon,
-                                        contentDescription = item.label,
-                                        modifier = Modifier.size(if (selectedTab == index) 24.dp else 22.dp),
-                                        tint = if (selectedTab == index) ColorPrimary else ColorTextSecondary.copy(alpha = 0.5f)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                                        MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
                                     )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = item.label,
-                                    fontSize = if (selectedTab == index) 11.sp else 10.sp,
-                                    fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (selectedTab == index) ColorPrimary else ColorTextSecondary.copy(alpha = 0.5f)
+                                )
+                            )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(58.dp)
+                                .padding(horizontal = 4.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            navItems.forEachIndexed { index, item ->
+                                GlassmorphismNavItem(
+                                    item = item,
+                                    isSelected = selectedTab == index,
+                                    onClick = { selectedTab = index },
+                                    unreadCount = if (item is BottomNavItem.Notifications && unreadCount > 0) unreadCount else null
                                 )
                             }
                         }
@@ -158,6 +131,135 @@ fun UserHomeScreen(
                     navController = navController,
                     onLogout = onLogout
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Item de navigation avec effet glassmorphism - Style iOS moderne
+ */
+@Composable
+private fun GlassmorphismNavItem(
+    item: BottomNavItem,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    unreadCount: Int?
+) {
+    // Animations
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 1.05f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "scale"
+    )
+    
+    val backgroundAlpha by animateFloatAsState(
+        targetValue = if (isSelected) 1f else 0f,
+        animationSpec = tween(400, easing = FastOutSlowInEasing),
+        label = "backgroundAlpha"
+    )
+    
+    val iconTint by animateColorAsState(
+        targetValue = if (isSelected) 
+            MaterialTheme.colorScheme.primary 
+        else 
+            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        animationSpec = tween(300),
+        label = "iconTint"
+    )
+    
+    Box(
+        modifier = Modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+    ) {
+        // Fond glassmorphism pour l'item sélectionné
+        if (isSelected) {
+            Surface(
+                modifier = Modifier
+                    .size(width = 46.dp, height = 46.dp)
+                    .graphicsLayer { alpha = backgroundAlpha },
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
+                                )
+                            )
+                        )
+                )
+            }
+        }
+        
+        // Contenu de l'item
+        Box(
+            modifier = Modifier
+                .size(width = 46.dp, height = 46.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Badge pour notifications
+                BadgedBox(
+                    badge = {
+                        if (unreadCount != null && unreadCount > 0) {
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.offset(x = 6.dp, y = (-5).dp)
+                            ) {
+                                Text(
+                                    text = if (unreadCount > 9) "9+" else "$unreadCount",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onError
+                                )
+                            }
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.label,
+                        modifier = Modifier.size(23.dp),
+                        tint = iconTint
+                    )
+                }
+                
+                // Point indicateur minimaliste
+                AnimatedVisibility(
+                    visible = isSelected,
+                    enter = fadeIn(animationSpec = tween(200)) + scaleIn(
+                        animationSpec = tween(200),
+                        initialScale = 0.3f
+                    ),
+                    exit = fadeOut(animationSpec = tween(200)) + scaleOut(
+                        animationSpec = tween(200),
+                        targetScale = 0.3f
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 3.dp)
+                            .size(3.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                    )
+                }
             }
         }
     }

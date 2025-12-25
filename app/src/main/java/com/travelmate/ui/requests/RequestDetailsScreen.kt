@@ -40,6 +40,7 @@ fun RequestDetailsScreen(
     val state by viewModel.state.collectAsState()
     val cancelState by viewModel.cancelState.collectAsState()
     var showCancelDialog by remember { mutableStateOf(false) }
+    val colorScheme = MaterialTheme.colorScheme
     
     LaunchedEffect(requestId) {
         viewModel.loadRequestDetails(requestId)
@@ -66,18 +67,19 @@ fun RequestDetailsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ColorPrimary,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = colorScheme.primary,
+                    titleContentColor = colorScheme.onPrimary,
+                    navigationIconContentColor = colorScheme.onPrimary
                 )
             )
-        }
+        },
+        containerColor = colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(ColorBackground)
+                .background(colorScheme.background)
         ) {
             when (state) {
                 is RequestDetailsState.Loading -> {
@@ -91,10 +93,10 @@ fun RequestDetailsScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            CircularProgressIndicator(color = ColorPrimary)
+                            CircularProgressIndicator(color = colorScheme.primary)
                             Text(
                                 "Chargement...",
-                                color = ColorTextSecondary,
+                                color = colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp
                             )
                         }
@@ -112,70 +114,82 @@ fun RequestDetailsScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         // En-tête avec statut
-                        StatusHeaderCard(request = request)
+                        StatusHeaderCard(request = request, colorScheme = colorScheme)
                         
                         // Informations du voyageur
                         InfoCard(
                             title = "Informations du voyageur",
-                            icon = Icons.Default.Person
+                            icon = Icons.Default.Person,
+                            colorScheme = colorScheme
                         ) {
                             DetailItem(
                                 icon = Icons.Default.Badge,
                                 label = "Nom",
-                                value = request.travelerName
+                                value = request.travelerName,
+                                colorScheme = colorScheme
                             )
                             DetailItem(
                                 icon = Icons.Default.Email,
                                 label = "Email",
-                                value = request.travelerEmail
+                                value = request.travelerEmail,
+                                colorScheme = colorScheme
                             )
                             DetailItem(
                                 icon = Icons.Default.Phone,
                                 label = "Téléphone",
-                                value = request.travelerPhone
+                                value = request.travelerPhone,
+                                colorScheme = colorScheme
                             )
                             DetailItem(
                                 icon = Icons.Default.Cake,
                                 label = "Date de naissance",
-                                value = formatDate(request.dateOfBirth)
+                                value = formatDate(request.dateOfBirth),
+                                colorScheme = colorScheme
                             )
                             DetailItem(
                                 icon = Icons.Default.CreditCard,
                                 label = "Passeport",
-                                value = request.passportNumber
+                                value = request.passportNumber,
+                                colorScheme = colorScheme
                             )
                             DetailItem(
                                 icon = Icons.Default.Flag,
                                 label = "Nationalité",
-                                value = request.nationality
+                                value = request.nationality,
+                                colorScheme = colorScheme
                             )
                         }
                         
                         // Détails du voyage
                         InfoCard(
                             title = "Détails du voyage",
-                            icon = Icons.Default.Flight
+                            icon = Icons.Default.Flight,
+                            colorScheme = colorScheme
                         ) {
                             DetailItem(
                                 icon = Icons.Default.Public,
                                 label = "Destination",
-                                value = request.destination
+                                value = request.destination,
+                                colorScheme = colorScheme
                             )
                             DetailItem(
                                 icon = Icons.Default.FlightTakeoff,
                                 label = "Date de départ",
-                                value = formatDate(request.departureDate)
+                                value = formatDate(request.departureDate),
+                                colorScheme = colorScheme
                             )
                             DetailItem(
                                 icon = Icons.Default.FlightLand,
                                 label = "Date de retour",
-                                value = formatDate(request.returnDate)
+                                value = formatDate(request.returnDate),
+                                colorScheme = colorScheme
                             )
                             request.travelPurpose?.let {
                                 DetailItem(
                                     icon = Icons.Default.WorkOutline,
                                     label = "Motif du voyage",
-                                    value = it
+                                    value = it,
+                                    colorScheme = colorScheme
                                 )
                             }
                         }
@@ -184,12 +198,13 @@ fun RequestDetailsScreen(
                         if (request.message != null) {
                             InfoCard(
                                 title = "Message",
-                                icon = Icons.Default.Message
+                                icon = Icons.Default.Message,
+                                colorScheme = colorScheme
                             ) {
                                 Text(
                                     text = request.message,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = ColorTextPrimary,
+                                    color = colorScheme.onSurface,
                                     modifier = Modifier.padding(top = 8.dp)
                                 )
                             }
@@ -205,22 +220,23 @@ fun RequestDetailsScreen(
                                     title = "Réponse de l'agence",
                                     icon = Icons.Default.Business,
                                     containerColor = when (request.status) {
-                                        RequestStatus.APPROVED -> ColorSuccess.copy(alpha = 0.05f)
-                                        RequestStatus.REJECTED -> ColorError.copy(alpha = 0.05f)
-                                        else -> Color.White
-                                    }
+                                        RequestStatus.APPROVED -> ColorSuccess.copy(alpha = 0.1f)
+                                        RequestStatus.REJECTED -> colorScheme.error.copy(alpha = 0.1f)
+                                        else -> colorScheme.surface
+                                    },
+                                    colorScheme = colorScheme
                                 ) {
                                     Text(
                                         text = request.agencyResponse,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = ColorTextPrimary,
+                                        color = colorScheme.onSurface,
                                         modifier = Modifier.padding(top = 8.dp)
                                     )
                                     request.reviewedAt?.let {
                                         Text(
                                             text = "Révisée le ${formatDate(it)}",
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = ColorTextSecondary,
+                                            color = colorScheme.onSurfaceVariant,
                                             modifier = Modifier.padding(top = 8.dp)
                                         )
                                     }
@@ -253,8 +269,7 @@ fun RequestDetailsScreen(
                                                 .fillMaxWidth()
                                                 .padding(16.dp),
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = ColorSuccess,
-                                                contentColor = Color.White
+                                                containerColor = ColorSuccess
                                             ),
                                             shape = RoundedCornerShape(8.dp)
                                         ) {
@@ -314,7 +329,7 @@ fun RequestDetailsScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 enabled = cancelState !is CancelRequestState.Loading,
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = ColorError
+                                    contentColor = colorScheme.error
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -332,7 +347,7 @@ fun RequestDetailsScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = ColorError.copy(alpha = 0.1f)
+                                    containerColor = colorScheme.error.copy(alpha = 0.1f)
                                 )
                             ) {
                                 Row(
@@ -342,13 +357,13 @@ fun RequestDetailsScreen(
                                     Icon(
                                         Icons.Default.Error,
                                         contentDescription = null,
-                                        tint = ColorError,
+                                        tint = colorScheme.error,
                                         modifier = Modifier.size(24.dp)
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = (cancelState as CancelRequestState.Error).message,
-                                        color = ColorError,
+                                        color = colorScheme.error,
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
@@ -372,11 +387,11 @@ fun RequestDetailsScreen(
                                 Icons.Default.Error,
                                 contentDescription = null,
                                 modifier = Modifier.size(64.dp),
-                                tint = ColorError
+                                tint = colorScheme.error
                             )
                             Text(
                                 text = (state as RequestDetailsState.Error).message,
-                                color = ColorError,
+                                color = colorScheme.error,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -394,18 +409,22 @@ fun RequestDetailsScreen(
                 Icon(
                     Icons.Default.Warning,
                     contentDescription = null,
-                    tint = ColorError,
+                    tint = colorScheme.error,
                     modifier = Modifier.size(48.dp)
                 )
             },
             title = { 
                 Text(
                     "Annuler la demande",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = colorScheme.onSurface
                 )
             },
             text = { 
-                Text("Êtes-vous sûr de vouloir annuler cette demande ? Cette action est irréversible.")
+                Text(
+                    "Êtes-vous sûr de vouloir annuler cette demande ? Cette action est irréversible.",
+                    color = colorScheme.onSurfaceVariant
+                )
             },
             confirmButton = {
                 Button(
@@ -414,28 +433,31 @@ fun RequestDetailsScreen(
                         showCancelDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = ColorError,
-                        contentColor = Color.White
+                        containerColor = colorScheme.error
                     )
                 ) {
-                    Text("Confirmer l'annulation", color = Color.White)
+                    Text("Confirmer l'annulation")
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showCancelDialog = false }) {
                     Text("Retour")
                 }
-            }
+            },
+            containerColor = colorScheme.surface
         )
     }
 }
 
 @Composable
-private fun StatusHeaderCard(request: InsuranceRequest) {
+private fun StatusHeaderCard(
+    request: InsuranceRequest,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = colorScheme.surface
         ),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -454,9 +476,9 @@ private fun StatusHeaderCard(request: InsuranceRequest) {
                     .background(
                         when (request.status) {
                             RequestStatus.APPROVED -> ColorSuccess.copy(alpha = 0.1f)
-                            RequestStatus.REJECTED -> ColorError.copy(alpha = 0.1f)
-                            RequestStatus.PENDING -> ColorPrimary.copy(alpha = 0.1f)
-                            RequestStatus.CANCELLED -> ColorTextSecondary.copy(alpha = 0.1f)
+                            RequestStatus.REJECTED -> colorScheme.error.copy(alpha = 0.1f)
+                            RequestStatus.PENDING -> colorScheme.primary.copy(alpha = 0.1f)
+                            RequestStatus.CANCELLED -> colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -472,19 +494,19 @@ private fun StatusHeaderCard(request: InsuranceRequest) {
                     modifier = Modifier.size(40.dp),
                     tint = when (request.status) {
                         RequestStatus.APPROVED -> ColorSuccess
-                        RequestStatus.REJECTED -> ColorError
-                        RequestStatus.PENDING -> ColorPrimary
-                        RequestStatus.CANCELLED -> ColorTextSecondary
+                        RequestStatus.REJECTED -> colorScheme.error
+                        RequestStatus.PENDING -> colorScheme.primary
+                        RequestStatus.CANCELLED -> colorScheme.onSurfaceVariant
                     }
                 )
             }
             
-            EnhancedStatusChip(status = request.status)
+            EnhancedStatusChip(status = request.status, colorScheme = colorScheme)
             
             Text(
                 text = "Demande soumise le ${formatDate(request.createdAt)}",
                 style = MaterialTheme.typography.bodySmall,
-                color = ColorTextSecondary
+                color = colorScheme.onSurfaceVariant
             )
         }
     }
@@ -495,6 +517,7 @@ private fun InfoCard(
     title: String,
     icon: ImageVector,
     containerColor: Color = MaterialTheme.colorScheme.surface,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -516,13 +539,13 @@ private fun InfoCard(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(ColorPrimary.copy(alpha = 0.1f)),
+                        .background(colorScheme.primary.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         icon,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -531,11 +554,14 @@ private fun InfoCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = colorScheme.onSurface
                 )
             }
             
-            Divider(modifier = Modifier.padding(bottom = 16.dp))
+            Divider(
+                modifier = Modifier.padding(bottom = 16.dp),
+                color = colorScheme.outline.copy(alpha = 0.3f)
+            )
             
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -550,7 +576,8 @@ private fun InfoCard(
 private fun DetailItem(
     icon: ImageVector,
     label: String,
-    value: String
+    value: String,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -560,20 +587,20 @@ private fun DetailItem(
             icon,
             contentDescription = null,
             modifier = Modifier.size(20.dp),
-            tint = ColorTextSecondary
+            tint = colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = ColorTextSecondary,
+                color = colorScheme.onSurfaceVariant,
                 fontSize = 12.sp
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium,
-                color = ColorTextPrimary,
+                color = colorScheme.onSurface,
                 fontSize = 15.sp,
                 modifier = Modifier.padding(top = 2.dp)
             )

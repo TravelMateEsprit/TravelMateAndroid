@@ -113,8 +113,8 @@ fun GroupsListScreen(
             ) {
                 ExtendedFloatingActionButton(
                     onClick = { showCreateDialog = true },
-                    containerColor = ColorPrimary,
-                    contentColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     icon = {
                         Icon(
                             Icons.Default.Add,
@@ -128,7 +128,8 @@ fun GroupsListScreen(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
-                    }
+                    },
+                    modifier = Modifier.navigationBarsPadding()
                 )
             }
         }
@@ -136,8 +137,7 @@ fun GroupsListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color(0xFFF5F5F5))
+                .background(MaterialTheme.colorScheme.background)
         ) {
             // En-tête avec gradient
             Surface(
@@ -150,17 +150,19 @@ fun GroupsListScreen(
                         .background(
                             Brush.horizontalGradient(
                                 colors = listOf(
-                                    ColorPrimary,
-                                    ColorPrimary.copy(alpha = 0.8f)
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                                 )
                             )
                         )
                 ) {
-                    Column {
+                    Column(
+                        modifier = Modifier.statusBarsPadding()
+                    ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -169,7 +171,7 @@ fun GroupsListScreen(
                                     "${myGroups.size + myCreatedGroups.size} Groupes Actifs",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
 
@@ -177,17 +179,17 @@ fun GroupsListScreen(
                                 BadgedBox(
                                     badge = {
                                         Badge(
-                                            containerColor = ColorError,
+                                            containerColor = MaterialTheme.colorScheme.error,
                                             modifier = Modifier.offset(x = (-4).dp, y = 4.dp)
                                         ) {
-                                            Text("3", fontSize = 10.sp, color = Color.White)
+                                            Text("3", fontSize = 10.sp, color = MaterialTheme.colorScheme.onError)
                                         }
                                     }
                                 ) {
                                     Icon(
                                         Icons.Default.Notifications,
                                         contentDescription = "Notifications",
-                                        tint = Color.White,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
                                         modifier = Modifier.size(28.dp)
                                     )
                                 }
@@ -201,7 +203,7 @@ fun GroupsListScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
-                                .padding(bottom = 12.dp),
+                                .padding(bottom = 8.dp),
                             placeholder = {
                                 Text(
                                     "Rechercher un groupe, une destination...",
@@ -212,7 +214,7 @@ fun GroupsListScreen(
                                 Icon(
                                     Icons.Default.Search,
                                     contentDescription = null,
-                                    tint = Color.White.copy(alpha = 0.7f)
+                                    tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                                 )
                             },
                             trailingIcon = {
@@ -222,7 +224,7 @@ fun GroupsListScreen(
                                             Icon(
                                                 Icons.Default.Close,
                                                 "Effacer",
-                                                tint = Color.White.copy(alpha = 0.7f)
+                                                tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                                             )
                                         }
                                     }
@@ -231,20 +233,20 @@ fun GroupsListScreen(
                                         Icon(
                                             Icons.Default.Sort,
                                             "Trier",
-                                            tint = Color.White.copy(alpha = 0.7f)
+                                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                                         )
                                     }
                                 }
                             },
                             shape = RoundedCornerShape(24.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.White,
-                                unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                cursorColor = Color.White,
-                                focusedContainerColor = Color.White.copy(alpha = 0.15f),
-                                unfocusedContainerColor = Color.White.copy(alpha = 0.1f)
+                                focusedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                                focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                                cursorColor = MaterialTheme.colorScheme.onPrimary,
+                                focusedContainerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f)
                             ),
                             singleLine = true
                         )
@@ -259,7 +261,7 @@ fun GroupsListScreen(
                                     "Trier par",
                                     modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
                                     fontSize = 12.sp,
-                                    color = ColorTextSecondary,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontWeight = FontWeight.SemiBold
                                 )
 
@@ -276,7 +278,7 @@ fun GroupsListScreen(
                                                     Icon(
                                                         Icons.Default.Check,
                                                         contentDescription = null,
-                                                        tint = ColorPrimary,
+                                                        tint = MaterialTheme.colorScheme.primary,
                                                         modifier = Modifier.size(20.dp)
                                                     )
                                                 } else {
@@ -300,33 +302,38 @@ fun GroupsListScreen(
                 }
             }
 
-            // Onglets
+            // Onglets - Optimisés pour un layout compact
             TabRow(
                 selectedTabIndex = selectedTab,
-                containerColor = Color.White,
-                contentColor = ColorPrimary,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
                 indicator = { tabPositions ->
                     TabRowDefaults.Indicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        color = ColorPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         height = 3.dp
                     )
-                }
+                },
+                modifier = Modifier.height(56.dp) // Hauteur réduite pour plus de compacité
             ) {
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
                     text = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        ) {
                             Text(
                                 "Mes créations",
-                                fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal,
+                                fontSize = 13.sp
                             )
                             if (displayedCreatedGroups.isNotEmpty()) {
                                 Text(
                                     "(${displayedCreatedGroups.size})",
-                                    fontSize = 11.sp,
-                                    color = ColorTextSecondary
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -337,16 +344,20 @@ fun GroupsListScreen(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
                     text = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        ) {
                             Text(
                                 "Mes groupes",
-                                fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal,
+                                fontSize = 13.sp
                             )
                             if (displayedMyGroups.isNotEmpty()) {
                                 Text(
                                     "(${displayedMyGroups.size})",
-                                    fontSize = 11.sp,
-                                    color = ColorTextSecondary
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -357,16 +368,20 @@ fun GroupsListScreen(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
                     text = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        ) {
                             Text(
                                 "Découvrir",
-                                fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Normal,
+                                fontSize = 13.sp
                             )
                             if (discoverGroups.isNotEmpty()) {
                                 Text(
                                     "(${discoverGroups.size})",
-                                    fontSize = 11.sp,
-                                    color = ColorTextSecondary
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -501,7 +516,7 @@ fun GroupsListScreen(
             },
             dismissButton = {
                 TextButton(onClick = { groupToDelete = null }) {
-                    Text("Annuler", color = ColorTextSecondary)
+                    Text("Annuler", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -532,10 +547,10 @@ fun GroupsList(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                CircularProgressIndicator(color = ColorPrimary)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 Text(
                     "Chargement des groupes...",
-                    color = ColorTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             }
@@ -547,14 +562,16 @@ fun GroupsList(
         )
     } else {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding(),
             contentPadding = PaddingValues(
                 start = 16.dp,
-                            end = 16.dp,
-                top = 16.dp,
+                end = 16.dp,
+                top = 12.dp,
                 bottom = 96.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(groups, key = { it._id }) { group ->
                 AnimatedVisibility(
@@ -600,7 +617,7 @@ fun EmptyGroupsState(
             Surface(
                 modifier = Modifier.size(120.dp),
                 shape = CircleShape,
-                color = ColorPrimary.copy(alpha = 0.1f)
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
             ) {
                 Icon(
                     icon,
@@ -608,7 +625,7 @@ fun EmptyGroupsState(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(28.dp),
-                    tint = ColorPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -617,7 +634,7 @@ fun EmptyGroupsState(
             Text(
                 message,
                 fontSize = 16.sp,
-                color = ColorTextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 lineHeight = 22.sp
             )
@@ -627,7 +644,7 @@ fun EmptyGroupsState(
             Text(
                 "Commencez votre aventure",
                 fontSize = 14.sp,
-                color = ColorTextSecondary.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
         }
     }

@@ -100,7 +100,7 @@ fun CreateGroupDialog(
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier
@@ -116,10 +116,10 @@ fun CreateGroupDialog(
                         "Créer un groupe",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, "Fermer", tint = ColorTextSecondary)
+                        Icon(Icons.Default.Close, "Fermer", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
 
@@ -129,7 +129,7 @@ fun CreateGroupDialog(
                     "Photo du groupe",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -140,7 +140,7 @@ fun CreateGroupDialog(
                         .clip(RoundedCornerShape(12.dp))
                         .border(
                             width = 2.dp,
-                            color = if (isUploading) ColorPrimary else ColorTextSecondary.copy(alpha = 0.3f),
+                            color = if (isUploading) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                             shape = RoundedCornerShape(12.dp)
                         )
                         .clickable(enabled = !isUploading) {
@@ -156,12 +156,12 @@ fun CreateGroupDialog(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                CircularProgressIndicator(color = ColorPrimary)
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     "Upload en cours...",
                                     fontSize = 12.sp,
-                                    color = ColorTextSecondary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -190,12 +190,12 @@ fun CreateGroupDialog(
                                     Icons.Default.AddPhotoAlternate,
                                     contentDescription = null,
                                     modifier = Modifier.size(48.dp),
-                                    tint = ColorTextSecondary
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     "Cliquez pour choisir une photo",
-                                    color = ColorTextSecondary,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 14.sp
                                 )
                             }
@@ -219,7 +219,7 @@ fun CreateGroupDialog(
                     "Nom du groupe",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
@@ -240,7 +240,7 @@ fun CreateGroupDialog(
                     "Destination",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
@@ -250,8 +250,8 @@ fun CreateGroupDialog(
                     placeholder = { Text("Ex: Thaïlande") },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = ColorPrimary,
-                        unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                     )
                 )
 
@@ -261,7 +261,7 @@ fun CreateGroupDialog(
                     "Description",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
@@ -273,8 +273,8 @@ fun CreateGroupDialog(
                     placeholder = { Text("Décrivez votre groupe...") },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = ColorPrimary,
-                        unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                     ),
                     maxLines = 5
                 )
@@ -314,7 +314,7 @@ fun CreateGroupDialog(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = name.isNotBlank() && description.isNotBlank() && !isUploading,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = ColorPrimary
+                        containerColor = MaterialTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(vertical = 14.dp)
@@ -322,7 +322,7 @@ fun CreateGroupDialog(
                     if (isUploading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
                         Spacer(modifier = Modifier.width(8.dp))

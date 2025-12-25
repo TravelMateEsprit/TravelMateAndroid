@@ -103,7 +103,7 @@ fun NotificationsScreen(
                 isLoading && notifications.isEmpty() -> {
                     NotificationsSkeletonLoader(colorScheme = colorScheme)
                 }
-
+                
                 error != null && notifications.isEmpty() -> {
                     EfficientErrorState(
                         message = error ?: "Erreur inconnue",
@@ -111,11 +111,11 @@ fun NotificationsScreen(
                         colorScheme = colorScheme
                     )
                 }
-
+                
                 filteredNotifications.isEmpty() -> {
                     EfficientEmptyState(filter = selectedFilter, colorScheme = colorScheme)
                 }
-
+                
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -146,7 +146,7 @@ fun NotificationsScreen(
                                     if (!notification.isRead) {
                                         viewModel.markAsRead(notification._id)
                                     }
-
+                                    
                                     when (notification.type) {
                                         NotificationType.NEW_INSURANCE_REQUEST,
                                         NotificationType.REQUEST_STATUS_CHANGED -> {
@@ -176,8 +176,8 @@ fun NotificationsScreen(
         EfficientAlertDialog(
             onDismiss = { showMarkAllDialog = false },
             onConfirm = {
-                viewModel.markAllAsRead()
-                showMarkAllDialog = false
+                        viewModel.markAllAsRead()
+                        showMarkAllDialog = false
                 scope.launch {
                     snackbarHostState.showSnackbar("Toutes les notifications ont été marquées comme lues")
                 }
@@ -269,7 +269,7 @@ private fun EfficientNotificationsTopBar(
                                 fontWeight = FontWeight.Bold,
                                 color = colorScheme.onPrimary
                             )
-                        }
+                }
                     }
                 }
 
@@ -340,7 +340,7 @@ private fun CompactNotificationItem(
     val colorScheme = MaterialTheme.colorScheme
     var swipeOffset by remember { mutableStateOf(0f) }
     var isSwiping by remember { mutableStateOf(false) }
-
+    
     // Animation d'entrée
     val enterAnimation = remember {
         slideInHorizontally(
@@ -357,7 +357,7 @@ private fun CompactNotificationItem(
             )
         )
     }
-
+    
     AnimatedVisibility(
         visible = true,
         enter = enterAnimation,
@@ -454,7 +454,7 @@ private fun CompactNotificationItem(
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = if (notification.isRead) 1.dp else 2.dp
-                )
+                            )
             ) {
                 Row(
                     modifier = Modifier
@@ -466,11 +466,11 @@ private fun CompactNotificationItem(
                 ) {
                     // Barre latérale colorée pour les non lues
                     if (!notification.isRead) {
-                        Box(
-                            modifier = Modifier
+                    Box(
+                        modifier = Modifier
                                 .fillMaxHeight()
                                 .width(3.dp)
-                                .background(
+                            .background(
                                     color = getNotificationColor(notification.type),
                                     shape = RoundedCornerShape(2.dp)
                                 )
@@ -487,17 +487,17 @@ private fun CompactNotificationItem(
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = getNotificationIcon(notification.type),
-                                contentDescription = null,
-                                tint = getNotificationColor(notification.type),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = getNotificationIcon(notification.type),
+                            contentDescription = null,
+                            tint = getNotificationColor(notification.type),
                                 modifier = Modifier.size(22.dp)
-                            )
+                        )
                         }
                     }
-
+                    
                     // Contenu compact
                     Column(
                         modifier = Modifier.weight(1f),
@@ -518,7 +518,7 @@ private fun CompactNotificationItem(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
-
+                            
                             if (!notification.isRead) {
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Surface(
@@ -528,7 +528,7 @@ private fun CompactNotificationItem(
                                 ) {}
                             }
                         }
-
+                        
                         // Message
                         Text(
                             text = notification.body,
@@ -538,7 +538,7 @@ private fun CompactNotificationItem(
                             overflow = TextOverflow.Ellipsis,
                             lineHeight = 18.sp
                         )
-
+                        
                         // Timestamp et badge de statut
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -555,14 +555,14 @@ private fun CompactNotificationItem(
                                     modifier = Modifier.size(12.dp),
                                     tint = colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                                 )
-                                Text(
-                                    text = notification.getFormattedTime(),
-                                    style = MaterialTheme.typography.labelSmall,
+                            Text(
+                                text = notification.getFormattedTime(),
+                                style = MaterialTheme.typography.labelSmall,
                                     color = colorScheme.onSurfaceVariant,
                                     fontSize = 11.sp
-                                )
+                            )
                             }
-
+                            
                             // Badge de statut compact
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
@@ -598,10 +598,10 @@ private fun EfficientEmptyState(
             .fillMaxSize()
             .padding(32.dp),
         contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Surface(
                 modifier = Modifier.size(80.dp),
@@ -619,9 +619,9 @@ private fun EfficientEmptyState(
                         modifier = Modifier.size(40.dp)
                     )
                 }
-            }
-
-            Text(
+                }
+                
+                Text(
                 text = when (filter) {
                     NotificationFilter.ALL -> "Aucune notification"
                     NotificationFilter.UNREAD -> "Aucune notification non lue"
@@ -631,19 +631,19 @@ private fun EfficientEmptyState(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface
-            )
-
-            Text(
+                )
+                
+                Text(
                 text = when (filter) {
                     NotificationFilter.ALL -> "Vous n'avez reçu aucune notification pour le moment"
                     NotificationFilter.UNREAD -> "Toutes vos notifications ont été lues"
                     NotificationFilter.REQUESTS -> "Aucune demande d'assurance en cours"
                     NotificationFilter.SYSTEM -> "Aucune notification système"
                 },
-                style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium,
                 color = colorScheme.onSurfaceVariant,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
         }
     }
 }
@@ -675,23 +675,23 @@ private fun EfficientErrorState(
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
-                ) {
-                    Icon(
+        ) {
+            Icon(
                         imageVector = Icons.Default.ErrorOutline,
-                        contentDescription = null,
+                contentDescription = null,
                         tint = colorScheme.error,
                         modifier = Modifier.size(32.dp)
-                    )
+            )
                 }
             }
-
+            
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
                 color = colorScheme.onSurfaceVariant,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
-
+            
             Button(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(
@@ -760,10 +760,10 @@ private fun NotificationsSkeletonLoader(colorScheme: ColorScheme) {
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(colorScheme.surfaceVariant.copy(alpha = 0.4f))
                         )
-                    }
-                }
             }
         }
+    }
+}
     }
 }
 

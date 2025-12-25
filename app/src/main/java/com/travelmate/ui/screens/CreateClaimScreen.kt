@@ -28,6 +28,7 @@ import androidx.navigation.NavController
 import com.travelmate.data.models.InsuranceRequest
 import com.travelmate.data.models.RequestStatus
 import com.travelmate.data.models.ClaimCategory
+import com.travelmate.ui.theme.ColorSuccess
 import com.travelmate.ui.user.requests.MyInsuranceRequestsViewModel
 import com.travelmate.ui.user.requests.MyRequestsState
 import com.travelmate.utils.Constants
@@ -56,6 +57,7 @@ fun CreateClaimScreen(
     var description by remember { mutableStateOf("") }
     var selectedInsuranceRequestId by remember { mutableStateOf<String?>(null) }
     var selectedCategory by remember { mutableStateOf<ClaimCategory?>(null) }
+    val colorScheme = MaterialTheme.colorScheme
     
     val createSuccess by viewModel.createClaimSuccess.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -157,18 +159,12 @@ fun CreateClaimScreen(
     
     Scaffold(
         topBar = {
-            Surface(shadowElevation = 4.dp) {
+            Surface(
+                shadowElevation = 4.dp,
+                color = colorScheme.primary
+            ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFF1E88E5),
-                                    Color(0xFF1976D2)
-                                )
-                            )
-                        )
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     // Header
                     Row(
@@ -180,7 +176,7 @@ fun CreateClaimScreen(
                         IconButton(
                             onClick = { navController.popBackStack() },
                             colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = Color.White
+                                contentColor = colorScheme.onPrimary
                             )
                         ) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
@@ -193,12 +189,12 @@ fun CreateClaimScreen(
                                 text = "Nouveau Ticket",
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = colorScheme.onPrimary
                             )
                             Text(
                                 text = "Décrivez votre problème",
                                 fontSize = 13.sp,
-                                color = Color.White.copy(alpha = 0.9f)
+                                color = colorScheme.onPrimary.copy(alpha = 0.9f)
                             )
                         }
                     }
@@ -214,32 +210,36 @@ fun CreateClaimScreen(
                             stepNumber = 1,
                             label = "Catégorie",
                             isActive = currentStep == 1,
-                            isCompleted = currentStep > 1
+                            isCompleted = currentStep > 1,
+                            colorScheme = colorScheme
                         )
-                        StepConnector(isCompleted = currentStep > 1)
+                        StepConnector(isCompleted = currentStep > 1, colorScheme = colorScheme)
                         StepIndicator(
                             stepNumber = 2,
                             label = "Assurance",
                             isActive = currentStep == 2,
-                            isCompleted = currentStep > 2
+                            isCompleted = currentStep > 2,
+                            colorScheme = colorScheme
                         )
-                        StepConnector(isCompleted = currentStep > 2)
+                        StepConnector(isCompleted = currentStep > 2, colorScheme = colorScheme)
                         StepIndicator(
                             stepNumber = 3,
                             label = "Détails",
                             isActive = currentStep == 3,
-                            isCompleted = false
+                            isCompleted = false,
+                            colorScheme = colorScheme
                         )
                     }
                 }
             }
-        }
+        },
+        containerColor = colorScheme.background
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF5F7FA))
+                .background(colorScheme.background)
         ) {
             Column(
                 modifier = Modifier
@@ -262,7 +262,8 @@ fun CreateClaimScreen(
                             onCategorySelected = { 
                                 selectedCategory = it
                                 currentStep = 2
-                            }
+                            },
+                            colorScheme = colorScheme
                         )
                         
                         2 -> InsuranceSelectionStep(
@@ -272,7 +273,8 @@ fun CreateClaimScreen(
                                 selectedInsuranceRequestId = it
                                 currentStep = 3
                             },
-                            onBack = { currentStep = 1 }
+                            onBack = { currentStep = 1 },
+                            colorScheme = colorScheme
                         )
                         
                         3 -> DetailsStep(
@@ -294,7 +296,8 @@ fun CreateClaimScreen(
                                     )
                                 }
                             },
-                            onBack = { currentStep = 2 }
+                            onBack = { currentStep = 2 },
+                            colorScheme = colorScheme
                         )
                     }
                 }
@@ -310,7 +313,8 @@ fun StepIndicator(
     stepNumber: Int,
     label: String,
     isActive: Boolean,
-    isCompleted: Boolean
+    isCompleted: Boolean,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -318,9 +322,9 @@ fun StepIndicator(
         Surface(
             shape = CircleShape,
             color = when {
-                isCompleted -> Color(0xFF4CAF50)
-                isActive -> Color.White
-                else -> Color.White.copy(alpha = 0.3f)
+                isCompleted -> ColorSuccess
+                isActive -> colorScheme.onPrimary
+                else -> colorScheme.onPrimary.copy(alpha = 0.3f)
             },
             modifier = Modifier.size(40.dp)
         ) {
@@ -337,7 +341,7 @@ fun StepIndicator(
                         text = "$stepNumber",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = if (isActive) Color(0xFF1976D2) else Color.White.copy(alpha = 0.7f)
+                        color = if (isActive) colorScheme.primary else colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -347,13 +351,16 @@ fun StepIndicator(
             text = label,
             fontSize = 11.sp,
             fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-            color = Color.White.copy(alpha = if (isActive) 1f else 0.7f)
+            color = colorScheme.onPrimary.copy(alpha = if (isActive) 1f else 0.7f)
         )
     }
 }
 
 @Composable
-fun RowScope.StepConnector(isCompleted: Boolean) {
+fun RowScope.StepConnector(
+    isCompleted: Boolean,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
+) {
     Box(
         modifier = Modifier
             .weight(1f)
@@ -361,7 +368,7 @@ fun RowScope.StepConnector(isCompleted: Boolean) {
             .align(Alignment.CenterVertically)
             .padding(top = 20.dp)
             .background(
-                if (isCompleted) Color(0xFF4CAF50) else Color.White.copy(alpha = 0.3f)
+                if (isCompleted) ColorSuccess else colorScheme.onPrimary.copy(alpha = 0.3f)
             )
     )
 }
@@ -370,14 +377,15 @@ fun RowScope.StepConnector(isCompleted: Boolean) {
 fun CategorySelectionStep(
     categories: List<CategoryOption>,
     selectedCategory: ClaimCategory?,
-    onCategorySelected: (ClaimCategory) -> Unit
+    onCategorySelected: (ClaimCategory) -> Unit,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Column {
         Text(
             text = "Quelle est la nature de votre réclamation ?",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF212121)
+            color = colorScheme.onSurface
         )
         
         Spacer(modifier = Modifier.height(8.dp))
@@ -385,7 +393,7 @@ fun CategorySelectionStep(
         Text(
             text = "Sélectionnez la catégorie qui correspond le mieux à votre problème",
             fontSize = 14.sp,
-            color = Color(0xFF757575)
+            color = colorScheme.onSurfaceVariant
         )
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -400,7 +408,8 @@ fun CategorySelectionStep(
                         category = category,
                         isSelected = selectedCategory == category.category,
                         onClick = { onCategorySelected(category.category) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colorScheme = colorScheme
                     )
                 }
                 if (rowCategories.size == 1) {
@@ -417,7 +426,8 @@ fun CategoryCard(
     category: CategoryOption,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Card(
         modifier = modifier
@@ -425,7 +435,7 @@ fun CategoryCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) category.color.copy(alpha = 0.15f) else Color.White
+            containerColor = if (isSelected) category.color.copy(alpha = 0.15f) else colorScheme.surface
         ),
         border = if (isSelected) {
             androidx.compose.foundation.BorderStroke(2.dp, category.color)
@@ -462,7 +472,7 @@ fun CategoryCard(
                 text = category.label,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isSelected) category.color else Color(0xFF212121),
+                color = if (isSelected) category.color else colorScheme.onSurface,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
             
@@ -484,7 +494,8 @@ fun InsuranceSelectionStep(
     activeRequests: List<InsuranceRequest>,
     selectedRequestId: String?,
     onRequestSelected: (String) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Column {
         Row(
@@ -498,7 +509,7 @@ fun InsuranceSelectionStep(
                 text = "Sélectionnez votre assurance",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF212121)
+                color = colorScheme.onSurface
             )
         }
         
@@ -508,7 +519,7 @@ fun InsuranceSelectionStep(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFFFEBEE)
+                    containerColor = colorScheme.errorContainer.copy(alpha = 0.3f)
                 )
             ) {
                 Column(
@@ -518,7 +529,7 @@ fun InsuranceSelectionStep(
                     Icon(
                         Icons.Outlined.Warning,
                         contentDescription = null,
-                        tint = Color(0xFFC62828),
+                        tint = colorScheme.error,
                         modifier = Modifier.size(48.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -526,13 +537,13 @@ fun InsuranceSelectionStep(
                         text = "Aucune assurance active",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFC62828)
+                        color = colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Vous devez avoir une assurance approuvée pour créer un ticket",
                         fontSize = 14.sp,
-                        color = Color(0xFF757575),
+                        color = colorScheme.onSurfaceVariant,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
@@ -542,7 +553,8 @@ fun InsuranceSelectionStep(
                 InsuranceRequestCard(
                     request = request,
                     isSelected = selectedRequestId == request.id,
-                    onClick = { onRequestSelected(request.id) }
+                    onClick = { onRequestSelected(request.id) },
+                    colorScheme = colorScheme
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -554,7 +566,8 @@ fun InsuranceSelectionStep(
 fun InsuranceRequestCard(
     request: InsuranceRequest,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Card(
         modifier = Modifier
@@ -562,10 +575,10 @@ fun InsuranceRequestCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color(0xFFE3F2FD) else Color.White
+            containerColor = if (isSelected) colorScheme.primaryContainer.copy(alpha = 0.3f) else colorScheme.surface
         ),
         border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF1976D2))
+            androidx.compose.foundation.BorderStroke(2.dp, colorScheme.primary)
         } else null,
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isSelected) 6.dp else 2.dp
@@ -579,14 +592,14 @@ fun InsuranceRequestCard(
         ) {
             Surface(
                 shape = CircleShape,
-                color = Color(0xFF1976D2).copy(alpha = 0.1f),
+                color = colorScheme.primary.copy(alpha = 0.1f),
                 modifier = Modifier.size(48.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         Icons.Outlined.Shield,
                         contentDescription = null,
-                        tint = Color(0xFF1976D2),
+                        tint = colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -599,19 +612,19 @@ fun InsuranceRequestCard(
                     text = request.travelerName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF212121)
+                    color = colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = request.destination,
                     fontSize = 14.sp,
-                    color = Color(0xFF757575)
+                    color = colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "Départ: ${request.departureDate}",
                     fontSize = 12.sp,
-                    color = Color(0xFF9E9E9E)
+                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
             
@@ -619,7 +632,7 @@ fun InsuranceRequestCard(
                 Icon(
                     Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = Color(0xFF1976D2),
+                    tint = colorScheme.primary,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -638,7 +651,8 @@ fun DetailsStep(
     isLoading: Boolean,
     error: String?,
     onSubmit: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Column {
         Row(
@@ -652,7 +666,7 @@ fun DetailsStep(
                 text = "Décrivez votre problème",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF212121)
+                color = colorScheme.onSurface
             )
         }
         
@@ -663,7 +677,7 @@ fun DetailsStep(
             text = "Titre du ticket",
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF424242)
+            color = colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(8.dp))
         
@@ -676,8 +690,10 @@ fun DetailsStep(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF1976D2),
-                unfocusedBorderColor = Color(0xFFBDBDBD)
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colorScheme.outline,
+                focusedContainerColor = colorScheme.surface,
+                unfocusedContainerColor = colorScheme.surface
             )
         )
         
@@ -688,7 +704,7 @@ fun DetailsStep(
             text = "Description détaillée",
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF424242)
+            color = colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(8.dp))
         
@@ -708,8 +724,10 @@ fun DetailsStep(
             maxLines = 8,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF1976D2),
-                unfocusedBorderColor = Color(0xFFBDBDBD)
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colorScheme.outline,
+                focusedContainerColor = colorScheme.surface,
+                unfocusedContainerColor = colorScheme.surface
             )
         )
         
@@ -719,7 +737,7 @@ fun DetailsStep(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFFFF9C4)
+                containerColor = colorScheme.tertiaryContainer.copy(alpha = 0.5f)
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
@@ -730,7 +748,7 @@ fun DetailsStep(
                 Icon(
                     Icons.Outlined.Lightbulb,
                     contentDescription = null,
-                    tint = Color(0xFFF57F17),
+                    tint = colorScheme.tertiary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -739,13 +757,13 @@ fun DetailsStep(
                         text = "Conseil",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFF57F17)
+                        color = colorScheme.tertiary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Plus votre description est détaillée, plus nous pourrons vous répondre rapidement et efficacement.",
                         fontSize = 12.sp,
-                        color = Color(0xFF827717),
+                        color = colorScheme.onTertiaryContainer,
                         lineHeight = 16.sp
                     )
                 }
@@ -757,7 +775,7 @@ fun DetailsStep(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFFFEBEE)
+                    containerColor = colorScheme.errorContainer.copy(alpha = 0.3f)
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -768,14 +786,14 @@ fun DetailsStep(
                     Icon(
                         Icons.Outlined.ErrorOutline,
                         contentDescription = null,
-                        tint = Color(0xFFC62828),
+                        tint = colorScheme.error,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = error,
                         fontSize = 13.sp,
-                        color = Color(0xFFC62828)
+                        color = colorScheme.error
                     )
                 }
             }
@@ -792,13 +810,13 @@ fun DetailsStep(
             enabled = !isLoading && subject.isNotBlank() && description.isNotBlank(),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF1976D2)
+                containerColor = colorScheme.primary
             )
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = Color.White,
+                    color = colorScheme.onPrimary,
                     strokeWidth = 2.dp
                 )
                 Spacer(modifier = Modifier.width(12.dp))
