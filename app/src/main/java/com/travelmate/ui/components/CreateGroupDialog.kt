@@ -229,8 +229,8 @@ fun CreateGroupDialog(
                     placeholder = { Text("Ex: Voyageurs solo en Asie") },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = ColorPrimary,
-                        unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                     )
                 )
 

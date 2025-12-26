@@ -98,10 +98,10 @@ fun AgencyInsuranceRequestsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ColorPrimary,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -224,7 +224,7 @@ fun StatsCard(stats: com.travelmate.data.models.InsuranceRequestStats) {
                             Text(
                                 text = stats.unreadCount.toString(),
                                 style = MaterialTheme.typography.labelMedium,
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onError,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -246,7 +246,7 @@ fun StatsCard(stats: com.travelmate.data.models.InsuranceRequestStats) {
                         title = "Total",
                         value = stats.total.toString(),
                         icon = Icons.Default.List,
-                        color = ColorTextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
                     )
                     
@@ -254,7 +254,7 @@ fun StatsCard(stats: com.travelmate.data.models.InsuranceRequestStats) {
                         title = "En attente",
                         value = stats.pending.toString(),
                         icon = Icons.Default.Pending,
-                        color = ColorPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -275,7 +275,7 @@ fun StatsCard(stats: com.travelmate.data.models.InsuranceRequestStats) {
                         title = "Rejetées",
                         value = stats.rejected.toString(),
                         icon = Icons.Default.Cancel,
-                        color = ColorError,
+                        color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -299,7 +299,7 @@ fun StatsCard(stats: com.travelmate.data.models.InsuranceRequestStats) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onError,
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .size(20.dp)
@@ -404,7 +404,7 @@ fun AgencyRequestCard(
                     Surface(
                         modifier = Modifier.size(48.dp),
                         shape = CircleShape,
-                        color = ColorPrimary.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                     ) {
                         Box(
                             contentAlignment = Alignment.Center
@@ -412,7 +412,7 @@ fun AgencyRequestCard(
                             Text(
                                 text = request.travelerName.firstOrNull()?.toString()?.uppercase() ?: "?",
                                 style = MaterialTheme.typography.titleLarge,
-                                color = ColorPrimary,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -443,7 +443,7 @@ fun AgencyRequestCard(
                         Text(
                             text = "Soumise le ${formatDate(request.createdAt)}",
                             style = MaterialTheme.typography.bodySmall,
-                            color = ColorTextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -451,7 +451,7 @@ fun AgencyRequestCard(
                 EnhancedStatusChip(status = request.status)
             }
             
-            Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+            Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
             
             // Trip details with icons
             Column(
@@ -494,19 +494,19 @@ fun InfoRow(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = ColorPrimary,
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(20.dp)
         )
         Text(
             text = "$label: ",
             style = MaterialTheme.typography.bodyMedium,
-            color = ColorTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            color = ColorTextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

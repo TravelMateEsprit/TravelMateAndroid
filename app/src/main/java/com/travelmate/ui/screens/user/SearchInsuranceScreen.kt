@@ -191,7 +191,7 @@ fun SearchInsuranceScreen(
                                         if (isLoading) {
                                             CircularProgressIndicator(
                                                 modifier = Modifier.size(20.dp),
-                                                color = Color.White
+                                                color = MaterialTheme.colorScheme.onPrimary
                                             )
                                         } else {
                                             Text("Charger plus")

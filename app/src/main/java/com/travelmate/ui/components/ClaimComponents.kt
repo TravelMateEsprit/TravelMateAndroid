@@ -24,7 +24,7 @@ fun ClaimStatusChip(status: String) {
         "EN_ATTENTE_CLIENT" -> Triple(Color(0xFFFFF9C4), Color(0xFFF57F17), "En attente")
         "RESOLU" -> Triple(Color(0xFFE8F5E9), Color(0xFF2E7D32), "Résolu")
         "FERME" -> Triple(Color(0xFFECEFF1), Color(0xFF455A64), "Fermé")
-        else -> Triple(Color.Gray, Color.White, status)
+        else -> Triple(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, status)
     }
     
     Surface(
@@ -48,7 +48,7 @@ fun ClaimPriorityChip(priority: String) {
         "MOYENNE" -> Triple(Color(0xFFFFF9C4), Color(0xFFF57F17), "Moyenne")
         "HAUTE" -> Triple(Color(0xFFFFE0B2), Color(0xFFE65100), "Haute")
         "URGENTE" -> Triple(Color(0xFFFFCDD2), Color(0xFFC62828), "Urgente")
-        else -> Triple(Color.Gray, Color.White, priority)
+        else -> Triple(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, priority)
     }
     
     Surface(

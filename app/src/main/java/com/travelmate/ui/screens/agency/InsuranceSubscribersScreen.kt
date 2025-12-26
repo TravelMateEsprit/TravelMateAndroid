@@ -74,7 +74,7 @@ fun InsuranceSubscribersScreen(
                         Text(
                             insuranceName,
                             fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.8f)
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                         )
                     }
                 },
@@ -83,13 +83,13 @@ fun InsuranceSubscribersScreen(
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Retour",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ColorPrimary,
-                    titleContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -103,7 +103,7 @@ fun InsuranceSubscribersScreen(
                 isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = ColorPrimary
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 error != null -> {
@@ -117,7 +117,7 @@ fun InsuranceSubscribersScreen(
                         Icon(
                             Icons.Default.Error,
                             contentDescription = null,
-                            tint = ColorError,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -125,13 +125,13 @@ fun InsuranceSubscribersScreen(
                             "Erreur",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             error ?: "Une erreur est survenue",
                             fontSize = 14.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
@@ -147,7 +147,7 @@ fun InsuranceSubscribersScreen(
                         Icon(
                             Icons.Default.PeopleOutline,
                             contentDescription = null,
-                            tint = ColorTextSecondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(80.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -155,13 +155,13 @@ fun InsuranceSubscribersScreen(
                             "Aucun inscrit",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             "Personne n'est encore inscrit à cette assurance",
                             fontSize = 14.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
@@ -181,7 +181,7 @@ fun InsuranceSubscribersScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = ColorPrimary.copy(alpha = 0.1f)
+                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -194,7 +194,7 @@ fun InsuranceSubscribersScreen(
                                     Icon(
                                         Icons.Default.Info,
                                         contentDescription = null,
-                                        tint = ColorPrimary,
+                                        tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(24.dp)
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -202,12 +202,12 @@ fun InsuranceSubscribersScreen(
                                         Text(
                                             "${subscribers.size} utilisateur(s) inscrit(s)",
                                             fontWeight = FontWeight.Bold,
-                                            color = ColorTextPrimary
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Text(
                                             "Liste des clients abonnés à cette assurance",
                                             fontSize = 12.sp,
-                                            color = ColorTextSecondary
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                 }
@@ -242,7 +242,7 @@ fun SubscriberCard(user: User) {
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(ColorPrimary.copy(alpha = 0.2f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
                 val initials = buildString {
@@ -254,7 +254,7 @@ fun SubscriberCard(user: User) {
                     text = if (initials.isNotEmpty()) initials else user.email.firstOrNull()?.uppercase()?.toString() ?: "?",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorPrimary
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             
@@ -270,7 +270,7 @@ fun SubscriberCard(user: User) {
                     displayName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 
@@ -278,14 +278,14 @@ fun SubscriberCard(user: User) {
                     Icon(
                         Icons.Default.Email,
                         contentDescription = null,
-                        tint = ColorTextSecondary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         user.email,
                         fontSize = 13.sp,
-                        color = ColorTextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 
@@ -295,14 +295,14 @@ fun SubscriberCard(user: User) {
                         Icon(
                             Icons.Default.Phone,
                             contentDescription = null,
-                            tint = ColorTextSecondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             user.phone!!,
                             fontSize = 13.sp,
-                            color = ColorTextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -315,7 +315,7 @@ fun SubscriberCard(user: User) {
                 Icon(
                     Icons.Default.MoreVert,
                     contentDescription = "Options",
-                    tint = ColorTextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

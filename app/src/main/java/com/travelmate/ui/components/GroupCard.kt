@@ -104,7 +104,7 @@ fun GroupCard(
                     group.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -112,7 +112,7 @@ fun GroupCard(
                 Text(
                     group.description,
                     fontSize = 14.sp,
-                    color = ColorTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2
                 )
 
@@ -123,14 +123,14 @@ fun GroupCard(
                         Icon(
                             Icons.Default.LocationOn,
                             contentDescription = null,
-                            tint = ColorPrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             group.destination,
                             fontSize = 13.sp,
-                            color = ColorTextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -145,14 +145,14 @@ fun GroupCard(
                         Icon(
                             Icons.Default.People,
                             contentDescription = null,
-                            tint = ColorTextSecondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             "${group.memberCount} membres",
                             fontSize = 13.sp,
-                            color = ColorTextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -164,7 +164,7 @@ fun GroupCard(
                                     OutlinedButton(
                                         onClick = { onEdit(group._id) },
                                         colors = ButtonDefaults.outlinedButtonColors(
-                                            contentColor = ColorPrimary
+                                            contentColor = MaterialTheme.colorScheme.primary
                                         ),
                                         contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
                                     ) {
@@ -182,7 +182,7 @@ fun GroupCard(
                                     OutlinedButton(
                                         onClick = { onDelete(group._id) },
                                         colors = ButtonDefaults.outlinedButtonColors(
-                                            contentColor = ColorError
+                                            contentColor = MaterialTheme.colorScheme.error
                                         ),
                                         contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
                                     ) {
@@ -202,7 +202,7 @@ fun GroupCard(
                             OutlinedButton(
                                 onClick = { onLeave(group._id) },
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = ColorError
+                                    contentColor = MaterialTheme.colorScheme.error
                                 ),
                                 contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
                             ) {
@@ -222,7 +222,7 @@ fun GroupCard(
                                 onClick = { },
                                 enabled = false,
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = ColorTextSecondary
+                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
                             ) {
@@ -240,7 +240,7 @@ fun GroupCard(
                             Button(
                                 onClick = { onJoin(group._id) },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = ColorPrimary
+                                    containerColor = MaterialTheme.colorScheme.primary
                                 ),
                                 contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
                             ) {

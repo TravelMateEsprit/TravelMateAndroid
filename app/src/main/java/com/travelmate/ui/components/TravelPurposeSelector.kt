@@ -83,9 +83,9 @@ fun TravelPurposeSelector(
                         )
                     },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = ColorPrimary,
-                        selectedLabelColor = Color.White,
-                        selectedLeadingIconColor = Color.White
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
             }
@@ -100,7 +100,7 @@ fun TravelPurposeSelector(
                 .clickable { showCustomInput = !showCustomInput },
             border = BorderStroke(
                 width = 1.dp,
-                color = if (showCustomInput) ColorPrimary else MaterialTheme.colorScheme.outline
+                color = if (showCustomInput) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             )
         ) {
             Row(
@@ -114,13 +114,13 @@ fun TravelPurposeSelector(
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = null,
-                        tint = if (showCustomInput) ColorPrimary 
+                        tint = if (showCustomInput) MaterialTheme.colorScheme.primary 
                               else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "Autre motif (personnalisé)",
-                        color = if (showCustomInput) ColorPrimary 
+                        color = if (showCustomInput) MaterialTheme.colorScheme.primary 
                                else MaterialTheme.colorScheme.onSurface
                     )
                 }

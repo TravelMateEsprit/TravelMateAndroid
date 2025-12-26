@@ -39,7 +39,7 @@ fun GroupMembersSheet(
             text = "Membres du groupe",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = ColorTextPrimary,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -87,12 +87,12 @@ private fun MemberCard(
                     text = member.userName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = if (member.isAdmin()) "Administrateur" else "Membre",
                     fontSize = 14.sp,
-                    color = ColorTextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -128,7 +128,7 @@ private fun MemberCard(
                             else -> { /* Do nothing */ }
                         }
                         DropdownMenuItem(
-                            text = { Text("Bannir du groupe", color = ColorError) },
+                            text = { Text("Bannir du groupe", color = MaterialTheme.colorScheme.error) },
                             onClick = {
                                 onBanMember()
                                 showMenu = false

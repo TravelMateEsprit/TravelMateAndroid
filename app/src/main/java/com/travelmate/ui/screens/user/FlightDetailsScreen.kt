@@ -63,8 +63,8 @@ fun FlightDetailsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                CircularProgressIndicator(color = ColorPrimary)
-                Text(text = "Chargement...", fontSize = 16.sp, color = ColorTextSecondary)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                Text(text = "Chargement...", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         return
@@ -328,7 +328,7 @@ fun FlightDetailsScreen(
                                 showConfirmation = false
                                 onNavigateBack()
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) { Text("OK") }
                 },
                 shape = RoundedCornerShape(16.dp)
@@ -350,7 +350,7 @@ fun FlightDetailsScreen(
                                 Icon(
                                         Icons.Default.ArrowBack,
                                         contentDescription = "Retour",
-                                        tint = Color.White
+                                        tint = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                         },
@@ -363,25 +363,25 @@ fun FlightDetailsScreen(
                                 Icon(
                                         Icons.Default.Print,
                                         contentDescription = "Imprimer",
-                                        tint = Color.White
+                                        tint = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                             IconButton(onClick = { shareFlightDetails(context, flightOffer) }) {
                                 Icon(
                                         Icons.Default.Share,
                                         contentDescription = "Partager le vol",
-                                        tint = Color.White
+                                        tint = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(containerColor = ColorPrimary)
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
                 )
             },
             bottomBar = {
                 Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shadowElevation = 8.dp,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.surface
                 ) {
                     Row(
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -405,7 +405,7 @@ fun FlightDetailsScreen(
                                                                     Brush.linearGradient(
                                                                             colors =
                                                                                     listOf(
-                                                                                            ColorPrimary,
+                                                                                            MaterialTheme.colorScheme.primary,
                                                                                             ColorSecondary
                                                                                     ),
                                                                             start =
@@ -437,14 +437,14 @@ fun FlightDetailsScreen(
                                             Icons.Default.CheckCircle,
                                             null,
                                             modifier = Modifier.size(24.dp),
-                                            tint = Color.White
+                                            tint = MaterialTheme.colorScheme.onPrimary
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                             "Réserver",
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color.White
+                                            color = MaterialTheme.colorScheme.onPrimary
                                     )
                                 }
                             }
@@ -459,7 +459,7 @@ fun FlightDetailsScreen(
                         Modifier.fillMaxSize()
                                 .padding(paddingValues)
                                 .verticalScroll(scrollState)
-                                .background(ColorBackground)
+                                .background(MaterialTheme.colorScheme.background)
         ) {
             // Header Card with Airline Info
             Card(
@@ -477,7 +477,7 @@ fun FlightDetailsScreen(
                                                         Brush.linearGradient(
                                                                 colors =
                                                                         listOf(
-                                                                                ColorPrimary,
+                                                                                MaterialTheme.colorScheme.primary,
                                                                                 ColorSecondary
                                                                         ),
                                                                 start =
@@ -502,13 +502,13 @@ fun FlightDetailsScreen(
                         ) {
                             Surface(
                                     shape = CircleShape,
-                                    color = Color.White.copy(alpha = 0.25f),
+                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f),
                                     modifier = Modifier.size(50.dp)
                             ) {
                                 Icon(
                                         Icons.Default.Flight,
                                         null,
-                                        tint = Color.White,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
                                         modifier = Modifier.size(30.dp).padding(10.dp)
                                 )
                             }
@@ -519,13 +519,13 @@ fun FlightDetailsScreen(
                                                     "Compagnie aérienne"
                                                 },
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontSize = 18.sp
                                 )
                                 flightOffer.flightNumber?.let {
                                     Text(
                                             text = "Vol $it",
-                                            color = Color.White.copy(alpha = 0.9f),
+                                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                                             fontSize = 13.sp
                                     )
                                 }
@@ -534,12 +534,12 @@ fun FlightDetailsScreen(
                         Column(horizontalAlignment = Alignment.End) {
                             Surface(
                                     shape = RoundedCornerShape(8.dp),
-                                    color = Color.White.copy(alpha = 0.2f)
+                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
                             ) {
                                 Text(
                                         text = flightOffer.getFormattedPrice(),
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontSize = 24.sp,
                                         modifier =
                                                 Modifier.padding(
@@ -552,7 +552,7 @@ fun FlightDetailsScreen(
                             }
                             Text(
                                     text = "par personne",
-                                    color = Color.White.copy(alpha = 0.8f),
+                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                                     fontSize = 11.sp,
                                     modifier = Modifier.padding(top = 4.dp)
                             )
@@ -573,7 +573,7 @@ fun FlightDetailsScreen(
                         type = flightOffer.getTypeValue()
                 )
 
-                Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+                Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
                 // Departure Flight Details
                 flightOffer.getDepartureSegment()?.let { departureSegment ->
@@ -598,7 +598,7 @@ fun FlightDetailsScreen(
                     )
                 }
 
-                Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+                Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
                 // Dates Information
                 DatesInfoSection(flightOffer = flightOffer)
@@ -607,7 +607,7 @@ fun FlightDetailsScreen(
                 Card(
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -615,7 +615,7 @@ fun FlightDetailsScreen(
                                 text = "Itinéraire",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = ColorPrimary
+                                color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         val originCity =
@@ -636,17 +636,17 @@ fun FlightDetailsScreen(
                     }
                 }
 
-                Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+                Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
                 // Flight Information
                 FlightInfoSection(flightOffer = flightOffer)
 
-                Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+                Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
                 // Airport Details
                 AirportDetailsSection(flightOffer = flightOffer)
 
-                Divider(color = ColorTextSecondary.copy(alpha = 0.2f))
+                Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
                 // Price Breakdown
                 PriceBreakdownCard(flightOffer = flightOffer)
@@ -660,7 +660,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
     Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(24.dp)) {
@@ -670,7 +670,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                         shape = RoundedCornerShape(20.dp),
                         color =
                                 when (type) {
-                                    "aller-retour" -> ColorPrimary.copy(alpha = 0.1f)
+                                    "aller-retour" -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                                     else -> ColorAccent.copy(alpha = 0.1f)
                                 }
                 ) {
@@ -685,7 +685,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                             fontWeight = FontWeight.SemiBold,
                             color =
                                     when (type) {
-                                        "aller-retour" -> ColorPrimary
+                                        "aller-retour" -> MaterialTheme.colorScheme.primary
                                         else -> ColorAccent
                                     },
                             modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
@@ -707,7 +707,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                             text = from.code,
                             fontSize = 36.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             letterSpacing = 1.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -715,14 +715,14 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                             text = from.city ?: from.name,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1
                     )
                     from.country?.let {
                         Text(
                                 text = it,
                                 fontSize = 12.sp,
-                                color = ColorTextSecondary.copy(alpha = 0.7f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                 maxLines = 1
                         )
                     }
@@ -762,7 +762,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                         // Flight icon in center
                         Surface(
                                 shape = CircleShape,
-                                color = ColorPrimary,
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(36.dp)
                         ) {
                             Box(
@@ -772,7 +772,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                                 Icon(
                                         Icons.Default.Flight,
                                         contentDescription = null,
-                                        tint = Color.White,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
                                         modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -786,7 +786,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                             text = to.code,
                             fontSize = 36.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             letterSpacing = 1.sp,
                             textAlign = TextAlign.End
                     )
@@ -795,7 +795,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                             text = to.city ?: to.name,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.End,
                             maxLines = 1
                     )
@@ -803,7 +803,7 @@ fun FlightRouteHeader(from: Airport, to: Airport, type: String) {
                         Text(
                                 text = it,
                                 fontSize = 12.sp,
-                                color = ColorTextSecondary.copy(alpha = 0.7f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                 textAlign = TextAlign.End,
                                 maxLines = 1
                         )
@@ -825,7 +825,7 @@ fun FlightSegmentDetailsCard(
     Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Box(
@@ -836,14 +836,14 @@ fun FlightSegmentDetailsCard(
                                                 Brush.verticalGradient(
                                                         colors =
                                                                 listOf(
-                                                                        Color.White,
-                                                                        ColorPrimary.copy(
+                                                                        MaterialTheme.colorScheme.surface,
+                                                                        MaterialTheme.colorScheme.primary.copy(
                                                                                 alpha = 0.08f
                                                                         ),
                                                                         ColorSecondary.copy(
                                                                                 alpha = 0.05f
                                                                         ),
-                                                                        Color.White
+                                                                        MaterialTheme.colorScheme.surface
                                                                 )
                                                 )
                                 )
@@ -866,12 +866,12 @@ fun FlightSegmentDetailsCard(
                                                                 Brush.linearGradient(
                                                                         colors =
                                                                                 listOf(
-                                                                                        ColorPrimary
+                                                                                        MaterialTheme.colorScheme.primary
                                                                                                 .copy(
                                                                                                         alpha =
                                                                                                                 0.8f
                                                                                                 ),
-                                                                                        ColorPrimary
+                                                                                        MaterialTheme.colorScheme.primary
                                                                                                 .copy(
                                                                                                         alpha =
                                                                                                                 0.6f
@@ -900,7 +900,7 @@ fun FlightSegmentDetailsCard(
                                     text = title,
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }
@@ -962,7 +962,7 @@ fun FlightSegmentDetailsCard(
                                             else "${segment.getStops()} escale(s)",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }
@@ -996,7 +996,7 @@ fun FlightSegmentDetailsCard(
                             }
                         }
                         Column {
-                            Text(text = "Durée", fontSize = 12.sp, color = ColorTextSecondary)
+                            Text(text = "Durée", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                     text = segment.getDurationValue() ?: "N/A",
                                     fontSize = 18.sp,
@@ -1009,7 +1009,7 @@ fun FlightSegmentDetailsCard(
 
                 // Flight Number
                 segment.flightNumber?.let { flightNum ->
-                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                     Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -1018,9 +1018,9 @@ fun FlightSegmentDetailsCard(
                                 Icons.Default.Info,
                                 null,
                                 modifier = Modifier.size(16.dp),
-                                tint = ColorTextSecondary
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(text = "Vol: $flightNum", fontSize = 12.sp, color = ColorTextSecondary)
+                        Text(text = "Vol: $flightNum", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -1035,13 +1035,13 @@ fun DatesInfoSection(flightOffer: FlightOffer) {
                 text = "Dates de voyage",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorPrimary
+                color = MaterialTheme.colorScheme.primary
         )
 
         Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Box(
@@ -1052,7 +1052,7 @@ fun DatesInfoSection(flightOffer: FlightOffer) {
                                                     Brush.verticalGradient(
                                                             colors =
                                                                     listOf(
-                                                                            Color.White,
+                                                                            MaterialTheme.colorScheme.surface,
                                                                             ColorAccent.copy(
                                                                                     alpha = 0.05f
                                                                             )
@@ -1073,7 +1073,7 @@ fun DatesInfoSection(flightOffer: FlightOffer) {
                     }
 
                     flightOffer.getReturnDate()?.let { date ->
-                        Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                        Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                         InfoRow(
                                 icon = Icons.Default.CalendarToday,
                                 label = "Date de retour",
@@ -1082,7 +1082,7 @@ fun DatesInfoSection(flightOffer: FlightOffer) {
                     }
 
                     flightOffer.duration?.let { duration ->
-                        Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                        Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                         InfoRow(
                                 icon = Icons.Default.Schedule,
                                 label = "Durée totale",
@@ -1185,7 +1185,7 @@ fun FlightRouteMap(originCity: String, destinationCity: String, modifier: Modifi
                 ) {
                     CircularProgressIndicator(
                             modifier = Modifier.size(32.dp),
-                            color = ColorPrimary,
+                            color = MaterialTheme.colorScheme.primary,
                             strokeWidth = 3.dp
                     )
                 }
@@ -1216,19 +1216,19 @@ fun FlightRouteMap(originCity: String, destinationCity: String, modifier: Modifi
                     Icon(
                             Icons.Default.Map,
                             contentDescription = null,
-                            tint = ColorPrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(48.dp)
                     )
                     Text(
                             text = "$originCity → $destinationCity",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorPrimary
+                            color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                             text = "Carte non disponible",
                             fontSize = 12.sp,
-                            color = ColorTextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -1243,13 +1243,13 @@ fun FlightInfoSection(flightOffer: FlightOffer) {
                 text = "Informations du vol",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorPrimary
+                color = MaterialTheme.colorScheme.primary
         )
 
         Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Box(
@@ -1260,8 +1260,8 @@ fun FlightInfoSection(flightOffer: FlightOffer) {
                                                     Brush.verticalGradient(
                                                             colors =
                                                                     listOf(
-                                                                            Color.White,
-                                                                            ColorPrimary.copy(
+                                                                            MaterialTheme.colorScheme.surface,
+                                                                            MaterialTheme.colorScheme.primary.copy(
                                                                                     alpha = 0.05f
                                                                             )
                                                                     )
@@ -1279,11 +1279,11 @@ fun FlightInfoSection(flightOffer: FlightOffer) {
                     )
 
                     flightOffer.flightNumber?.let {
-                        Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                        Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                         InfoRow(icon = Icons.Default.Info, label = "Numéro de vol", value = it)
                     }
 
-                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                     InfoRow(
                             icon = Icons.Default.Schedule,
                             label = "Type de vol",
@@ -1296,7 +1296,7 @@ fun FlightInfoSection(flightOffer: FlightOffer) {
                     )
 
                     if (flightOffer.availableSeats != null) {
-                        Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                        Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                         InfoRow(
                                 icon = Icons.Default.EventSeat,
                                 label = "Places disponibles",
@@ -1305,7 +1305,7 @@ fun FlightInfoSection(flightOffer: FlightOffer) {
                     }
 
                     flightOffer.direct?.let { isDirect ->
-                        Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                        Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                         InfoRow(
                                 icon = Icons.Default.Flight,
                                 label = "Type de trajet",
@@ -1315,7 +1315,7 @@ fun FlightInfoSection(flightOffer: FlightOffer) {
 
                     flightOffer.stops?.let { stops ->
                         if (stops > 0) {
-                            Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                            Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                             InfoRow(
                                     icon = Icons.Default.Info,
                                     label = "Nombre d'escales",
@@ -1339,13 +1339,13 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
                 text = "Détails des aéroports",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorPrimary
+                color = MaterialTheme.colorScheme.primary
         )
 
         Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Box(
@@ -1356,7 +1356,7 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
                                                     Brush.verticalGradient(
                                                             colors =
                                                                     listOf(
-                                                                            Color.White,
+                                                                            MaterialTheme.colorScheme.surface,
                                                                             ColorSecondary.copy(
                                                                                     alpha = 0.05f
                                                                             )
@@ -1377,14 +1377,14 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
                             Icon(
                                     Icons.Default.FlightTakeoff,
                                     null,
-                                    tint = ColorPrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                             )
                             Text(
                                     text = "Aéroport de départ",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = ColorTextPrimary
+                                    color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -1392,13 +1392,13 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
                                 text =
                                         "${fromAirport.code.ifEmpty { "N/A" }} - ${fromAirport.name.ifEmpty { "Aéroport" }}",
                                 fontSize = 14.sp,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         fromAirport.city?.let {
                             Text(
                                     text = it,
                                     fontSize = 12.sp,
-                                    color = ColorTextSecondary.copy(alpha = 0.7f),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                     modifier = Modifier.padding(top = 4.dp)
                             )
                         }
@@ -1406,12 +1406,12 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
                             Text(
                                     text = it,
                                     fontSize = 12.sp,
-                                    color = ColorTextSecondary.copy(alpha = 0.7f)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
                         }
                     }
 
-                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
 
                     // Arrival Airport
                     Column {
@@ -1422,14 +1422,14 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
                             Icon(
                                     Icons.Default.FlightLand,
                                     null,
-                                    tint = ColorPrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                             )
                             Text(
                                     text = "Aéroport d'arrivée",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = ColorTextPrimary
+                                    color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -1437,13 +1437,13 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
                                 text =
                                         "${toAirport.code.ifEmpty { "N/A" }} - ${toAirport.name.ifEmpty { "Aéroport" }}",
                                 fontSize = 14.sp,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         toAirport.city?.let {
                             Text(
                                     text = it,
                                     fontSize = 12.sp,
-                                    color = ColorTextSecondary.copy(alpha = 0.7f),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                     modifier = Modifier.padding(top = 4.dp)
                             )
                         }
@@ -1451,7 +1451,7 @@ fun AirportDetailsSection(flightOffer: FlightOffer) {
                             Text(
                                     text = it,
                                     fontSize = 12.sp,
-                                    color = ColorTextSecondary.copy(alpha = 0.7f)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
                         }
                     }
@@ -1472,14 +1472,14 @@ fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, null, modifier = Modifier.size(20.dp), tint = ColorPrimary)
-            Text(text = label, fontSize = 14.sp, color = ColorTextSecondary)
+            Icon(icon, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+            Text(text = label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Text(
                 text = value,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -1491,13 +1491,13 @@ fun PriceBreakdownCard(flightOffer: FlightOffer) {
                 text = "Détail des prix",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorPrimary
+                color = MaterialTheme.colorScheme.primary
         )
 
         Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Box(
@@ -1508,7 +1508,7 @@ fun PriceBreakdownCard(flightOffer: FlightOffer) {
                                                     Brush.verticalGradient(
                                                             colors =
                                                                     listOf(
-                                                                            Color.White,
+                                                                            MaterialTheme.colorScheme.surface,
                                                                             ColorAccent.copy(
                                                                                     alpha = 0.05f
                                                                             )
@@ -1521,7 +1521,7 @@ fun PriceBreakdownCard(flightOffer: FlightOffer) {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     PriceRow("Prix du vol", flightOffer.getFormattedPrice())
-                    Divider(color = ColorTextSecondary.copy(alpha = 0.1f))
+                    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
                     PriceRow("Total", flightOffer.getFormattedPrice(), isTotal = true)
                 }
             }
@@ -1540,13 +1540,13 @@ fun PriceRow(label: String, price: String, isTotal: Boolean = false) {
                 text = label,
                 fontSize = if (isTotal) 16.sp else 14.sp,
                 fontWeight = if (isTotal) FontWeight.Bold else FontWeight.Normal,
-                color = if (isTotal) ColorTextPrimary else ColorTextSecondary
+                color = if (isTotal) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
                 text = price,
                 fontSize = if (isTotal) 20.sp else 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isTotal) ColorPrimary else ColorTextPrimary
+                color = if (isTotal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
         )
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,7 +21,7 @@ fun ValidationIcon(
     Icon(
         imageVector = if (isValid) Icons.Default.Check else Icons.Default.Close,
         contentDescription = if (isValid) "Valid" else "Invalid",
-        tint = if (isValid) ColorSuccess else ColorError,
+        tint = if (isValid) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
         modifier = modifier.size(24.dp)
     )
 }

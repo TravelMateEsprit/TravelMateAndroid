@@ -56,15 +56,15 @@ fun AgencyDashboardScreen(
             TopAppBar(
                 title = { Text("Tableau de bord") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ColorPrimary,
-                    titleContentColor = androidx.compose.ui.graphics.Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(
                             Icons.Default.MoreVert,
                             contentDescription = "Menu",
-                            tint = androidx.compose.ui.graphics.Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                     

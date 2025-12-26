@@ -144,7 +144,7 @@ fun OffresScreen(navController: NavController? = null) {
                 if (selectedFlights.isNotEmpty()) {
                     ExtendedFloatingActionButton(
                         onClick = { showComparisonDialog = true },
-                        containerColor = ColorPrimary,
+                        containerColor = MaterialTheme.colorScheme.primary,
                         icon = {
                             Icon(
                                 Icons.Default.SwapHoriz,
@@ -206,7 +206,7 @@ fun OffresScreen(navController: NavController? = null) {
                         Icon(
                             Icons.Default.AutoAwesome,
                             contentDescription = null,
-                            tint = ColorPrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(48.dp)
                         )
                         
@@ -216,7 +216,7 @@ fun OffresScreen(navController: NavController? = null) {
                             "Recommandations personnalisées",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
-                            color = ColorPrimary
+                            color = MaterialTheme.colorScheme.primary
                         )
                         
                         Spacer(modifier = Modifier.height(16.dp))
@@ -249,7 +249,7 @@ fun OffresScreen(navController: NavController? = null) {
                                         .fillMaxSize()
                                         .background(
                                             brush = Brush.linearGradient(
-                                                colors = listOf(ColorPrimary, ColorSecondary),
+                                                colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary),
                                                 start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                                 end = androidx.compose.ui.geometry.Offset(1000f, 0f)
                                             ),
@@ -271,7 +271,7 @@ fun OffresScreen(navController: NavController? = null) {
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
                                             "Obtenir des recommandations personnalisées",
-                                            color = Color.White,
+                                            color = MaterialTheme.colorScheme.onPrimary,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp
                                         )
@@ -280,7 +280,7 @@ fun OffresScreen(navController: NavController? = null) {
                             }
                         } else if (isLoadingRecommendations) {
                             CircularProgressIndicator(
-                                color = ColorPrimary,
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(48.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -427,7 +427,7 @@ fun OffresScreen(navController: NavController? = null) {
                                         Text(
                                             text = getSortLabel(sortBy),
                                             fontSize = 12.sp,
-                                            color = Color.White,
+                                            color = MaterialTheme.colorScheme.onPrimary,
                                             fontWeight = FontWeight.Medium
                                         )
                                     }
@@ -452,7 +452,7 @@ fun OffresScreen(navController: NavController? = null) {
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             CircularProgressIndicator(
-                                color = ColorPrimary,
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(48.dp),
                                 strokeWidth = 4.dp
                             )
@@ -473,7 +473,7 @@ fun OffresScreen(navController: NavController? = null) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = ColorError.copy(alpha = 0.1f)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f)),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
@@ -484,24 +484,24 @@ fun OffresScreen(navController: NavController? = null) {
                             Icon(
                                 Icons.Default.Error,
                                 null,
-                                tint = ColorError,
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(24.dp)
                             )
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "Erreur",
                                     fontWeight = FontWeight.Bold,
-                                    color = ColorError,
+                                    color = MaterialTheme.colorScheme.error,
                                     fontSize = 14.sp
                                 )
                                 Text(
                                     text = errorMessage,
-                                    color = ColorError.copy(alpha = 0.8f),
+                                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
                                     fontSize = 12.sp
                                 )
                             }
                             IconButton(onClick = { viewModel.clearError() }) {
-                                Icon(Icons.Default.Close, null, tint = ColorError)
+                                Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.error)
                             }
                         }
                     }
@@ -676,7 +676,7 @@ fun AmadeusSearchForm(
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            ColorPrimary.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             ColorSecondary.copy(alpha = 0.05f)
                         ),
                         start = androidx.compose.ui.geometry.Offset(0f, 0f),
@@ -697,14 +697,14 @@ fun AmadeusSearchForm(
                     Icon(
                         Icons.Default.Flight,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
                         "Recherche de vols en temps réel",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorPrimary
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 
@@ -720,7 +720,7 @@ fun AmadeusSearchForm(
                 if (errorMessage != null || error != null) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = ColorError.copy(alpha = 0.1f),
+                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -731,13 +731,13 @@ fun AmadeusSearchForm(
                             Icon(
                                 Icons.Default.Error,
                                 contentDescription = null,
-                                tint = ColorError,
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
                                 errorMessage ?: error ?: "",
                                 fontSize = 13.sp,
-                                color = ColorError,
+                                color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.weight(1f)
                             )
                             IconButton(
@@ -750,7 +750,7 @@ fun AmadeusSearchForm(
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = "Fermer",
-                                    tint = ColorError,
+                                    tint = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -784,14 +784,14 @@ fun AmadeusSearchForm(
                                 Icon(
                                     Icons.Default.FlightTakeoff,
                                     null,
-                                    tint = ColorPrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = ColorPrimary,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             enabled = !isLoading
@@ -800,7 +800,7 @@ fun AmadeusSearchForm(
                             Text(
                                 "Code IATA (3 lettres)",
                                 fontSize = 10.sp,
-                                color = ColorError,
+                                color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(top = 4.dp, start = 4.dp)
                             )
                         }
@@ -820,12 +820,12 @@ fun AmadeusSearchForm(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = ColorPrimary.copy(alpha = 0.1f)
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         ) {
                             Icon(
                                 Icons.Default.SwapHoriz,
                                 null,
-                                tint = ColorPrimary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .padding(8.dp)
@@ -854,14 +854,14 @@ fun AmadeusSearchForm(
                                 Icon(
                                     Icons.Default.FlightLand,
                                     null,
-                                    tint = ColorPrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = ColorPrimary,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             enabled = !isLoading
@@ -870,7 +870,7 @@ fun AmadeusSearchForm(
                             Text(
                                 "Code IATA (3 lettres)",
                                 fontSize = 10.sp,
-                                color = ColorError,
+                                color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(top = 4.dp, start = 4.dp)
                             )
                         }
@@ -903,14 +903,14 @@ fun AmadeusSearchForm(
                                 Icon(
                                     Icons.Default.CalendarToday,
                                     null,
-                                    tint = ColorPrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = ColorPrimary,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             enabled = !isLoading
@@ -939,14 +939,14 @@ fun AmadeusSearchForm(
                                     Icon(
                                         Icons.Default.CalendarToday,
                                         null,
-                                        tint = ColorPrimary,
+                                        tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(20.dp)
                                     )
                                 },
                                 singleLine = true,
                                 shape = RoundedCornerShape(12.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = ColorPrimary,
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
                                     unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                                 ),
                                 enabled = !isLoading
@@ -974,8 +974,8 @@ fun AmadeusSearchForm(
                             if (!it) returnDateText = ""
                         },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = ColorPrimary
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
@@ -1008,14 +1008,14 @@ fun AmadeusSearchForm(
                                 Icon(
                                     Icons.Default.Person,
                                     null,
-                                    tint = ColorPrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = ColorPrimary,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             ),
                             enabled = !isLoading
@@ -1051,7 +1051,7 @@ fun AmadeusSearchForm(
                                     .menuAnchor(),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = ColorPrimary,
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
                                     unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                                 ),
                                 enabled = !isLoading
@@ -1106,7 +1106,7 @@ fun AmadeusSearchForm(
                         Icon(
                             Icons.Default.Flight,
                             null,
-                            tint = ColorPrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
@@ -1120,8 +1120,8 @@ fun AmadeusSearchForm(
                         checked = directOnly,
                         onCheckedChange = { directOnly = it },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = ColorPrimary
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
@@ -1201,7 +1201,7 @@ fun AmadeusSearchForm(
                             .fillMaxSize()
                             .background(
                                 brush = Brush.linearGradient(
-                                    colors = listOf(ColorPrimary, ColorSecondary),
+                                    colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary),
                                     start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                     end = androidx.compose.ui.geometry.Offset(1000f, 0f)
                                 ),
@@ -1217,13 +1217,13 @@ fun AmadeusSearchForm(
                             ) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(20.dp),
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     strokeWidth = 2.dp
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
                                     "Recherche en cours...",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp
                                 )
@@ -1238,14 +1238,14 @@ fun AmadeusSearchForm(
                                     Icons.Default.Search,
                                     null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = Color.White
+                                    tint = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     "Rechercher des vols",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                         }
@@ -1389,7 +1389,7 @@ fun UnifiedFlightSearchForm(
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            ColorPrimary.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             ColorSecondary.copy(alpha = 0.05f)
                         ),
                         start = androidx.compose.ui.geometry.Offset(0f, 0f),
@@ -1410,14 +1410,14 @@ fun UnifiedFlightSearchForm(
                     Icon(
                         Icons.Default.Flight,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
                         "Recherche de vols en temps réel",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorPrimary
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 
@@ -1425,7 +1425,7 @@ fun UnifiedFlightSearchForm(
                 if (errorMessage != null) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = ColorError.copy(alpha = 0.1f),
+                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -1436,13 +1436,13 @@ fun UnifiedFlightSearchForm(
                             Icon(
                                 Icons.Default.Error,
                                 contentDescription = null,
-                                tint = ColorError,
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
                                 errorMessage ?: "",
                                 fontSize = 13.sp,
-                                color = ColorError,
+                                color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.weight(1f)
                             )
                             IconButton(
@@ -1455,7 +1455,7 @@ fun UnifiedFlightSearchForm(
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = "Fermer",
-                                    tint = ColorError,
+                                    tint = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -1487,8 +1487,8 @@ fun UnifiedFlightSearchForm(
                             label = { Text("Aller simple") },
                             modifier = Modifier.weight(1f),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = ColorPrimary,
-                                selectedLabelColor = Color.White,
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
                                 containerColor = MaterialTheme.colorScheme.surface,
                                 labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1499,8 +1499,8 @@ fun UnifiedFlightSearchForm(
                             label = { Text("Aller-retour") },
                             modifier = Modifier.weight(1f),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = ColorPrimary,
-                                selectedLabelColor = Color.White,
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
                                 containerColor = MaterialTheme.colorScheme.surface,
                                 labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1540,12 +1540,12 @@ fun UnifiedFlightSearchForm(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = ColorPrimary.copy(alpha = 0.1f)
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         ) {
                             Icon(
                                 Icons.Default.SwapHoriz,
                                 null,
-                                tint = ColorPrimary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .padding(8.dp)
@@ -1636,14 +1636,14 @@ fun UnifiedFlightSearchForm(
                                 Icon(
                                     Icons.Default.FilterList,
                                     null,
-                                    tint = ColorPrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
                                     "Filtres avancés",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = ColorPrimary
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                             Icon(
@@ -1673,7 +1673,7 @@ fun UnifiedFlightSearchForm(
                                         Icon(
                                             Icons.Default.Flight,
                                             null,
-                                            tint = ColorPrimary,
+                                            tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Text(
@@ -1687,8 +1687,8 @@ fun UnifiedFlightSearchForm(
                                         checked = directOnly,
                                         onCheckedChange = { directOnly = it },
                                         colors = SwitchDefaults.colors(
-                                            checkedThumbColor = Color.White,
-                                            checkedTrackColor = ColorPrimary
+                                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                            checkedTrackColor = MaterialTheme.colorScheme.primary
                                         )
                                     )
                                 }
@@ -1722,7 +1722,7 @@ fun UnifiedFlightSearchForm(
                                                 .menuAnchor(),
                                             shape = RoundedCornerShape(12.dp),
                                             colors = OutlinedTextFieldDefaults.colors(
-                                                focusedBorderColor = ColorPrimary,
+                                                focusedBorderColor = MaterialTheme.colorScheme.primary,
                                                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                                             ),
                                             enabled = !isLoading
@@ -1836,7 +1836,7 @@ fun UnifiedFlightSearchForm(
                             .fillMaxSize()
                             .background(
                                 brush = Brush.linearGradient(
-                                    colors = listOf(ColorPrimary, ColorSecondary),
+                                    colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary),
                                     start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                     end = androidx.compose.ui.geometry.Offset(1000f, 0f)
                                 ),
@@ -1852,13 +1852,13 @@ fun UnifiedFlightSearchForm(
                             ) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(20.dp),
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     strokeWidth = 2.dp
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
                                     "Recherche en cours...",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp
                                 )
@@ -1873,14 +1873,14 @@ fun UnifiedFlightSearchForm(
                                     Icons.Default.Search,
                                     null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = Color.White
+                                    tint = MaterialTheme.colorScheme.onPrimary
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     "Rechercher des vols",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                         }
@@ -1931,8 +1931,8 @@ fun FiltersCard(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color.White,
-                            ColorPrimary.copy(alpha = 0.05f),
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                             ColorSecondary.copy(alpha = 0.03f)
                         )
                     )
@@ -1951,10 +1951,10 @@ fun FiltersCard(
                     "Filtres de recherche",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = ColorPrimary
+                    color = MaterialTheme.colorScheme.primary
                 )
                 TextButton(onClick = onClear) {
-                    Text("Réinitialiser", fontSize = 12.sp, color = ColorPrimary)
+                    Text("Réinitialiser", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                 }
             }
 
@@ -2011,14 +2011,14 @@ fun FiltersCard(
                             Icon(
                                 Icons.Default.FlightTakeoff,
                                 null,
-                                tint = ColorPrimary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         },
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = ColorPrimary,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                         )
                     )
@@ -2037,13 +2037,13 @@ fun FiltersCard(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = ColorPrimary.copy(alpha = 0.1f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             Icons.Default.SwapHoriz,
                             null,
-                            tint = ColorPrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
                                 .size(24.dp)
                                 .padding(8.dp)
@@ -2069,14 +2069,14 @@ fun FiltersCard(
                             Icon(
                                 Icons.Default.FlightLand,
                                 null,
-                                tint = ColorPrimary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         },
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = ColorPrimary,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                         )
                     )
@@ -2106,14 +2106,14 @@ fun FiltersCard(
                             Icon(
                                 Icons.Default.CalendarToday,
                                 null,
-                                tint = ColorPrimary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         },
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = ColorPrimary,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                         )
                     )
@@ -2138,14 +2138,14 @@ fun FiltersCard(
                                 Icon(
                                     Icons.Default.CalendarToday,
                                     null,
-                                    tint = ColorPrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = ColorPrimary,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             )
                         )
@@ -2166,7 +2166,7 @@ fun FiltersCard(
                     Icon(
                         Icons.Default.Flight,
                         null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
@@ -2180,8 +2180,8 @@ fun FiltersCard(
                     checked = directOnly == true,
                     onCheckedChange = { onDirectOnlyChange(if (it) true else null) },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = ColorPrimary
+                        checkedThumbColor = MaterialTheme.colorScheme.surface,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary
                     )
                 )
             }
@@ -2199,7 +2199,7 @@ fun FiltersCard(
                         .fillMaxSize()
                         .background(
                             brush = Brush.linearGradient(
-                                colors = listOf(ColorPrimary, ColorSecondary),
+                                colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary),
                                 start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                 end = androidx.compose.ui.geometry.Offset(1000f, 0f)
                             ),
@@ -2210,7 +2210,7 @@ fun FiltersCard(
                     Text(
                         "Appliquer les filtres",
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -2239,15 +2239,15 @@ fun FlightTypeChip(
         },
         modifier = modifier,
         colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = ColorPrimary,
-            selectedLabelColor = Color.White,
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.surface,
             containerColor = MaterialTheme.colorScheme.surface,
             labelColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         border = FilterChipDefaults.filterChipBorder(
             enabled = true,
             selected = selected,
-            selectedBorderColor = ColorPrimary,
+            selectedBorderColor = MaterialTheme.colorScheme.primary,
             borderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
             selectedBorderWidth = 2.dp,
             borderWidth = 1.dp
@@ -2276,7 +2276,7 @@ fun SortOptionsPanel(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Trier par", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = ColorPrimary)
+                Text("Trier par", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
                 IconButton(onClick = { onSortSelected(selectedSort) }) {
                     Icon(Icons.Default.Close, null)
                 }
@@ -2301,7 +2301,7 @@ fun SortOptionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onSortSelected(if (selectedSort == value) null else value) },
-        color = if (selectedSort == value) ColorPrimary.copy(alpha = 0.1f) else Color.Transparent,
+        color = if (selectedSort == value) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent,
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
@@ -2309,9 +2309,9 @@ fun SortOptionItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(label, fontSize = 14.sp, color = if (selectedSort == value) ColorPrimary else MaterialTheme.colorScheme.onSurface)
+            Text(label, fontSize = 14.sp, color = if (selectedSort == value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
             if (selectedSort == value) {
-                Icon(Icons.Default.Check, null, tint = ColorPrimary, modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
             }
         }
     }
@@ -2353,8 +2353,8 @@ fun ProfessionalFlightCard(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color.White,
-                            ColorPrimary.copy(alpha = 0.03f)
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.03f)
                         ),
                         startY = 0f,
                         endY = 1000f
@@ -2384,14 +2384,14 @@ fun ProfessionalFlightCard(
                             }
                         },
                         colors = CheckboxDefaults.colors(
-                            checkedColor = ColorPrimary,
+                            checkedColor = MaterialTheme.colorScheme.primary,
                             uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                     )
                     Text(
                         text = if (isSelected) "Sélectionné pour comparaison" else "Sélectionner pour comparer",
                         fontSize = 12.sp,
-                        color = if (isSelected) ColorPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                     )
                 }
@@ -2425,7 +2425,7 @@ fun ProfessionalFlightCard(
                                 .fillMaxSize()
                                 .background(
                                     brush = Brush.linearGradient(
-                                        colors = listOf(ColorPrimary, ColorSecondary),
+                                        colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary),
                                         start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                         end = androidx.compose.ui.geometry.Offset(40f, 40f)
                                     ),
@@ -2436,7 +2436,7 @@ fun ProfessionalFlightCard(
                             Icon(
                                 Icons.Default.Flight,
                                 null,
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -2472,12 +2472,12 @@ fun ProfessionalFlightCard(
                                 Icons.Default.LocationOn,
                                 null,
                                 modifier = Modifier.size(14.dp),
-                                tint = ColorPrimary
+                                tint = MaterialTheme.colorScheme.primary
                             )
                             Text(
                                 text = destination,
                                 fontSize = 13.sp,
-                                color = ColorPrimary,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -2493,7 +2493,7 @@ fun ProfessionalFlightCard(
                             modifier = Modifier
                                 .background(
                                     brush = Brush.linearGradient(
-                                        colors = listOf(ColorPrimary, ColorSecondary),
+                                        colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary),
                                         start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                         end = androidx.compose.ui.geometry.Offset(100f, 0f)
                                     ),
@@ -2505,7 +2505,7 @@ fun ProfessionalFlightCard(
                                 text = offer.getFormattedPrice(),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }
@@ -2519,7 +2519,7 @@ fun ProfessionalFlightCard(
             }
 
             Divider(
-                color = ColorPrimary.copy(alpha = 0.2f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 thickness = 1.dp
             )
 
@@ -2542,7 +2542,7 @@ fun ProfessionalFlightCard(
                             Icons.Default.FlightTakeoff,
                             null,
                             modifier = Modifier.size(16.dp),
-                            tint = ColorPrimary
+                            tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "De",
@@ -2559,7 +2559,7 @@ fun ProfessionalFlightCard(
                         },
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                     if (!fromAirport.name.isBlank() && !fromAirport.code.isBlank()) {
@@ -2586,7 +2586,7 @@ fun ProfessionalFlightCard(
                     modifier = Modifier
                         .size(24.dp)
                         .padding(horizontal = 8.dp),
-                    tint = ColorPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
 
                 // To
@@ -2819,7 +2819,7 @@ fun ProfessionalFlightCard(
                                 },
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }
@@ -2834,7 +2834,7 @@ fun ProfessionalFlightCard(
                         modifier = Modifier
                             .background(
                                 brush = Brush.linearGradient(
-                                    colors = listOf(ColorPrimary, ColorSecondary),
+                                    colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary),
                                     start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                     end = androidx.compose.ui.geometry.Offset(100f, 0f)
                                 ),
@@ -2850,13 +2850,13 @@ fun ProfessionalFlightCard(
                                 "Voir détails",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                             Icon(
                                 Icons.Default.ArrowForward,
                                 null,
                                 modifier = Modifier.size(16.dp),
-                                tint = Color.White
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }
@@ -2894,7 +2894,7 @@ fun FlightComparisonDialog(
                     .fillMaxWidth()
                     .background(
                         brush = Brush.linearGradient(
-                            colors = listOf(ColorPrimary, ColorSecondary)
+                            colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary)
                         )
                     )
                     .padding(20.dp)
@@ -2911,7 +2911,7 @@ fun FlightComparisonDialog(
                         Icon(
                             Icons.Default.SwapHoriz,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(28.dp)
                         )
                         Column {
@@ -2919,12 +2919,12 @@ fun FlightComparisonDialog(
                                 text = "Comparaison de vols",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                             Text(
                                 text = "${flights.size} vol${if (flights.size > 1) "s" else ""} sélectionné${if (flights.size > 1) "s" else ""}",
                                 fontSize = 12.sp,
-                                color = Color.White.copy(alpha = 0.9f)
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                             )
                         }
                     }
@@ -2932,7 +2932,7 @@ fun FlightComparisonDialog(
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Fermer",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -3085,7 +3085,7 @@ fun FlightComparisonDialog(
                         .weight(1f)
                         .height(48.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = ColorPrimary
+                        contentColor = MaterialTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -3108,7 +3108,7 @@ fun FlightComparisonDialog(
                             .fillMaxSize()
                             .background(
                                 brush = Brush.linearGradient(
-                                    colors = listOf(ColorPrimary, ColorSecondary),
+                                    colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary),
                                     start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                     end = androidx.compose.ui.geometry.Offset(1000f, 0f)
                                 ),
@@ -3119,7 +3119,7 @@ fun FlightComparisonDialog(
                         Text(
                             "Fermer",
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -3155,7 +3155,7 @@ fun ComparisonRow(
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = ColorPrimary,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
@@ -3191,7 +3191,7 @@ fun ComparisonRow(
                         color = if (isBestValue) {
                             ColorSuccess.copy(alpha = 0.1f)
                         } else {
-                            ColorBackground
+                            MaterialTheme.colorScheme.surfaceVariant
                         }
                     ) {
                         Column(
@@ -3210,7 +3210,7 @@ fun ComparisonRow(
                                         "Meilleur",
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         modifier = Modifier.padding(start = 6.dp, top = 2.dp, end = 6.dp, bottom = 2.dp)
                                     )
                                 }
@@ -3280,7 +3280,7 @@ fun PreferencesBottomSheet(
                         text = "Recommandations personnalisées",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorPrimary
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = "Répondez à quelques questions",
@@ -3319,7 +3319,7 @@ fun PreferencesBottomSheet(
                         text = "Type de voyage",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = ColorPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                     Row(
@@ -3347,7 +3347,7 @@ fun PreferencesBottomSheet(
                         text = "Indiquez votre budget maximum en dinar tunisien (TND)",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = ColorPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                     Row(
@@ -3362,15 +3362,15 @@ fun PreferencesBottomSheet(
                             steps = 18,
                             modifier = Modifier.weight(1f),
                             colors = SliderDefaults.colors(
-                                thumbColor = ColorPrimary,
-                                activeTrackColor = ColorPrimary
+                                thumbColor = MaterialTheme.colorScheme.primary,
+                                activeTrackColor = MaterialTheme.colorScheme.primary
                             )
                         )
                         Text(
                             text = "${maxBudget.toInt()} TND",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorPrimary,
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.width(70.dp)
                         )
                     }
@@ -3387,7 +3387,7 @@ fun PreferencesBottomSheet(
                             text = "Vol direct uniquement",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = ColorPrimary
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "Ne montrer que les vols sans escale",
@@ -3399,8 +3399,8 @@ fun PreferencesBottomSheet(
                         checked = directOnly,
                         onCheckedChange = { directOnly = it },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = ColorPrimary
+                            checkedThumbColor = MaterialTheme.colorScheme.surface,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
@@ -3410,7 +3410,7 @@ fun PreferencesBottomSheet(
             error?.let { errorMessage ->
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = ColorError.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -3421,13 +3421,13 @@ fun PreferencesBottomSheet(
                         Icon(
                             Icons.Default.Error,
                             contentDescription = null,
-                            tint = ColorError,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
                             text = errorMessage,
                             fontSize = 13.sp,
-                            color = ColorError,
+                            color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -3438,7 +3438,7 @@ fun PreferencesBottomSheet(
             if (isLoading) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = ColorPrimary.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -3447,14 +3447,14 @@ fun PreferencesBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         CircularProgressIndicator(
-                            color = ColorPrimary,
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp),
                             strokeWidth = 2.dp
                         )
                         Text(
                             text = "Analyse en cours par l'IA Gemini... Cela peut prendre quelques instants",
                             fontSize = 13.sp,
-                            color = ColorPrimary,
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -3488,7 +3488,7 @@ fun PreferencesBottomSheet(
                         .fillMaxSize()
                         .background(
                             brush = Brush.linearGradient(
-                                colors = listOf(ColorPrimary, ColorSecondary),
+                                colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary),
                                 start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                 end = androidx.compose.ui.geometry.Offset(1000f, 0f)
                             ),
@@ -3498,13 +3498,13 @@ fun PreferencesBottomSheet(
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(24.dp)
                         )
                     } else {
                         Text(
                             "Voir mes recommandations",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
@@ -3543,7 +3543,7 @@ fun RecommendedFlightCard(
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = ColorPrimary.copy(alpha = 0.1f)
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                 ) {
                     Row(
                         modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
@@ -3553,14 +3553,14 @@ fun RecommendedFlightCard(
                         Icon(
                             Icons.Default.AutoAwesome,
                             contentDescription = null,
-                            tint = ColorPrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
                             "Recommandé par IA",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorPrimary
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -3568,13 +3568,13 @@ fun RecommendedFlightCard(
                 Column(horizontalAlignment = Alignment.End) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = ColorPrimary.copy(alpha = 0.1f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                     ) {
                         Text(
                             offer.getFormattedPrice(),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorPrimary,
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
                         )
                     }
@@ -3606,13 +3606,13 @@ fun RecommendedFlightCard(
                     "aller-retour" -> {
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = ColorPrimary.copy(alpha = 0.1f)
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         ) {
                             Text(
                                 text = "Aller-retour",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = ColorPrimary,
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
                             )
                         }
@@ -3680,7 +3680,7 @@ fun RecommendedFlightCard(
                         },
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorPrimary
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = fromAirport.city ?: fromAirport.name ?: "",
@@ -3692,7 +3692,7 @@ fun RecommendedFlightCard(
                 Icon(
                     Icons.Default.Flight,
                     contentDescription = null,
-                    tint = ColorPrimary,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
                 )
                 
@@ -3705,7 +3705,7 @@ fun RecommendedFlightCard(
                         },
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorPrimary
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = toAirport.city ?: toAirport.name ?: "",
@@ -3733,14 +3733,14 @@ fun RecommendedFlightCard(
                         Icon(
                             Icons.Default.Info,
                             contentDescription = null,
-                            tint = ColorPrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
                             "Pourquoi cette offre ?",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorPrimary
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                     Spacer(modifier = Modifier.height(6.dp))

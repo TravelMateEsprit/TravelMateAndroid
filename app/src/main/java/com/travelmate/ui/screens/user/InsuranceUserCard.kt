@@ -68,7 +68,7 @@ fun InsuranceUserCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header compact avec nom et rating
+            // Header compact avec nom
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -89,31 +89,6 @@ fun InsuranceUserCard(
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 }
-                
-                // Rating badge moderne
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = ColorAccent.copy(alpha = 0.1f)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Star,
-                            contentDescription = null,
-                            tint = ColorAccent,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Text(
-                            insurance.rating.toString(),
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
             }
             
             Spacer(modifier = Modifier.height(12.dp))
@@ -123,7 +98,7 @@ fun InsuranceUserCard(
                 "${insurance.price.toInt()} TND",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorPrimary
+                color = MaterialTheme.colorScheme.primary
             )
             
             Spacer(modifier = Modifier.height(10.dp))
@@ -215,13 +190,13 @@ fun InsuranceUserCard(
                         else 
                             "Voir les détails",
                         fontSize = 12.sp,
-                        color = ColorPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold
                     )
                     Icon(
                         Icons.Default.ChevronRight,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -243,7 +218,7 @@ fun InsuranceUserCard(
                                 onClick = { callback(insurance._id) },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = ColorPrimary
+                                    containerColor = MaterialTheme.colorScheme.primary
                                 ),
                                 shape = RoundedCornerShape(10.dp),
                                 contentPadding = PaddingValues(vertical = 12.dp)
@@ -267,13 +242,13 @@ fun InsuranceUserCard(
                             onClick = { onUnsubscribe(insurance._id) },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = ColorError
+                                contentColor = MaterialTheme.colorScheme.error
                             ),
                             shape = RoundedCornerShape(10.dp),
                             contentPadding = PaddingValues(vertical = 12.dp),
                             border = androidx.compose.foundation.BorderStroke(
                                 1.dp,
-                                ColorError.copy(alpha = 0.3f)
+                                MaterialTheme.colorScheme.error.copy(alpha = 0.3f)
                             )
                         ) {
                             Icon(
@@ -324,7 +299,7 @@ fun InsuranceUserCard(
                         onClick = { onCreateRequest(insurance._id) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = ColorPrimary
+                            containerColor = MaterialTheme.colorScheme.primary
                         ),
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(vertical = 12.dp)
@@ -376,7 +351,7 @@ fun InsuranceDetailsDialog(
                         .fillMaxWidth()
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(ColorPrimary, ColorPrimary.copy(alpha = 0.9f))
+                                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.9f))
                             )
                         )
                 ) {
@@ -395,13 +370,13 @@ fun InsuranceDetailsDialog(
                                     insurance.name,
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     lineHeight = 26.sp
                                 )
                                 Text(
                                     insurance.agencyName ?: "Agence",
                                     fontSize = 13.sp,
-                                    color = Color.White.copy(alpha = 0.9f),
+                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                                     modifier = Modifier.padding(top = 4.dp)
                                 )
                             }
@@ -410,50 +385,20 @@ fun InsuranceDetailsDialog(
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = "Fermer",
-                                    tint = Color.White
+                                    tint = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                         }
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        // Prix et rating
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "${insurance.price.toInt()} TND",
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                            
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color.White.copy(alpha = 0.2f)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Star,
-                                        contentDescription = null,
-                                        tint = ColorAccent,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        insurance.rating.toString(),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                }
-                            }
-                        }
+                        // Prix uniquement
+                        Text(
+                            "${insurance.price.toInt()} TND",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
                 
@@ -538,7 +483,7 @@ fun InsuranceDetailsDialog(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shadowElevation = 8.dp,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.surface
                 ) {
                     Column(
                         modifier = Modifier.padding(20.dp),
@@ -555,7 +500,7 @@ fun InsuranceDetailsDialog(
                                             onClick = callback,
                                             modifier = Modifier.weight(1f),
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = ColorPrimary
+                                                containerColor = MaterialTheme.colorScheme.primary
                                             ),
                                             shape = RoundedCornerShape(12.dp)
                                         ) {
@@ -573,7 +518,7 @@ fun InsuranceDetailsDialog(
                                         onClick = onUnsubscribe,
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.outlinedButtonColors(
-                                            contentColor = ColorError
+                                            contentColor = MaterialTheme.colorScheme.error
                                         ),
                                         shape = RoundedCornerShape(12.dp)
                                     ) {
@@ -608,7 +553,7 @@ fun InsuranceDetailsDialog(
                                     onClick = onCreateRequest,
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = ColorPrimary
+                                        containerColor = MaterialTheme.colorScheme.primary
                                     ),
                                     shape = RoundedCornerShape(12.dp),
                                     contentPadding = PaddingValues(vertical = 14.dp)
@@ -650,14 +595,14 @@ fun DetailSection(
         ) {
             Surface(
                 shape = CircleShape,
-                color = ColorPrimary.copy(alpha = 0.1f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                 modifier = Modifier.size(32.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         icon,
                         contentDescription = null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                 }

@@ -94,7 +94,7 @@ fun AirportAutocomplete(
                     Icon(
                         if (label.contains("partez")) Icons.Default.FlightTakeoff else Icons.Default.FlightLand,
                         null,
-                        tint = ColorPrimary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                 },
@@ -105,7 +105,7 @@ fun AirportAutocomplete(
                             onAirportSelected(Airport())
                             expanded = false
                         }) {
-                            Icon(Icons.Default.Clear, null, tint = ColorTextSecondary)
+                            Icon(Icons.Default.Clear, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     } else {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
@@ -119,8 +119,8 @@ fun AirportAutocomplete(
                 maxLines = 1,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = ColorPrimary,
-                    unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                 ),
                 enabled = enabled
             )
@@ -149,7 +149,7 @@ fun AirportAutocomplete(
                                         Text(
                                             text = "${airport.city ?: ""}${if (airport.city != null && airport.country != null) ", " else ""}${airport.country ?: ""}",
                                             fontSize = 12.sp,
-                                            color = ColorTextSecondary
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                 }
@@ -212,7 +212,7 @@ fun DatePickerField(
                 Icon(
                     Icons.Default.CalendarToday,
                     null,
-                    tint = ColorPrimary,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
             },
@@ -222,12 +222,12 @@ fun DatePickerField(
             maxLines = 1,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = ColorPrimary,
-                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f),
-                disabledTextColor = ColorTextPrimary,
-                disabledBorderColor = ColorTextSecondary.copy(alpha = 0.3f),
-                disabledLeadingIconColor = ColorPrimary,
-                disabledLabelColor = ColorTextSecondary
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                disabledLeadingIconColor = MaterialTheme.colorScheme.primary,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
             enabled = false // Disable to prevent keyboard
         )
@@ -288,7 +288,7 @@ fun DatePickerDialog(
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -305,14 +305,14 @@ fun DatePickerDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismissRequest) {
-                        Text("Annuler", color = ColorTextSecondary)
+                        Text("Annuler", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = onConfirm,
-                        colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text("Confirmer", color = Color.White)
+                        Text("Confirmer", color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
@@ -346,7 +346,7 @@ fun AdultsSelector(
                 Icon(
                     Icons.Default.Person,
                     null,
-                    tint = ColorPrimary,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
             },
@@ -358,8 +358,8 @@ fun AdultsSelector(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = ColorPrimary,
-                unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
             ),
             enabled = enabled
         )

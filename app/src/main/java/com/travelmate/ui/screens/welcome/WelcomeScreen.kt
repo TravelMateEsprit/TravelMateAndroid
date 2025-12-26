@@ -56,8 +56,8 @@ fun WelcomeScreen(
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        ColorPrimary,
-                        ColorSecondary
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
                     ),
                     start = Offset(0f, 0f),
                     end = Offset(1000f, 1500f)
@@ -113,7 +113,7 @@ fun WelcomeScreen(
                             text = "TravelMate",
                             fontSize = 42.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             textAlign = TextAlign.Center
                         )
                         
@@ -122,7 +122,7 @@ fun WelcomeScreen(
                         Text(
                             text = "Votre compagnon de voyage",
                             fontSize = 18.sp,
-                            color = Color.White.copy(alpha = 0.9f),
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Light
                         )
@@ -141,7 +141,7 @@ fun WelcomeScreen(
                         ModernConnectionStatus(
                             isConnected = isConnected,
                             modifier = Modifier.background(
-                                color = Color.White.copy(alpha = 0.15f),
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f),
                                 shape = RoundedCornerShape(24.dp)
                             ).padding(2.dp)
                         )
@@ -158,7 +158,7 @@ fun WelcomeScreen(
                 ) + fadeIn()
             ) {
                 ModernCard(
-                    backgroundColor = Color.White,
+                    backgroundColor = MaterialTheme.colorScheme.surface,
                     cornerRadius = 24.dp,
                     elevation = 8.dp,
                     modifier = Modifier.padding(bottom = 32.dp)
@@ -180,7 +180,7 @@ fun WelcomeScreen(
                         onClick = onNavigateToUserRegistration,
                         enabled = isConnected,
                         icon = Icons.Default.Person,
-                        backgroundColor = ColorPrimary
+                        backgroundColor = MaterialTheme.colorScheme.primary
                     )
                     
                     Spacer(modifier = Modifier.height(12.dp))
