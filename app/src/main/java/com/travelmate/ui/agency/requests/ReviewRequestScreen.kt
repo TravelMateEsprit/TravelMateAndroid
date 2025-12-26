@@ -181,7 +181,7 @@ fun ReviewRequestScreen(
                             Text(
                                 text = request.message,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = ColorTextPrimary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -518,7 +518,7 @@ fun StatusHeaderCard(status: RequestStatus) {
             Text(
                 text = "Statut de la demande",
                 style = MaterialTheme.typography.titleMedium,
-                color = ColorTextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             
             EnhancedStatusChip(status = status)
@@ -597,13 +597,13 @@ fun DetailItem(
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
-                color = ColorTextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyLarge,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

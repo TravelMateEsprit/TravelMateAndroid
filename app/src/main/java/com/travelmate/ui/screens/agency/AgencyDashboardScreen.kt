@@ -133,7 +133,7 @@ fun AgencyDashboardScreen(
                     "Statistiques",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             
@@ -188,7 +188,7 @@ fun AgencyDashboardScreen(
                         "Mes Assurances",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     TextButton(onClick = onCreateInsurance) {
                         Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
@@ -230,13 +230,13 @@ fun AgencyDashboardScreen(
                                 "Erreur de chargement",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = ColorTextPrimary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 error ?: "Une erreur est survenue",
                                 fontSize = 14.sp,
-                                color = ColorTextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -260,7 +260,7 @@ fun AgencyDashboardScreen(
                             Icon(
                                 Icons.Default.Inventory,
                                 contentDescription = null,
-                                tint = ColorTextSecondary,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -268,13 +268,13 @@ fun AgencyDashboardScreen(
                                 "Aucune assurance",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = ColorTextPrimary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 "Commencez par créer votre première assurance",
                                 fontSize = 14.sp,
-                                color = ColorTextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -327,12 +327,12 @@ fun StatCard(
                 value,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 label,
                 fontSize = 12.sp,
-                color = ColorTextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }

@@ -129,7 +129,7 @@ fun InsuranceFormScreen(
                     Text(
                         "Les champs marqués d'un * sont obligatoires",
                         fontSize = 14.sp,
-                        color = ColorTextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -139,7 +139,7 @@ fun InsuranceFormScreen(
                 "Informations de base",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             
             OutlinedTextField(
@@ -216,7 +216,7 @@ fun InsuranceFormScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isActive) ColorSuccess.copy(alpha = 0.1f) else ColorTextSecondary.copy(alpha = 0.1f)
+                    containerColor = if (isActive) ColorSuccess.copy(alpha = 0.1f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
                 )
             ) {
                 Row(
@@ -230,7 +230,7 @@ fun InsuranceFormScreen(
                         Icon(
                             if (isActive) Icons.Default.CheckCircle else Icons.Default.Cancel,
                             contentDescription = null,
-                            tint = if (isActive) ColorSuccess else ColorTextSecondary,
+                            tint = if (isActive) ColorSuccess else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -238,12 +238,12 @@ fun InsuranceFormScreen(
                             Text(
                                 "Statut de l'assurance",
                                 fontWeight = FontWeight.Bold,
-                                color = ColorTextPrimary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 if (isActive) "Active - Visible par les utilisateurs" else "Inactive - Non visible",
                                 fontSize = 12.sp,
-                                color = ColorTextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -270,7 +270,7 @@ fun InsuranceFormScreen(
                     "Conditions spécifiques (optionnel)",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Switch(
                     checked = showConditions,
@@ -282,7 +282,7 @@ fun InsuranceFormScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = ColorBackground
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 ) {
                     Column(
@@ -292,7 +292,7 @@ fun InsuranceFormScreen(
                         Text(
                             "Restrictions d'âge",
                             fontWeight = FontWeight.SemiBold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         
                         Row(

@@ -75,7 +75,7 @@ fun AgencyMainDashboard(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                drawerContainerColor = Color.White
+                drawerContainerColor = MaterialTheme.colorScheme.surface
             ) {
                 // Drawer Header
                 Box(
@@ -126,7 +126,7 @@ fun AgencyMainDashboard(
                             Icon(
                                 section.icon,
                                 contentDescription = null,
-                                tint = if (selectedSection == section) section.color else ColorTextSecondary
+                                tint = if (selectedSection == section) section.color else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
                         label = {
@@ -377,7 +377,7 @@ fun OverviewSection(
                 "Statistiques rapides",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
         
@@ -456,7 +456,7 @@ fun OverviewSection(
                 "Actions rapides",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
         
@@ -521,7 +521,7 @@ fun OverviewSection(
                     "Assurances récentes",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 TextButton(onClick = onNavigateToInsurances) {
                     Text("Voir tout")
@@ -543,7 +543,7 @@ fun OverviewSection(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = ColorTextSecondary.copy(alpha = 0.1f)
+                        containerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
                     )
                 ) {
                     Column(
@@ -555,20 +555,20 @@ fun OverviewSection(
                         Icon(
                             Icons.Default.Shield,
                             contentDescription = null,
-                            tint = ColorTextSecondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             "Aucune assurance",
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             "Créez votre première assurance",
                             fontSize = 14.sp,
-                            color = ColorTextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         ModernButton(
@@ -648,7 +648,7 @@ fun InsurancesSection(
                             Icon(
                                 Icons.Default.FilterList,
                                 contentDescription = "Filtres",
-                                tint = if (showFilters) ColorPrimary else ColorTextSecondary
+                                tint = if (showFilters) ColorPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -656,7 +656,7 @@ fun InsurancesSection(
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = ColorPrimary,
-                    unfocusedBorderColor = ColorTextSecondary.copy(alpha = 0.3f)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                 )
             )
         }
@@ -672,7 +672,7 @@ fun InsurancesSection(
                         "Filtres",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -681,7 +681,7 @@ fun InsurancesSection(
                     Text(
                         "Fourchette de prix: ${selectedPriceRange.start.toInt()} TND - ${selectedPriceRange.endInclusive.toInt()} TND",
                         fontSize = 14.sp,
-                        color = ColorTextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     RangeSlider(
                         value = selectedPriceRange,
@@ -701,7 +701,7 @@ fun InsurancesSection(
                         "Statut",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -750,7 +750,7 @@ fun InsurancesSection(
                 "Statistiques",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
         
@@ -809,7 +809,7 @@ fun InsurancesSection(
                     "Mes Assurances",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 TextButton(onClick = onNavigateToInsuranceForm) {
                     Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
@@ -851,13 +851,13 @@ fun InsurancesSection(
                             "Erreur de chargement",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             error ?: "Une erreur est survenue",
                             fontSize = 14.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -881,7 +881,7 @@ fun InsurancesSection(
                         Icon(
                             Icons.Default.Shield,
                             contentDescription = null,
-                            tint = ColorTextSecondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -889,13 +889,13 @@ fun InsurancesSection(
                             "Aucune assurance",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             "Commencez par créer votre première assurance",
                             fontSize = 14.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -919,7 +919,7 @@ fun InsurancesSection(
                         Icon(
                             Icons.Default.Search,
                             contentDescription = null,
-                            tint = ColorTextSecondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -927,13 +927,13 @@ fun InsurancesSection(
                             "Aucun résultat",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             "Aucune assurance ne correspond à vos critères de recherche",
                             fontSize = 14.sp,
-                            color = ColorTextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -987,12 +987,12 @@ fun ComingSoonSection(section: DashboardSection) {
                 section.title,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 "Cette section sera bientôt disponible",
                 fontSize = 14.sp,
-                color = ColorTextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Surface(
@@ -1055,12 +1055,12 @@ fun QuickStatCard(
                 value,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 label,
                 fontSize = 12.sp,
-                color = ColorTextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -1078,7 +1078,7 @@ fun QuickActionCard(
     Card(
         modifier = modifier.clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = ColorBackground
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -1108,13 +1108,13 @@ fun QuickActionCard(
                 Text(
                     title,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp
                 )
                 Text(
                     subtitle,
                     fontSize = 12.sp,
-                    color = ColorTextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -1140,14 +1140,14 @@ fun CompactInsuranceCard(insurance: com.travelmate.data.models.Insurance) {
                     .clip(CircleShape)
                     .background(
                         if (insurance.isActive) ColorPrimary.copy(alpha = 0.2f)
-                        else ColorTextSecondary.copy(alpha = 0.2f)
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.Shield,
                     contentDescription = null,
-                    tint = if (insurance.isActive) ColorPrimary else ColorTextSecondary,
+                    tint = if (insurance.isActive) ColorPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -1156,18 +1156,18 @@ fun CompactInsuranceCard(insurance: com.travelmate.data.models.Insurance) {
                 Text(
                     insurance.name,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp
                 )
                 Text(
                     "${insurance.price.toInt()} TND • ${insurance.subscribers.size} inscrits",
                     fontSize = 12.sp,
-                    color = ColorTextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Surface(
                 color = if (insurance.isActive) ColorSuccess.copy(alpha = 0.2f)
-                       else ColorTextSecondary.copy(alpha = 0.2f),
+                       else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
@@ -1175,7 +1175,7 @@ fun CompactInsuranceCard(insurance: com.travelmate.data.models.Insurance) {
                     modifier = Modifier.padding(start = 12.dp, top = 4.dp, end = 12.dp, bottom = 4.dp),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,
-                    color = if (insurance.isActive) ColorSuccess else ColorTextSecondary
+                    color = if (insurance.isActive) ColorSuccess else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -1227,7 +1227,7 @@ fun SettingsSection(
                         "Paramètres de l'agence",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -1241,7 +1241,7 @@ fun SettingsSection(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
@@ -1264,7 +1264,7 @@ fun SettingsSection(
                                 "Signature pour contrats",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = ColorTextPrimary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -1273,7 +1273,7 @@ fun SettingsSection(
                         Text(
                             "Cette signature apparaîtra sur tous les contrats d'assurance envoyés aux clients.",
                             fontSize = 14.sp,
-                            color = ColorTextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Spacer(modifier = Modifier.height(20.dp))
@@ -1416,7 +1416,7 @@ fun SettingsSection(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = ColorPrimary.copy(alpha = 0.1f)
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
                 ) {
                     Row(
@@ -1428,7 +1428,7 @@ fun SettingsSection(
                         Icon(
                             Icons.Default.Info,
                             contentDescription = null,
-                            tint = ColorPrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -1436,7 +1436,7 @@ fun SettingsSection(
                             Text(
                                 "Information",
                                 fontWeight = FontWeight.SemiBold,
-                                color = ColorPrimary,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontSize = 14.sp
                             )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -1444,7 +1444,7 @@ fun SettingsSection(
                                 "Formats acceptés: JPG, PNG, GIF. Taille maximale: 2MB. " +
                                 "Pour un meilleur résultat, utilisez une image avec fond transparent (PNG).",
                                 fontSize = 12.sp,
-                                color = ColorTextSecondary,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 lineHeight = 18.sp
                             )
                         }

@@ -308,14 +308,18 @@ fun ForgotPasswordScreen(
                     // Retour à la connexion
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             "Vous vous souvenez de votre mot de passe ? ",
                             fontSize = 14.sp,
                             color = ColorTextSecondary
                         )
-                        TextButton(onClick = onNavigateBack) {
+                        TextButton(
+                            onClick = onNavigateBack,
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                        ) {
                             Text(
                                 "Se connecter",
                                 color = ColorAccent,

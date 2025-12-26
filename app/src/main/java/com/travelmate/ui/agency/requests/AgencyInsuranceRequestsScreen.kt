@@ -353,7 +353,7 @@ fun EnhancedStatCard(
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodySmall,
-                color = ColorTextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

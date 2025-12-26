@@ -100,7 +100,7 @@ fun AgencyInsuranceCard(
                             colors = if (insurance.isActive) {
                                 listOf(ColorPrimary, ColorPrimary.copy(alpha = 0.7f))
                             } else {
-                                listOf(ColorTextSecondary, ColorTextSecondary.copy(alpha = 0.5f))
+                                listOf(MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                             }
                         )
                     )
@@ -146,7 +146,7 @@ fun AgencyInsuranceCard(
                             "${insurance.price.toInt()} TND",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (insurance.isActive) ColorPrimary else ColorTextSecondary,
+                            color = if (insurance.isActive) ColorPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
                         )
                     }
@@ -159,7 +159,7 @@ fun AgencyInsuranceCard(
                 Text(
                     insurance.description,
                     fontSize = 14.sp,
-                    color = ColorTextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = if (expanded) Int.MAX_VALUE else 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -189,7 +189,7 @@ fun AgencyInsuranceCard(
                         "Couvertures :",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = ColorTextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     FlowRow(
@@ -225,13 +225,13 @@ fun AgencyInsuranceCard(
                         }
                         if (insurance.coverage.size > 3) {
                             Surface(
-                                color = ColorTextSecondary.copy(alpha = 0.1f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
                                     "+${insurance.coverage.size - 3}",
                                     fontSize = 11.sp,
-                                    color = ColorTextSecondary,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = 6.dp)
                                 )
                             }
@@ -267,12 +267,12 @@ fun AgencyInsuranceCard(
                                     "${insurance.subscribers.size}",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = ColorTextPrimary
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     "Inscrits",
                                     fontSize = 10.sp,
-                                    color = ColorTextSecondary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -281,7 +281,7 @@ fun AgencyInsuranceCard(
                     // Status
                     Surface(
                         modifier = Modifier.weight(1f),
-                        color = if (insurance.isActive) ColorSuccess.copy(alpha = 0.1f) else ColorTextSecondary.copy(alpha = 0.1f),
+                        color = if (insurance.isActive) ColorSuccess.copy(alpha = 0.1f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
@@ -293,7 +293,7 @@ fun AgencyInsuranceCard(
                                 Icon(
                                     if (insurance.isActive) Icons.Default.CheckCircle else Icons.Default.Cancel,
                                     contentDescription = null,
-                                    tint = if (insurance.isActive) ColorSuccess else ColorTextSecondary,
+                                    tint = if (insurance.isActive) ColorSuccess else MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -302,7 +302,7 @@ fun AgencyInsuranceCard(
                                         if (insurance.isActive) "Active" else "Inactive",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = ColorTextPrimary
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                             }

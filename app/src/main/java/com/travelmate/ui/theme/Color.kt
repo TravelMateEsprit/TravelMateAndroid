@@ -7,7 +7,21 @@ val ColorPrimary = Color(0xFF2F80ED)
 val ColorSecondary = Color(0xFF56CCF2)
 val ColorAccent = Color(0xFFF2C94C)
 val ColorBackground = Color(0xFFF9FAFB)
+
+// Light theme text colors
+val ColorTextPrimaryLight = Color(0xFF1F2937)
+val ColorTextSecondaryLight = Color(0xFF6B7280)
+
+// Dark theme text colors
+val ColorTextPrimaryDark = Color(0xFFE5E7EB)
+val ColorTextSecondaryDark = Color(0xFF9CA3AF)
+
+// DEPRECATED: Use MaterialTheme.colorScheme.onSurface instead
+@Deprecated("Use MaterialTheme.colorScheme.onSurface instead")
 val ColorTextPrimary = Color(0xFF1F2937)
+
+// DEPRECATED: Use MaterialTheme.colorScheme.onSurfaceVariant instead
+@Deprecated("Use MaterialTheme.colorScheme.onSurfaceVariant instead")
 val ColorTextSecondary = Color(0xFF6B7280)
 
 // Additional colors
@@ -22,3 +36,4 @@ val ColorSecondaryDark = Color(0xFF38BDF8)
 val ColorBackgroundDark = Color(0xFF111827)
 val ColorSurfaceDark = Color(0xFF1F2937)
 val ColorDivider = Color(0xFFE5E7EB)
+val ColorDividerDark = Color(0xFF374151)

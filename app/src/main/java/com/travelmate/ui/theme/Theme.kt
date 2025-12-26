@@ -24,10 +24,12 @@ private val DarkColorScheme = darkColorScheme(
     surface = ColorSurfaceDark,
     onPrimary = Color.White,
     onSecondary = Color.White,
-    onTertiary = ColorTextPrimary,
-    onBackground = Color.White,
-    onSurface = Color.White,
-    error = ColorError
+    onTertiary = ColorTextPrimaryDark,
+    onBackground = ColorTextPrimaryDark,
+    onSurface = ColorTextPrimaryDark,
+    onSurfaceVariant = ColorTextSecondaryDark,
+    error = ColorError,
+    outline = ColorDividerDark
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -38,10 +40,12 @@ private val LightColorScheme = lightColorScheme(
     surface = Color.White,
     onPrimary = Color.White,
     onSecondary = Color.White,
-    onTertiary = ColorTextPrimary,
-    onBackground = ColorTextPrimary,
-    onSurface = ColorTextPrimary,
-    error = ColorError
+    onTertiary = ColorTextPrimaryLight,
+    onBackground = ColorTextPrimaryLight,
+    onSurface = ColorTextPrimaryLight,
+    onSurfaceVariant = ColorTextSecondaryLight,
+    error = ColorError,
+    outline = ColorDivider
 )
 
 @Composable

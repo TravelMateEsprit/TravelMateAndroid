@@ -82,7 +82,7 @@ fun AgencyClaimDetailScreen(
                     // Barre d'information pour ticket fermé
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFFF8F9FA),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
                         shadowElevation = 8.dp
                     ) {
                         Row(
@@ -95,7 +95,7 @@ fun AgencyClaimDetailScreen(
                             Icon(
                                 Icons.Default.Lock,
                                 contentDescription = null,
-                                tint = Color(0xFF64748B),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -103,7 +103,7 @@ fun AgencyClaimDetailScreen(
                                 text = "Ce ticket a été clôturé",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFF64748B)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -113,7 +113,7 @@ fun AgencyClaimDetailScreen(
                         if (selectedClaim?.status == "RESOLU") {
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
-                                color = Color(0xFFF0F9FF),
+                                color = MaterialTheme.colorScheme.secondaryContainer,
                                 shadowElevation = 4.dp
                             ) {
                                 Row(
@@ -137,7 +137,7 @@ fun AgencyClaimDetailScreen(
                                             text = "Problème résolu",
                                             fontSize = 15.sp,
                                             fontWeight = FontWeight.Medium,
-                                            color = Color(0xFF1E293B)
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
                                         )
                                     }
                                     
@@ -184,7 +184,7 @@ fun AgencyClaimDetailScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F7FA))
+                .background(MaterialTheme.colorScheme.background)
         ) {
             when {
                 isLoading -> {
@@ -357,7 +357,7 @@ fun AgencyClaimInfoPanel(claim: Claim) {
             .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 12.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(20.dp)
@@ -371,7 +371,7 @@ fun AgencyClaimInfoPanel(claim: Claim) {
                     text = "Informations client",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 ModernPriorityBadge(priority = claim.priority)
@@ -492,13 +492,13 @@ fun AgencyEmptyChatView() {
             text = "Pas encore de conversation",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF64748B)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Envoyez le premier message au client",
             fontSize = 14.sp,
-            color = Color(0xFF94A3B8),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
     }
@@ -553,7 +553,7 @@ fun AgencyMessageBubble(
                     text = senderName,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF64748B),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 14.dp, top = 4.dp, end = 14.dp, bottom = 4.dp)
                 )
             }
@@ -566,7 +566,7 @@ fun AgencyMessageBubble(
                     bottomEnd = 20.dp
                 ),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isAgency) Color(0xFF2196F3) else Color.White
+                    containerColor = if (isAgency) Color(0xFF2196F3) else MaterialTheme.colorScheme.surface
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -577,7 +577,7 @@ fun AgencyMessageBubble(
                         text = messageText,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Normal,
-                        color = if (isAgency) Color.White else Color(0xFF1E293B),
+                        color = if (isAgency) Color.White else MaterialTheme.colorScheme.onSurface,
                         lineHeight = 22.sp
                     )
                     
@@ -587,7 +587,7 @@ fun AgencyMessageBubble(
                         text = formatRelativeTime(timestamp),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Normal,
-                        color = if (isAgency) Color.White.copy(alpha = 0.8f) else Color(0xFF94A3B8)
+                        color = if (isAgency) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -631,7 +631,7 @@ fun AgencyMessageInputBar(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 12.dp
     ) {
         Row(
@@ -647,16 +647,16 @@ fun AgencyMessageInputBar(
                 placeholder = { 
                     Text(
                         "Réponse au client...",
-                        color = Color(0xFF94A3B8)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     ) 
                 },
                 enabled = enabled,
                 shape = RoundedCornerShape(28.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF2196F3),
-                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                    focusedContainerColor = Color(0xFFF8FAFC),
-                    unfocusedContainerColor = Color(0xFFF8FAFC)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
                 ),
                 maxLines = 5,
                 textStyle = LocalTextStyle.current.copy(
@@ -670,8 +670,8 @@ fun AgencyMessageInputBar(
             FloatingActionButton(
                 onClick = onSendClick,
                 modifier = Modifier.size(52.dp),
-                containerColor = if (messageText.isBlank()) Color(0xFFE2E8F0) else Color(0xFF2196F3),
-                contentColor = if (messageText.isBlank()) Color(0xFF94A3B8) else Color.White,
+                containerColor = if (messageText.isBlank()) MaterialTheme.colorScheme.surfaceVariant else Color(0xFF2196F3),
+                contentColor = if (messageText.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant else Color.White,
                 elevation = FloatingActionButtonDefaults.elevation(
                     defaultElevation = if (messageText.isBlank()) 0.dp else 6.dp,
                     pressedElevation = 12.dp
@@ -722,7 +722,7 @@ fun StatusChangeDialog(
                         else -> currentStatus
                     }}",
                     fontSize = 14.sp,
-                    color = Color(0xFF64748B),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal
                 )
             }
@@ -740,7 +740,7 @@ fun StatusChangeDialog(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFF0F9FF)
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
                 ) {
                     Row(
@@ -750,14 +750,14 @@ fun StatusChangeDialog(
                         Icon(
                             Icons.Outlined.Info,
                             contentDescription = null,
-                            tint = Color(0xFF2196F3),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Pour fermer un ticket, marquez-le d'abord comme résolu.",
                             fontSize = 12.sp,
-                            color = Color(0xFF1E293B),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             lineHeight = 16.sp
                         )
                     }
@@ -786,16 +786,16 @@ fun StatusChangeDialog(
                         colors = CardDefaults.cardColors(
                             containerColor = when {
                                 isSelected -> Color(0xFF2196F3).copy(alpha = 0.12f)
-                                isDisabled -> Color(0xFFF5F5F5)
-                                else -> Color.White
+                                isDisabled -> MaterialTheme.colorScheme.surfaceVariant
+                                else -> MaterialTheme.colorScheme.surface
                             }
                         ),
                         border = androidx.compose.foundation.BorderStroke(
                             width = if (isSelected) 2.dp else 1.dp,
                             color = when {
                                 isSelected -> Color(0xFF2196F3)
-                                isDisabled -> Color(0xFFE0E0E0)
-                                else -> Color(0xFFE2E8F0)
+                                isDisabled -> MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                                else -> MaterialTheme.colorScheme.outline
                             }
                         ),
                         enabled = !isDisabled
@@ -816,8 +816,8 @@ fun StatusChangeDialog(
                                 contentDescription = null,
                                 tint = when {
                                     isSelected -> Color(0xFF2196F3)
-                                    isDisabled -> Color(0xFFBDBDBD)
-                                    else -> Color(0xFF64748B)
+                                    isDisabled -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
                                 },
                                 modifier = Modifier.size(22.dp)
                             )
@@ -829,8 +829,8 @@ fun StatusChangeDialog(
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                     color = when {
                                         isSelected -> Color(0xFF2196F3)
-                                        isDisabled -> Color(0xFFBDBDBD)
-                                        else -> Color(0xFF1E293B)
+                                        isDisabled -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                        else -> MaterialTheme.colorScheme.onSurface
                                     }
                                 )
                                 if (isDisabled && status == "FERME") {
@@ -858,7 +858,7 @@ fun StatusChangeDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Annuler", color = Color(0xFF64748B))
+                Text("Annuler", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )

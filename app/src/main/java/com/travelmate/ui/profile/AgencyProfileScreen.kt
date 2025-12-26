@@ -77,7 +77,7 @@ fun AgencyProfileScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = ColorBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { },
@@ -452,7 +452,7 @@ private fun AgencyStatusCard(isVerified: Boolean) {
                 Text(
                     text = if (isVerified) "Votre agence est officiellement verifiee" else "Votre demande est en cours de traitement",
                     fontSize = 13.sp,
-                    color = ColorTextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -468,7 +468,7 @@ private fun AgencyProfileSectionCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -481,7 +481,7 @@ private fun AgencyProfileSectionCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = Color(0xFF1E3A5F),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -489,7 +489,7 @@ private fun AgencyProfileSectionCard(
                     text = title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Divider(color = ColorDivider, thickness = 1.dp)
@@ -514,13 +514,13 @@ private fun AgencyProfileInfoRow(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF1E3A5F).copy(alpha = 0.1f)),
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color(0xFF1E3A5F),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -529,13 +529,13 @@ private fun AgencyProfileInfoRow(
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = ColorTextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = value,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = ColorTextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -558,16 +558,18 @@ private fun AgencyModernTextField(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color(0xFF1E3A5F)
+                tint = MaterialTheme.colorScheme.primary
             )
         },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color(0xFF1E3A5F),
-            unfocusedBorderColor = ColorDivider,
-            focusedLabelColor = Color(0xFF1E3A5F),
-            cursorColor = Color(0xFF1E3A5F)
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface
         ),
         minLines = minLines
     )
