@@ -28,6 +28,8 @@ import com.travelmate.ui.screens.groups.GroupMembersScreen
 import com.travelmate.ui.screens.login.LoginScreen
 import com.travelmate.ui.screens.login.ForgotPasswordScreen
 import com.travelmate.ui.screens.login.ResetPasswordScreen
+import com.travelmate.ui.screens.login.EnterResetCodeScreen
+import com.travelmate.ui.screens.login.NewPasswordScreen
 import com.travelmate.ui.screens.registration.agency.AgencyRegistrationScreen
 import com.travelmate.ui.screens.registration.user.UserRegistrationScreen
 import com.travelmate.ui.screens.user.FlightDetailsScreen
@@ -162,20 +164,25 @@ fun NavGraph(
             ForgotPasswordScreen(
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onNavigateToEnterResetCode = {
+                    navController.navigate("enter_reset_code")
                 }
             )
         }
         
-        // Réinitialiser mot de passe
-        composable(Constants.Routes.RESET_PASSWORD) { backStackEntry ->
-            val token = backStackEntry.arguments?.getString("token") ?: ""
-            ResetPasswordScreen(
-                token = token,
-                onBackToLogin = {
-                    navController.navigate(Constants.Routes.LOGIN) {
-                        popUpTo(Constants.Routes.WELCOME) { inclusive = false }
-                    }
-                }
+
+        // Saisie du code reçu par email
+        composable("enter_reset_code") {
+            EnterResetCodeScreen(
+                navController = navController
+            )
+        }
+
+        // Saisie du nouveau mot de passe
+        composable("new_password") {
+            NewPasswordScreen(
+                navController = navController
             )
         }
         

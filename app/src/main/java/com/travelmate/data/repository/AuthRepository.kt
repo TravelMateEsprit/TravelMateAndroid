@@ -18,6 +18,36 @@ import com.travelmate.data.models.User
 class AuthRepository @Inject constructor(
     private val authApi: AuthApi
 ) {
+
+    suspend fun verifyResetCode(email: String, code: String): Result<MessageResponse> {
+        return try {
+            val request = com.travelmate.data.models.AuthResetCodeRequest(email, code)
+            val response = authApi.verifyResetCode(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception(errorBody ?: response.message() ?: "Code invalide"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun resetPasswordWithCode(email: String, code: String, newPassword: String): Result<MessageResponse> {
+        return try {
+            val request = com.travelmate.data.models.ResetPasswordWithCodeRequest(email, code, newPassword)
+            val response = authApi.resetPasswordWithCode(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception(errorBody ?: response.message() ?: "Erreur lors du changement de mot de passe"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
     
     suspend fun getUserProfile(token: String): Result<User> {
         return try {

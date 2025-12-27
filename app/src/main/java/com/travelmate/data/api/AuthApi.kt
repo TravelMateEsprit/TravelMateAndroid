@@ -21,6 +21,15 @@ import com.travelmate.data.models.UpdateProfileRequest
 import com.travelmate.data.models.User
 
 interface AuthApi {
+        @POST("auth/verify-reset-code")
+        suspend fun verifyResetCode(
+            @Body request: com.travelmate.data.models.AuthResetCodeRequest
+        ): Response<com.travelmate.data.models.MessageResponse>
+
+        @PUT("auth/reset-password-with-code")
+        suspend fun resetPasswordWithCode(
+            @Body request: com.travelmate.data.models.ResetPasswordWithCodeRequest
+        ): Response<com.travelmate.data.models.MessageResponse>
     
     @POST("auth/signup")
     suspend fun registerUser(

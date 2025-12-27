@@ -11,6 +11,8 @@ object Constants {
         const val LOGIN = "login"
         const val FORGOT_PASSWORD = "forgot_password"
         const val RESET_PASSWORD = "reset_password/{token}"
+        const val ENTER_RESET_CODE = "enter_reset_code"
+        const val NEW_PASSWORD = "new_password"
         const val HOME = "home"
         const val USER_HOME = "user_home"
         const val AGENCY_DASHBOARD = "agency_dashboard"

@@ -39,6 +39,7 @@ import com.travelmate.viewmodel.ForgotPasswordViewModel
 @Composable
 fun ForgotPasswordScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToEnterResetCode: () -> Unit = {},
     viewModel: ForgotPasswordViewModel = hiltViewModel()
 ) {
     val focusManager = LocalFocusManager.current
@@ -108,10 +109,10 @@ fun ForgotPasswordScreen(
             },
             confirmButton = {
                 ModernButton(
-                    text = "OK",
+                    text = "J'ai reçu le code",
                     onClick = {
                         showSuccessDialog = false
-                        onNavigateBack()
+                        onNavigateToEnterResetCode()
                     }
                 )
             }
