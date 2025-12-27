@@ -308,37 +308,37 @@ fun MessageBubble(message: ClaimMessage) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4. dp),
-        horizontalArrangement = if (isFromUser) Arrangement. End else Arrangement.Start,
+            .padding(vertical = 4.dp),
+        horizontalArrangement = if (isFromUser) Arrangement.End else Arrangement.Start,
         verticalAlignment = Alignment.Bottom
     ) {
-        if (! isFromUser) {
+        if (!isFromUser) {
             Surface(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(androidx.compose.foundation.shape.CircleShape),
-                color = MaterialTheme.colorScheme.tertiaryContainer,
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 tonalElevation = 2.dp
             ) {
                 Icon(
                     Icons.Default.SupportAgent,
                     contentDescription = null,
                     modifier = Modifier.padding(6.dp),
-                    tint = MaterialTheme.colorScheme.onTertiaryContainer
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
 
         Column(
-            horizontalAlignment = if (isFromUser) Alignment. End else Alignment.Start,
+            horizontalAlignment = if (isFromUser) Alignment.End else Alignment.Start,
             modifier = Modifier.weight(1f, fill = false)
         ) {
-            if (! isFromUser) {
+            if (!isFromUser) {
                 Text(
-                    text = message.sender. name,
+                    text = message.sender.name,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme. onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.padding(start = 12.dp, bottom = 4.dp)
                 )
             }
@@ -350,10 +350,10 @@ fun MessageBubble(message: ClaimMessage) {
                     bottomStart = if (isFromUser) 20.dp else 4.dp,
                     bottomEnd = if (isFromUser) 4.dp else 20.dp
                 ),
-                color = if (isFromUser) 
-                    MaterialTheme.colorScheme.primary 
-                else 
-                    MaterialTheme.colorScheme.surfaceVariant,
+                color = if (isFromUser)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.secondaryContainer,
                 shadowElevation = 1.dp
             ) {
                 Column(
@@ -362,10 +362,10 @@ fun MessageBubble(message: ClaimMessage) {
                     Text(
                         text = message.message,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (isFromUser) 
-                            MaterialTheme.colorScheme.onPrimary 
-                        else 
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (isFromUser)
+                            MaterialTheme.colorScheme.onPrimary
+                        else
+                            MaterialTheme.colorScheme.onSecondaryContainer
                     )
 
                     if (message.attachments.isNotEmpty()) {
@@ -492,7 +492,7 @@ fun MessageInputBar(
     ) {
         Row(
             modifier = Modifier
-                . fillMaxWidth()
+                .fillMaxWidth()
                 .padding(8.dp),
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -501,20 +501,38 @@ fun MessageInputBar(
                 value = messageText,
                 onValueChange = onMessageTextChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Votre message... ") },
+                placeholder = {
+                    Text(
+                        "Écrivez votre message...",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
                 maxLines = 4,
-                shape = RoundedCornerShape(24.dp)
+                shape = RoundedCornerShape(24.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
             )
 
             FilledIconButton(
                 onClick = onSendClick,
                 enabled = messageText.isNotBlank() && !isLoading,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(48.dp),
+                colors = androidx.compose.material3.IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 } else {
                     Icon(Icons.Default.Send, "Envoyer")

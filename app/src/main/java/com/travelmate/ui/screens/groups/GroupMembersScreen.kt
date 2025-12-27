@@ -108,6 +108,7 @@ private fun MemberCard(
     onRemoveMember: (String, String) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+
     val isCurrentUser = member.userId?.id == currentUserId
 
     Card(
@@ -130,6 +131,7 @@ private fun MemberCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Avatar
+                val avatarUrl = member.userId?.avatar ?: member.avatar
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -137,16 +139,23 @@ private fun MemberCard(
                         .background(ColorPrimary),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (member.userAvatar.isNotEmpty()) {
+                    if (!avatarUrl.isNullOrEmpty()) {
                         AsyncImage(
-                            model = member.userAvatar,
+                            model = avatarUrl,
                             contentDescription = null,
                             modifier = Modifier.size(48.dp)
                         )
                     } else {
-                        val initial = (member.userNom.firstOrNull() ?: 'U').toString()
+                        // Initiale : prénom > nom > email > U
+                        val initial = member.userId?.prenom?.firstOrNull()
+                            ?: member.userId?.nom?.firstOrNull()
+                            ?: member.prenom.firstOrNull()
+                            ?: member.nom.firstOrNull()
+                            ?: member.userId?.email?.firstOrNull()
+                            ?: member.email.firstOrNull()
+                            ?: 'U'
                         Text(
-                            text = initial,
+                            text = initial.uppercaseChar().toString(),
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
@@ -155,9 +164,18 @@ private fun MemberCard(
                 }
 
                 // Name and role
+                val userName = when {
+                    !member.userId?.prenom.isNullOrBlank() || !member.userId?.nom.isNullOrBlank() ->
+                        listOfNotNull(member.userId?.prenom, member.userId?.nom).joinToString(" ").trim()
+                    !member.prenom.isNullOrBlank() || !member.nom.isNullOrBlank() ->
+                        listOfNotNull(member.prenom, member.nom).joinToString(" ").trim()
+                    !member.userId?.email.isNullOrBlank() -> member.userId?.email ?: "Utilisateur"
+                    !member.email.isNullOrBlank() -> member.email
+                    else -> "Utilisateur"
+                }
                 Column {
                     Text(
-                        text = member.userName,
+                        text = userName,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface

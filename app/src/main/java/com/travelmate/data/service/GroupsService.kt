@@ -226,7 +226,12 @@ class GroupsService @Inject constructor(
             val response = groupsApi.getGroupById(groupId)
 
             if (response.isSuccessful && response.body() != null) {
-                val group = response.body()!!
+                var group = response.body()!!
+                val userId = getUserId()
+                // Si l'utilisateur est dans la liste des membres, forcer membershipStatus à 'active'
+                if (group.members.any { it == userId }) {
+                    group = group.copy(membershipStatus = "active")
+                }
                 _currentGroup.value = group
                 Result.success(group)
             } else {
@@ -391,6 +396,10 @@ class GroupsService @Inject constructor(
 
             if (response.isSuccessful) {
                 Log.d("GroupsService", "✅ Member approved")
+                // Rafraîchir le groupe et les membres pour mettre à jour le statut
+                kotlinx.coroutines.delay(500)
+                getGroupById(groupId)
+                getGroupMembers(groupId)
             } else {
                 Log.e("GroupsService", "❌ Error approving member: ${response.code()}")
             }

@@ -32,7 +32,7 @@ fun PendingRequestCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
@@ -45,16 +45,31 @@ fun PendingRequestCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Avatar
-            val userName = "${request.userId.nom ?: ""} ${request.userId.prenom ?: ""}".trim()
-            AsyncImage(
-                model = request.userId.photo ?: "https://ui-avatars.com/api/?name=${userName}",
-                contentDescription = null,
+            val userName = listOfNotNull(request.userId.prenom, request.userId.nom).joinToString(" ").ifEmpty { request.userId.name ?: "Utilisateur" }
+            val avatarUrl = request.userId.avatar ?: request.userId.photo
+            Box(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(ColorPrimary.copy(alpha = 0.1f)),
-                contentScale = ContentScale.Crop
-            )
+                    .background(ColorPrimary),
+                contentAlignment = Alignment.Center
+            ) {
+                if (!avatarUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = avatarUrl,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp)
+                    )
+                } else {
+                    val initial = (request.userId.nom?.firstOrNull() ?: 'U').toString()
+                    Text(
+                        text = initial,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                }
+            }
 
             // Infos utilisateur
             Column(
@@ -62,23 +77,20 @@ fun PendingRequestCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = userName.ifEmpty { "Utilisateur" },
+                    text = userName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = ColorTextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-
                 Text(
                     text = request.userId.email ?: "",
                     fontSize = 13.sp,
-                    color = ColorTextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-
-                // Date de la demande
                 Text(
                     text = "Il y a ${getTimeAgo(request.joinedAt)}",
                     fontSize = 12.sp,
-                    color = ColorTextSecondary.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -89,7 +101,7 @@ fun PendingRequestCard(
                 Button(
                     onClick = onApprove,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = ColorSuccess
+                        containerColor = ColorPrimary
                     ),
                     modifier = Modifier.width(100.dp),
                     contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp)
@@ -100,7 +112,7 @@ fun PendingRequestCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Accepter", fontSize = 13.sp)
+                    Text("Accepter", fontSize = 13.sp, color = Color.White)
                 }
 
                 OutlinedButton(

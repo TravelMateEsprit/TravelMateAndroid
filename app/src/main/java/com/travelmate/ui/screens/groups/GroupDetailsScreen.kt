@@ -73,24 +73,10 @@ fun GroupDetailsScreen(
     var typingJob: Job? by remember { mutableStateOf(null) }
 
     val context = LocalContext.current
-
-    // ✅ NEW: Use group members from ViewModel (already connected!)
     val members by viewModel.groupMembers.collectAsState()
     var showMembersDialog by remember { mutableStateOf(false) }
     val prefs = context.getSharedPreferences("travelmate_prefs", android.content.Context.MODE_PRIVATE)
     val currentUserId = prefs.getString("user_id", "") ?: ""
-
-    // ✅ DEBUG - Afficher toutes les clés
-    LaunchedEffect(Unit) {
-        android.util.Log.d("DEBUG_TOKEN", "=== SHARED PREFERENCES ===")
-        prefs.all.forEach { (key, value) ->
-            if (value is String) {
-                android.util.Log.d("DEBUG_TOKEN", "  $key: ${value.take(50)}...")
-            } else {
-                android.util.Log.d("DEBUG_TOKEN", "  $key: $value")
-            }
-        }
-    }
 
     var messageContent by remember { mutableStateOf("") }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -103,8 +89,6 @@ fun GroupDetailsScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var isSendingMessage by remember { mutableStateOf(false) }
     var hasImageBeenProcessed by remember { mutableStateOf(false) }
-
-    // États pour le dialog des réactions détaillées
     var showReactionDetailsDialog by remember { mutableStateOf(false) }
     var reactionDetailsMessage by remember { mutableStateOf<MessageGroupe?>(null) }
 
@@ -155,13 +139,10 @@ fun GroupDetailsScreen(
                 Log.d("GroupDetailsScreen", "📤 Image selected, uploading: $uri")
                 hasImageBeenProcessed = true
                 isSendingMessage = true
-                
                 viewModel.createMessageWithImage(groupId, messageContent, uri)
-                
                 messageContent = ""
                 selectedImageUri = null
                 isSendingMessage = false
-                
                 Log.d("GroupDetailsScreen", "✅ Image upload completed")
             }
         }
@@ -169,6 +150,68 @@ fun GroupDetailsScreen(
 
     val isCreator = currentGroup?.createdBy == currentUserId
 
+    // === RESTRICTION D'ACCÈS À LA CONVERSATION ===
+    val membershipStatus = currentGroup?.membershipStatus
+    if (membershipStatus != "active" && !isCreator) {
+        var demandeEnvoyee by remember { mutableStateOf(false) }
+        val context = LocalContext.current
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
+                Surface(modifier = Modifier.size(100.dp), shape = CircleShape, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) {
+                    Icon(Icons.Default.Lock, null, modifier = Modifier.fillMaxSize().padding(24.dp), tint = MaterialTheme.colorScheme.primary)
+                }
+                Spacer(Modifier.height(24.dp))
+                Text("Accès réservé aux membres du groupe", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(8.dp))
+                when {
+                    demandeEnvoyee -> {
+                        Text("Demande envoyée !", fontSize = 16.sp, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center)
+                        Spacer(Modifier.height(16.dp))
+                        Button(onClick = { onBack() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+                            Text("Retour à la liste des groupes", color = MaterialTheme.colorScheme.onPrimary)
+                        }
+                    }
+                    membershipStatus == "pending" -> {
+                        Text("Votre demande d'adhésion est en attente d'approbation.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                        Spacer(Modifier.height(16.dp))
+                        Button(onClick = { onBack() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+                            Text("Retour à la liste des groupes", color = MaterialTheme.colorScheme.onPrimary)
+                        }
+                    }
+                    membershipStatus == "banned" -> {
+                        Text("Vous avez été banni de ce groupe.", fontSize = 14.sp, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+                        Spacer(Modifier.height(16.dp))
+                        Button(onClick = { onBack() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+                            Text("Retour à la liste des groupes", color = MaterialTheme.colorScheme.onPrimary)
+                        }
+                    }
+                    else -> {
+                        Button(
+                            onClick = {
+                                coroutineScope.launch {
+                                    viewModel.joinGroup(groupId)
+                                    demandeEnvoyee = true
+                                    kotlinx.coroutines.delay(1200)
+                                    onBack()
+                                }
+                            },
+                            enabled = membershipStatus != "pending",
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("Demander à rejoindre le groupe", color = MaterialTheme.colorScheme.onPrimary)
+                        }
+                        Spacer(Modifier.height(16.dp))
+                        OutlinedButton(onClick = { onBack() }) {
+                            Text("Retour à la liste des groupes")
+                        }
+                    }
+                }
+            }
+        }
+        return
+    }
+
+    // === UI normale si membre accepté ===
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {

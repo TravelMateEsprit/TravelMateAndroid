@@ -414,7 +414,11 @@ fun NavGraph(
             val groupId = backStackEntry.arguments?.getString("groupId") ?: return@composable
             GroupDetailsScreen(
                 groupId = groupId,
-                onBack = { navController.popBackStack() },
+                onBack = {
+                    navController.navigate("groups") {
+                        popUpTo("groups") { inclusive = false }
+                    }
+                },
                 onNavigateToMembers = { gid ->
                     navController.navigate("groupMembers/$gid")
                 }

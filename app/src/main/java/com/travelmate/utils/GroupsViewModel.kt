@@ -99,13 +99,18 @@ class GroupsViewModel @Inject constructor(
                 if (newMessage != null) {
                     Log.d("GroupsViewModel", "📨 New message via WebSocket: ${newMessage.content}")
 
+                    // Ajout local immédiat
                     val currentMessages = _groupMessages.value.toMutableList()
                     currentMessages.removeAll { it.id.startsWith("temp_") }
-
                     if (!currentMessages.any { it.id == newMessage.id }) {
                         currentMessages.add(newMessage)
                         _groupMessages.value = currentMessages
                         Log.d("GroupsViewModel", "✅ Message ajouté à la liste (total: ${currentMessages.size})")
+                    }
+
+                    // Recharge la liste complète depuis l'API pour garantir la synchro
+                    currentGroup.value?._id?.let { groupId ->
+                        loadGroupMessages(groupId)
                     }
 
                     chatSocketService.resetNewMessage()
@@ -338,14 +343,30 @@ class GroupsViewModel @Inject constructor(
             try {
                 Log.d("GroupsViewModel", "📤 Envoi message via API REST...")
 
-                // ✅ 1. Sauvegarder via API REST
+                // Ajout d'un message temporaire localement pour affichage instantané
+                val tempId = "temp_${System.currentTimeMillis()}"
+                val tempMessage = MessageGroupe(
+                    id = tempId,
+                    groupId = groupId,
+                    authorId = AuthorInfo(id = currentUserId),
+                    content = content,
+                    images = emptyList(),
+                    reactions = emptyList(),
+                    status = "publie",
+                    createdAt = System.currentTimeMillis().toString(),
+                    updatedAt = "",
+                    tempId = tempId
+                )
+                val currentMessages = _groupMessages.value.toMutableList()
+                currentMessages.add(tempMessage)
+                _groupMessages.value = currentMessages
+
+                // 1. Sauvegarder via API REST
                 val result = groupsService.createMessage(groupId, content, emptyList())
 
                 if (result.isSuccess) {
                     Log.d("GroupsViewModel", "✅ Message sauvegardé en BDD")
-                    
-                    // ✅ 2. Recharger les messages pour obtenir la version complète avec populate
-                    loadGroupMessages(groupId)
+                    // Ne pas recharger la liste, laisser le WebSocket gérer l'ajout réel
                 } else {
                     val errorMsg = result.exceptionOrNull()?.message ?: "Erreur inconnue"
                     Log.e("GroupsViewModel", "❌ Erreur API: $errorMsg")
