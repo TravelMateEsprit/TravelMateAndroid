@@ -76,7 +76,7 @@ fun WelcomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(top = 60.dp)
             ) {
-                                                                // Logo animé
+                // Logo animé
                 AnimatedVisibility(
                     visible = visible,
                     enter = scaleIn(
@@ -87,14 +87,16 @@ fun WelcomeScreen(
                     ) + fadeIn()
                 ) {
                     Box(
-                        modifier = Modifier.size(180.dp),
+                        modifier = Modifier
+                            .size(180.dp)
+                            .clip(RoundedCornerShape(28.dp)), // <-- MODIFICATION ICI : Ajout du Border Radius
                         contentAlignment = Alignment.Center
                     ) {
-                    Image(
+                        Image(
                             painter = painterResource(id = com.travelmate.R.drawable.logo_travelmate),
-                        contentDescription = "TravelMate logo",
+                            contentDescription = "TravelMate logo",
                             modifier = Modifier.fillMaxSize()
-                    )
+                        )
                     }
                 }
                 

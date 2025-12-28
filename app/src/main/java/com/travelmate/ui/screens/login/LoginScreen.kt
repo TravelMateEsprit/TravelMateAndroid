@@ -234,12 +234,10 @@ fun LoginScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Logo
+            // --- SECTION LOGO FIXÉE ---
             AnimatedVisibility(
                 visible = visible,
-                enter = scaleIn(animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy
-                )) + fadeIn()
+                enter = scaleIn(animationSpec = spring(Spring.DampingRatioMediumBouncy)) + fadeIn()
             ) {
                 Box(
                     modifier = Modifier
@@ -248,14 +246,16 @@ fun LoginScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
-                        modifier = Modifier.size(120.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(RoundedCornerShape(28.dp)), // <-- MODIFICATION ICI : Arrondi des coins
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
                             painter = painterResource(id = com.travelmate.R.drawable.logo_travelmate),
-                        contentDescription = "TravelMate logo",
+                            contentDescription = "TravelMate logo",
                             modifier = Modifier.fillMaxSize()
-                    )
+                        )
                     }
                 }
             }

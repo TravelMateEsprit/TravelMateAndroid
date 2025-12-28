@@ -201,12 +201,10 @@ fun ForgotPasswordScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Logo
+            // --- SECTION LOGO FIXÉE ---
             AnimatedVisibility(
                 visible = visible,
-                enter = scaleIn(animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy
-                )) + fadeIn()
+                enter = scaleIn(animationSpec = spring(Spring.DampingRatioMediumBouncy)) + fadeIn()
             ) {
                 Box(
                     modifier = Modifier
@@ -215,14 +213,16 @@ fun ForgotPasswordScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
-                        modifier = Modifier.size(120.dp),
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(RoundedCornerShape(28.dp)), // <-- MODIFICATION ICI : Arrondi des coins
                         contentAlignment = Alignment.Center
                     ) {
-                    Image(
+                        Image(
                             painter = painterResource(id = com.travelmate.R.drawable.logo_travelmate),
-                        contentDescription = "TravelMate logo",
+                            contentDescription = "TravelMate logo",
                             modifier = Modifier.fillMaxSize()
-                    )
+                        )
                     }
                 }
             }
@@ -308,27 +308,34 @@ fun ForgotPasswordScreen(
                     
                     // Retour à la connexion
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "Vous vous souvenez de votre mot de passe ? ",
-                            fontSize = 14.sp,
-                            color = ColorTextSecondary
-                        )
-                        TextButton(
-                            onClick = onNavigateBack,
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
-                        ) {
-                            Text(
-                                "Se connecter",
-                                color = ColorAccent,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = 16.dp), // Ajoute un peu d'espace au dessus
+    horizontalArrangement = Arrangement.Center,
+    verticalAlignment = Alignment.CenterVertically
+) {
+    Text(
+        text = "Vous vous souvenez de votre mot de passe ? ",
+        fontSize = 14.sp,
+        color = ColorTextSecondary,
+        textAlign = TextAlign.Center,
+        // Le weight(1f, fill = false) permet au texte de prendre 
+        // sa place mais de laisser le bouton exister
+        modifier = Modifier.weight(1f, fill = false) 
+    )
+    TextButton(
+        onClick = onNavigateBack,
+        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp)
+    ) {
+        Text(
+            text = "Se connecter",
+            color = ColorAccent,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+            softWrap = false // Empêche le bouton de se couper
+        )
+    }
+}
                 }
             }
             

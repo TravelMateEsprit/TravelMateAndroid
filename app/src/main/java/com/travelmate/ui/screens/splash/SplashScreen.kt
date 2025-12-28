@@ -4,13 +4,18 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,28 +25,29 @@ import com.travelmate.ui.theme.ColorPrimary
 import com.travelmate.ui.theme.ColorSecondary
 import kotlinx.coroutines.delay
 
-/**
- * Splash Screen moderne avec animations
- * Utilise la palette de couleurs TravelMate : Vert Sauge (#8CA493) et Terre Cuite (#C88C78)
- */
 @Composable
 fun SplashScreen(
     onNavigateToNext: () -> Unit
 ) {
-    // États d'animation
     val alphaAnim = remember { Animatable(0f) }
     val scaleAnim = remember { Animatable(0.3f) }
     
-    LaunchedEffect(key1 = true) {
-        // Animation de fade-in pour le logo
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse"
+    )
+
+    LaunchedEffect(Unit) {
         alphaAnim.animateTo(
             targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = 800,
-                easing = FastOutSlowInEasing
-            )
+            animationSpec = tween(800, easing = FastOutSlowInEasing)
         )
-        // Animation de scale avec effet rebond
         scaleAnim.animateTo(
             targetValue = 1f,
             animationSpec = spring(
@@ -49,21 +55,16 @@ fun SplashScreen(
                 stiffness = Spring.StiffnessLow
             )
         )
-        // Attendre avant de naviguer vers l'écran suivant
-        delay(2000)
+        delay(2500)
         onNavigateToNext()
     }
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                // Gradient vertical avec la palette TravelMate originale
                 brush = Brush.verticalGradient(
-                    colors = listOf(
-                        ColorPrimary,    // #2F80ED - Bleu primaire
-                        ColorSecondary  // #56CCF2 - Cyan secondaire
-                    )
+                    colors = listOf(ColorPrimary, ColorSecondary)
                 )
             ),
         contentAlignment = Alignment.Center
@@ -75,39 +76,45 @@ fun SplashScreen(
                 .alpha(alphaAnim.value)
                 .scale(scaleAnim.value)
         ) {
-            // Logo circulaire
-            Box(
-                modifier = Modifier.size(150.dp),
-                contentAlignment = Alignment.Center
+            
+            // --- FIX : Utilisation de shadowElevation au lieu de .shadow() ---
+            Surface(
+                modifier = Modifier
+                    .size(160.dp)
+                    .scale(pulseScale),
+                shape = RoundedCornerShape(35.dp),
+                color = Color.White,
+                shadowElevation = 12.dp // On utilise la propriété native de Surface
             ) {
                 Image(
                     painter = painterResource(id = TravelMateR.drawable.logo_travelmate),
                     contentDescription = "TravelMate Logo",
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(35.dp)),
+                    // ContentScale.Crop permet de supprimer les bords gris internes de votre image source
+                    contentScale = ContentScale.Crop 
                 )
             }
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // Nom de l'application avec animation
-            androidx.compose.material3.Text(
+
+            Spacer(modifier = Modifier.height(35.dp))
+
+            Text(
                 text = "TravelMate",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 42.sp,
+                fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
-                letterSpacing = 1.sp
+                letterSpacing = 1.5.sp
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
-            // Tagline
-            androidx.compose.material3.Text(
+
+            Text(
                 text = "Votre compagnon de voyage",
-                fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.9f),
-                fontWeight = FontWeight.Light
+                fontSize = 18.sp,
+                color = Color.White.copy(alpha = 0.85f),
+                fontWeight = FontWeight.Medium
             )
         }
     }
 }
-
