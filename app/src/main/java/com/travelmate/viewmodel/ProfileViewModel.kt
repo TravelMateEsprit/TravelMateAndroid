@@ -95,4 +95,9 @@ class ProfileViewModel @Inject constructor(
             _isLoading.value = false
         }
     }
+
+    fun logout() {
+        userPreferences.clearAll()
+        _userProfile.value = null
+    }
 }

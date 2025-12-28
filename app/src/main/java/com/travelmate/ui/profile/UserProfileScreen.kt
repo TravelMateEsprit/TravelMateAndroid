@@ -355,6 +355,7 @@ fun UserProfileScreen(
             onDismiss = { showLogoutDialog = false },
             onConfirm = {
                                 showLogoutDialog = false
+                                viewModel.logout()
                                 onLogout()
                             },
             title = "Déconnexion",

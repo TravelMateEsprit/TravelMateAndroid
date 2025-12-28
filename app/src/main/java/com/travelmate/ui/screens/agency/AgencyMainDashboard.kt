@@ -328,44 +328,60 @@ fun OverviewSection(
     onSectionClick: (DashboardSection) -> Unit,
     navController: androidx.navigation.NavController
 ) {
+    var isHeaderVisible by remember { mutableStateOf(true) }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Welcome Header
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Transparent
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(ColorPrimary, ColorPrimary.copy(alpha = 0.7f))
-                            ),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(24.dp)
+        // Cet état sera réinitialisé à true à chaque reconnexion/rechargement du composant
+
+        if (isHeaderVisible) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                 ) {
-                    Column {
-                        Text(
-                            "Bienvenue sur votre tableau de bord",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "Gérez votre agence efficacement",
-                            fontSize = 14.sp,
-                            color = Color.White.copy(alpha = 0.9f)
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(ColorPrimary, ColorPrimary.copy(alpha = 0.7f))
+                                ),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .padding(24.dp)
+                    ) {
+                        // Le contenu textuel
+                        Column(modifier = Modifier.fillMaxWidth().padding(end = 32.dp)) { 
+                            Text(
+                                "Bienvenue sur votre tableau de bord",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "Gérez votre agence efficacement",
+                                fontSize = 14.sp,
+                                color = Color.White.copy(alpha = 0.9f)
+                            )
+                        }
+
+                        // Le bouton "X" pour fermer
+                        IconButton(
+                            onClick = { isHeaderVisible = false },
+                            modifier = Modifier.align(Alignment.TopEnd) // Positionne en haut à droite
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Fermer",
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
             }
@@ -473,14 +489,7 @@ fun OverviewSection(
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToInsuranceForm
                 )
-                QuickActionCard(
-                    icon = Icons.Default.CalendarMonth,
-                    title = "Réservations",
-                    subtitle = "Voir les réservations",
-                    color = Color(0xFF4CAF50),
-                    modifier = Modifier.weight(1f),
-                    onClick = { onSectionClick(DashboardSection.BOOKINGS) }
-                )
+               
             }
         }
         
@@ -498,14 +507,7 @@ fun OverviewSection(
                     modifier = Modifier.weight(1f),
                     onClick = { navController.navigate(Constants.Routes.AGENCY_CLAIMS) }
                 )
-                QuickActionCard(
-                    icon = Icons.Default.People,
-                    title = "Clients",
-                    subtitle = "Voir les clients",
-                    color = Color(0xFF9C27B0),
-                    modifier = Modifier.weight(1f),
-                    onClick = { onSectionClick(DashboardSection.CLIENTS) }
-                )
+                
             }
         }
 

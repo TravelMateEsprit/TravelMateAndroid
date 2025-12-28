@@ -2,23 +2,21 @@ package com.travelmate.ui.screens.welcome
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -35,191 +33,159 @@ fun WelcomeScreen(
     socketService: SocketService
 ) {
     val isConnected by socketService.connectionState.collectAsState()
-    
-    // Animations d'entrée
     var visible by remember { mutableStateOf(false) }
+    val isDark = isSystemInDarkTheme()
+
     LaunchedEffect(Unit) {
         visible = true
-    }
-    
-    // Gérer le cycle de vie du socket
-    DisposableEffect(Unit) {
         socketService.connect()
-        onDispose {
-            // Ne pas déconnecter ici car on veut garder la connexion active
-        }
     }
-    
+
+    // Palette de couleurs dynamique
+    val gradientColors = if (isDark) {
+        listOf(Color(0xFF0D47A1), Color(0xFF000000))
+    } else {
+        listOf(Color(0xFF1E88E5), Color(0xFF64B5F6), Color(0xFFBBDEFB))
+    }
+
+    val cardBackgroundColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.secondary
-                    ),
-                    start = Offset(0f, 0f),
-                    end = Offset(1000f, 1500f)
-                )
-            )
+            .background(brush = Brush.verticalGradient(colors = gradientColors))
     ) {
+        // Éléments décoratifs d'arrière-plan (Cercles subtils pour la profondeur)
+        Box(
+            modifier = Modifier
+                .size(400.dp)
+                .offset(x = (-150).dp, y = (-100).dp)
+                .background(Color.White.copy(alpha = 0.07f), CircleShape)
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(horizontal = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Top Section avec Logo et Status
+            
+            // --- SECTION TEXTE UNIQUEMENT ---
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 60.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 120.dp) // Plus d'espace en haut maintenant qu'il n'y a plus de logo
             ) {
-                // Logo animé
                 AnimatedVisibility(
                     visible = visible,
-                    enter = scaleIn(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ) + fadeIn()
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(180.dp)
-                            .clip(RoundedCornerShape(28.dp)), // <-- MODIFICATION ICI : Ajout du Border Radius
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = com.travelmate.R.drawable.logo_travelmate),
-                            contentDescription = "TravelMate logo",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // Titre animé
-                AnimatedVisibility(
-                    visible = visible,
-                    enter = slideInVertically(
-                        initialOffsetY = { -50 },
-                        animationSpec = tween(600)
-                    ) + fadeIn()
+                    enter = fadeIn(tween(1000)) + slideInVertically(initialOffsetY = { -20 })
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "TravelMate",
-                            fontSize = 42.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 54.sp, // Taille augmentée pour compenser l'absence de logo
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White,
+                            letterSpacing = (-1.5).sp,
                             textAlign = TextAlign.Center
                         )
                         
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         
                         Text(
-                            text = "Votre compagnon de voyage",
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                            text = "Explorez le monde avec un allié",
+                            fontSize = 20.sp,
+                            color = Color.White.copy(alpha = 0.9f),
+                            fontWeight = FontWeight.Light,
                             textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Light
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(32.dp))
-                
-                // Indicateur de connexion seulement si non connecté
-                if (!isConnected) {
-                    AnimatedVisibility(
-                        visible = visible,
-                        enter = fadeIn(animationSpec = tween(800)),
-                        exit = fadeOut()
-                    ) {
-                        ModernConnectionStatus(
-                            isConnected = isConnected,
-                            modifier = Modifier.background(
-                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f),
-                                shape = RoundedCornerShape(24.dp)
-                            ).padding(2.dp)
+                            modifier = Modifier.padding(horizontal = 20.dp)
                         )
                     }
                 }
             }
-            
-            // Bottom Section avec Boutons dans une Card
+
+            // --- SECTION ACTIONS (Carte du bas) ---
             AnimatedVisibility(
                 visible = visible,
-                enter = slideInVertically(
-                    initialOffsetY = { 100 },
-                    animationSpec = tween(700, delayMillis = 200)
-                ) + fadeIn()
+                enter = slideInVertically(initialOffsetY = { 150 }) + fadeIn(tween(1200))
             ) {
-                ModernCard(
-                    backgroundColor = MaterialTheme.colorScheme.surface,
-                    cornerRadius = 24.dp,
-                    elevation = 8.dp,
-                    modifier = Modifier.padding(bottom = 32.dp)
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 50.dp),
+                    shape = RoundedCornerShape(35.dp),
+                    color = cardBackgroundColor.copy(alpha = if (isDark) 0.9f else 1f),
+                    shadowElevation = if (isDark) 0.dp else 12.dp
                 ) {
-                    Text(
-                        text = "Commencez votre aventure",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    // Bouton inscription utilisateur
-                    ModernButton(
-                        text = "S'inscrire en tant qu'Utilisateur",
-                        onClick = onNavigateToUserRegistration,
-                        enabled = isConnected,
-                        icon = Icons.Default.Person,
-                        backgroundColor = MaterialTheme.colorScheme.primary
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // Bouton inscription agence
-                    ModernButton(
-                        text = "S'inscrire en tant qu'Agence",
-                        onClick = onNavigateToAgencyRegistration,
-                        enabled = isConnected,
-                        icon = Icons.Default.Business,
-                        backgroundColor = ColorAccent
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // Bouton connexion (outline)
-                    ModernOutlineButton(
-                        text = "Se connecter",
-                        onClick = onNavigateToLogin,
-                        enabled = isConnected,
-                        icon = Icons.Default.Login
-                    )
-                    
-                    // Message d'attente si non connecté
-                    AnimatedVisibility(
-                        visible = !isConnected,
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
+                    Column(
+                        modifier = Modifier.padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(
-                            modifier = Modifier.padding(top = 16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Text(
+                            text = "Prêt pour l'aventure ?",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        // Bouton Voyageur
+                        ModernButton(
+                            text = "Compte Voyageur",
+                            onClick = onNavigateToUserRegistration,
+                            enabled = isConnected,
+                            icon = Icons.Outlined.PersonOutline,
+                            modifier = Modifier.fillMaxWidth().height(58.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Bouton Agence
+                        ModernButton(
+                            text = "Espace Agence",
+                            onClick = onNavigateToAgencyRegistration,
+                            enabled = isConnected,
+                            icon = Icons.Default.BusinessCenter,
+                            backgroundColor = ColorAccent,
+                            modifier = Modifier.fillMaxWidth().height(58.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Lien de connexion
+                        TextButton(
+                            onClick = onNavigateToLogin,
+                            enabled = isConnected,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(28.dp),
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "Déjà membre ? ",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    "Connexion",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+
+                        // Status de connexion discret
+                        if (!isConnected) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.5f)
+                                    .height(3.dp)
+                                    .clip(CircleShape),
                                 color = ColorAccent,
-                                strokeWidth = 3.dp
+                                trackColor = ColorAccent.copy(alpha = 0.2f)
                             )
                         }
                     }
