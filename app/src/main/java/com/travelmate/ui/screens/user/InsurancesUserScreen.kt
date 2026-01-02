@@ -3,12 +3,15 @@ package com.travelmate.ui.screens.user
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -53,6 +56,10 @@ fun InsurancesUserScreen(
     var selectedPriceRange by remember { mutableStateOf(0f..2000f) }
     var selectedDestination by remember { mutableStateOf<String?>(null) }
     var selectedDuration by remember { mutableStateOf<String?>(null) }
+    
+    // États pour la sélection et comparaison
+    var selectedInsurances by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var showComparisonDialog by remember { mutableStateOf(false) }
     
     LaunchedEffect(Unit) {
         viewModel.loadAllInsurances()
@@ -119,6 +126,33 @@ fun InsurancesUserScreen(
         contentVisible = true
     }
     
+    Scaffold(
+        floatingActionButton = {
+            // Bouton de comparaison (seulement si des assurances sont sélectionnées)
+            if (selectedInsurances.isNotEmpty()) {
+                ExtendedFloatingActionButton(
+                    onClick = { showComparisonDialog = true },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    icon = {
+                        Icon(
+                            Icons.Default.AutoAwesome,
+                            contentDescription = "Comparer avec IA",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = "Comparer avec IA (${selectedInsurances.size})",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+                )
+            }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { scaffoldPadding ->
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -783,6 +817,19 @@ fun InsurancesUserScreen(
                                     }
                                 } else null,
                                 isInMySubscriptionsTab = selectedTabIndex == 1,
+                                // Nouveaux paramètres pour la sélection
+                                isSelected = selectedInsurances.contains(insurance._id),
+                                onSelectionToggle = {
+                                    selectedInsurances = if (selectedInsurances.contains(insurance._id)) {
+                                        selectedInsurances - insurance._id
+                                    } else {
+                                        if (selectedInsurances.size < 3) {
+                                            selectedInsurances + insurance._id
+                                        } else {
+                                            selectedInsurances
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
                             )
                         }
@@ -798,6 +845,471 @@ fun InsurancesUserScreen(
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
         )
+    }
+    
+    // Dialog de comparaison IA
+    if (showComparisonDialog) {
+        InsuranceAIComparisonDialog(
+            insurances = insurances.filter { selectedInsurances.contains(it._id) },
+            onDismiss = { showComparisonDialog = false },
+            onClearSelection = {
+                selectedInsurances = emptySet()
+                showComparisonDialog = false
+            }
+        )
+    }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun InsuranceAIComparisonDialog(
+    insurances: List<com.travelmate.data.models.Insurance>,
+    onDismiss: () -> Unit,
+    onClearSelection: () -> Unit
+) {
+    val compareViewModel: com.travelmate.viewmodel.CompareInsurancesViewModel = hiltViewModel()
+    val comparisonResult by compareViewModel.comparisonResult.collectAsState()
+    val isLoading by compareViewModel.isLoading.collectAsState()
+    
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    
+    LaunchedEffect(insurances) {
+        compareViewModel.clearSelection()
+        insurances.forEach { compareViewModel.toggleInsuranceSelection(it) }
+        compareViewModel.compareInsurances()
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+        dragHandle = null,
+        modifier = Modifier.fillMaxHeight(0.95f)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(MaterialTheme.colorScheme.primary, ColorSecondary)
+                        )
+                    )
+                    .padding(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "Comparaison IA",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                text = "${insurances.size} assurance${if (insurances.size > 1) "s" else ""}",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                            )
+                        }
+                    }
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Fermer",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+            }
+
+            // Content
+            Box(modifier = Modifier.weight(1f)) {
+                when {
+                    isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Card(
+                                modifier = Modifier.padding(32.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                ),
+                                shape = RoundedCornerShape(24.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(40.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                                ) {
+                                    // Icône IA animée
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                        modifier = Modifier.size(80.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(
+                                                Icons.Default.AutoAwesome,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(40.dp)
+                                            )
+                                        }
+                                    }
+                                    
+                                    CircularProgressIndicator(
+                                        color = MaterialTheme.colorScheme.primary,
+                                        strokeWidth = 3.dp,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                    
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            "Analyse en cours...",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 20.sp,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                        Text(
+                                            "L'IA compare vos ${insurances.size} assurances",
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    comparisonResult != null -> {
+                        val scrollState = rememberScrollState()
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(scrollState)
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            // Résumé IA modernisé
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                                ),
+                                shape = RoundedCornerShape(20.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(24.dp)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f),
+                                            modifier = Modifier.size(48.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    Icons.Default.AutoAwesome,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.tertiary,
+                                                    modifier = Modifier.size(28.dp)
+                                                )
+                                            }
+                                        }
+                                        Text(
+                                            "Analyse IA",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 20.sp,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        )
+                                    }
+                                    Spacer(Modifier.height(16.dp))
+                                    Text(
+                                        comparisonResult!!.summary,
+                                        fontSize = 15.sp,
+                                        lineHeight = 22.sp,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
+                            
+                            // Meilleur choix modernisé
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                ),
+                                shape = RoundedCornerShape(20.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                                modifier = Modifier.border(
+                                    width = 3.dp,
+                                    color = Color(0xFF10B981),
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(24.dp)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = Color(0xFF10B981).copy(alpha = 0.15f),
+                                            modifier = Modifier.size(48.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    Icons.Default.EmojiEvents,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFF059669),
+                                                    modifier = Modifier.size(28.dp)
+                                                )
+                                            }
+                                        }
+                                        Text(
+                                            "Meilleur Choix",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 20.sp,
+                                            color = Color(0xFF047857)
+                                        )
+                                    }
+                                    Spacer(Modifier.height(16.dp))
+                                    Text(
+                                        comparisonResult!!.bestChoice.name,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(Modifier.height(8.dp))
+                                    Text(
+                                        comparisonResult!!.bestChoice.reason,
+                                        fontSize = 15.sp,
+                                        lineHeight = 22.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                            
+                            // Analyse détaillée titre
+                            Text(
+                                "Analyse Détaillée",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                            
+                            // Détails modernisés
+                            comparisonResult!!.insurances.forEach { comp ->
+                                val insurance = insurances.find { it._id == comp.id }
+                                Card(
+                                    shape = RoundedCornerShape(20.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(20.dp)) {
+                                        // Header avec score
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    comp.name,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 17.sp
+                                                )
+                                                if (insurance != null) {
+                                                    Text(
+                                                        "${insurance.price.toInt()} TND • ${insurance.duration}",
+                                                        fontSize = 13.sp,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        modifier = Modifier.padding(top = 4.dp)
+                                                    )
+                                                }
+                                            }
+                                            // Score badge
+                                            Surface(
+                                                shape = RoundedCornerShape(12.dp),
+                                                color = when {
+                                                    comp.overallScore >= 8.0 -> SuccessGreen.copy(alpha = 0.15f)
+                                                    comp.overallScore >= 6.0 -> AccentOrange.copy(alpha = 0.15f)
+                                                    else -> ErrorRed.copy(alpha = 0.15f)
+                                                },
+                                                border = androidx.compose.foundation.BorderStroke(
+                                                    1.5.dp,
+                                                    when {
+                                                        comp.overallScore >= 8.0 -> SuccessGreen
+                                                        comp.overallScore >= 6.0 -> AccentOrange
+                                                        else -> ErrorRed
+                                                    }
+                                                )
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.Star,
+                                                        contentDescription = null,
+                                                        tint = when {
+                                                            comp.overallScore >= 8.0 -> SuccessGreen
+                                                            comp.overallScore >= 6.0 -> AccentOrange
+                                                            else -> ErrorRed
+                                                        },
+                                                        modifier = Modifier.size(18.dp)
+                                                    )
+                                                    Text(
+                                                        String.format("%.1f/10", comp.overallScore),
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 15.sp,
+                                                        color = when {
+                                                            comp.overallScore >= 8.0 -> SuccessGreen
+                                                            comp.overallScore >= 6.0 -> AccentOrange
+                                                            else -> ErrorRed
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        
+                                        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                                        
+                                        // Points forts
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Default.ThumbUp,
+                                                contentDescription = null,
+                                                tint = SuccessGreen,
+                                                modifier = Modifier.size(22.dp)
+                                            )
+                                            Text(
+                                                "Points Forts",
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 16.sp,
+                                                color = SuccessGreen
+                                            )
+                                        }
+                                        Spacer(Modifier.height(12.dp))
+                                        comp.strengths.forEach { strength ->
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                                modifier = Modifier.padding(start = 8.dp)
+                                            ) {
+                                                Text(
+                                                    "•",
+                                                    color = SuccessGreen,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 16.sp
+                                                )
+                                                Text(
+                                                    strength,
+                                                    fontSize = 14.sp,
+                                                    lineHeight = 20.sp,
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                            }
+                                            Spacer(Modifier.height(6.dp))
+                                        }
+                                        
+                                        Spacer(Modifier.height(16.dp))
+                                        
+                                        // Points faibles
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Default.ThumbDown,
+                                                contentDescription = null,
+                                                tint = ErrorRed,
+                                                modifier = Modifier.size(22.dp)
+                                            )
+                                            Text(
+                                                "Points Faibles",
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 16.sp,
+                                                color = ErrorRed
+                                            )
+                                        }
+                                        Spacer(Modifier.height(12.dp))
+                                        comp.weaknesses.forEach { weakness ->
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                                modifier = Modifier.padding(start = 8.dp)
+                                            ) {
+                                                Text(
+                                                    "•",
+                                                    color = ErrorRed,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 16.sp
+                                                )
+                                                Text(
+                                                    weakness,
+                                                    fontSize = 14.sp,
+                                                    lineHeight = 20.sp,
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                            }
+                                            Spacer(Modifier.height(6.dp))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Footer - Un seul bouton Fermer
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Fermer",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
     }
 }
 
@@ -930,3 +1442,4 @@ fun CompactStatChip(
         )
     }
 }
+

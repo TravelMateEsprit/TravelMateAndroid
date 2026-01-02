@@ -37,3 +37,12 @@ val ColorBackgroundDark = Color(0xFF111827)
 val ColorSurfaceDark = Color(0xFF1F2937)
 val ColorDivider = Color(0xFFE5E7EB)
 val ColorDividerDark = Color(0xFF374151)
+
+// Legacy colors for backward compatibility - Use MaterialTheme.colorScheme instead
+val PrimaryBlue = ColorPrimary
+val AccentOrange = Color(0xFFFF9800)
+val LightBlueBackground = Color(0xFFE3F2FD)
+val TextSecondary = ColorTextSecondaryLight
+val SuccessGreen = ColorSuccess
+val ErrorRed = ColorError
+val WarningYellow = ColorWarning

@@ -165,4 +165,23 @@ class InsuranceRepository @Inject constructor(
             Result.failure(e)
         }
     }
+    
+    // ========== AI Comparison ==========
+    
+    suspend fun compareInsurances(
+        token: String,
+        insuranceIds: List<String>
+    ): Result<ComparisonResult> {
+        return try {
+            val request = CompareInsurancesRequest(insuranceIds)
+            val response = insuranceApi.compareInsurances(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to compare insurances"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

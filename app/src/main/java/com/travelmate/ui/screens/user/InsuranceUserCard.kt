@@ -1,6 +1,7 @@
 package com.travelmate.ui.screens.user
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +28,8 @@ fun InsuranceUserCard(
     onUnsubscribe: (String) -> Unit,
     onCreateClaim: ((String) -> Unit)? = null,
     isInMySubscriptionsTab: Boolean = false,
+    isSelected: Boolean = false,
+    onSelectionToggle: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var showDetailsDialog by remember { mutableStateOf(false) }
@@ -54,13 +57,23 @@ fun InsuranceUserCard(
         )
     }
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (isSelected) {
+                    Modifier.border(
+                        width = 3.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                } else Modifier
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
+            defaultElevation = if (isSelected) 4.dp else 2.dp
         )
     ) {
         Column(
@@ -68,7 +81,7 @@ fun InsuranceUserCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header compact avec nom
+            // Header compact avec nom ET CHECKBOX
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -88,6 +101,34 @@ fun InsuranceUserCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 2.dp)
                     )
+                }
+                
+                // Badge de sélection moderne
+                if (onSelectionToggle != null) {
+                    Surface(
+                        onClick = onSelectionToggle,
+                        shape = CircleShape,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            if (isSelected) {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = "Sélectionné",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Default.RadioButtonUnchecked,
+                                    contentDescription = "Non sélectionné",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
             

@@ -398,7 +398,7 @@ fun NavGraph(
             )
         }
         
-        // ✅ ========== ROUTES GROUPES ==========
+        //  ========== ROUTES GROUPES ==========
         
         // Liste des groupes
         composable("groups") {

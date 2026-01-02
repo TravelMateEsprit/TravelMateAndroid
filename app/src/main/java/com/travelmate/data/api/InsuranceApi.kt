@@ -121,6 +121,13 @@ interface InsuranceApi {
         @Body request: ReviewInsuranceRequestRequest
     ): Response<InsuranceRequest>
     
+    // ========== Endpoint IA : Comparaison d'assurances ==========
+    
+    @POST("insurances/compare")
+    suspend fun compareInsurances(
+        @Body request: CompareInsurancesRequest
+    ): Response<ComparisonResult>
+    
     // ========== Endpoints Paiement Stripe ==========
     
     // Créer un paiement (Utilisateur)
