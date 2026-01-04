@@ -204,4 +204,54 @@ class AuthRepository @Inject constructor(
             android.util.Log.d("AuthRepository", "=== updateTravelProfile FIN ===")
         }
     }
+
+    suspend fun uploadAvatar(avatarPart: okhttp3.MultipartBody.Part): Result<String> {
+        return try {
+            val response = authApi.uploadAvatar(avatarPart)
+            if (response.isSuccessful && response.body() != null) {
+                val avatarUrl = response.body()?.get("avatar")
+                if (avatarUrl != null) {
+                    Result.success(avatarUrl)
+                } else {
+                    Result.failure(Exception("Avatar URL not found in response"))
+                }
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to upload avatar"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun requestPasswordChangeCode(): Result<MessageResponse> {
+        return try {
+            val response = authApi.requestPasswordChangeCode()
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception(errorBody ?: response.message() ?: "Failed to request code"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun changePasswordWithCode(code: String, newPassword: String): Result<MessageResponse> {
+        return try {
+            val body = mapOf(
+                "code" to code,
+                "newPassword" to newPassword
+            )
+            val response = authApi.changePasswordWithCode(body)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception(errorBody ?: response.message() ?: "Failed to change password"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

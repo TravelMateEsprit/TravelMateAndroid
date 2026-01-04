@@ -263,6 +263,15 @@ fun NavGraph(
             )
         }
 
+        // Settings
+        composable(Constants.Routes.SETTINGS) {
+            com.travelmate.ui.profile.SettingsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         // Agency Profile
         composable(Constants.Routes.AGENCY_PROFILE) {
             AgencyProfileScreen(

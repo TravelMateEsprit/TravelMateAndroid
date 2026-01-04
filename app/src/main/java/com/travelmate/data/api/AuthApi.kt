@@ -67,6 +67,12 @@ interface AuthApi {
         @Body request: UpdateProfileRequest
     ): Response<User>
 
+    @Multipart
+    @PUT("auth/profile/avatar")
+    suspend fun uploadAvatar(
+        @Part avatar: MultipartBody.Part
+    ): Response<Map<String, String>>
+
     @GET("agencies/profile")
     suspend fun getAgencyProfile(): Response<User>
 
@@ -90,4 +96,12 @@ interface AuthApi {
     suspend fun updateTravelProfile(
         @Body travelProfile: TravelProfile
     ): Response<UpdateTravelProfileResponse>
+
+    @POST("auth/request-password-change-code")
+    suspend fun requestPasswordChangeCode(): Response<MessageResponse>
+
+    @PUT("auth/change-password-with-code")
+    suspend fun changePasswordWithCode(
+        @Body request: Map<String, String>
+    ): Response<MessageResponse>
 }

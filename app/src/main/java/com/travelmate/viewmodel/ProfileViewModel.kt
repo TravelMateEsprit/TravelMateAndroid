@@ -100,4 +100,24 @@ class ProfileViewModel @Inject constructor(
         userPreferences.clearAll()
         _userProfile.value = null
     }
+
+    fun uploadAvatar(avatarPart: okhttp3.MultipartBody.Part) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            
+            val result = authRepository.uploadAvatar(avatarPart)
+            result.onSuccess { avatarUrl ->
+                // Mettre à jour le profil utilisateur localement
+                _userProfile.value = _userProfile.value?.copy(avatar = avatarUrl)
+                
+                // Recharger le profil pour avoir les données à jour
+                loadProfile()
+            }.onFailure { e ->
+                _error.value = e.message
+            }
+            
+            _isLoading.value = false
+        }
+    }
 }

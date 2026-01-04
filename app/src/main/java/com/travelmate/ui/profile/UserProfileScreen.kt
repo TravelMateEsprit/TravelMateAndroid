@@ -3,6 +3,9 @@ package com.travelmate.ui.profile
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -24,17 +27,22 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.travelmate.config.AppConfig
 import com.travelmate.data.models.UpdateProfileRequest
 import com.travelmate.ui.theme.*
 import com.travelmate.viewmodel.ProfileViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 
 /**
  * User Profile Screen moderne inspiré des apps de voyage
@@ -69,6 +77,41 @@ fun UserProfileScreen(
     val context = LocalContext.current
     
     val colorScheme = MaterialTheme.colorScheme
+
+    // Image picker launcher pour l'avatar
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            try {
+                val inputStream = context.contentResolver.openInputStream(it)
+                inputStream?.let { stream ->
+                    val bytes = stream.readBytes()
+                    stream.close()
+                    
+                    val contentType = context.contentResolver.getType(uri) ?: "image/*"
+                    val requestFile = okhttp3.RequestBody.create(
+                        contentType.toMediaTypeOrNull(),
+                        bytes
+                    )
+                    val avatarPart = okhttp3.MultipartBody.Part.createFormData(
+                        "avatar",
+                        "avatar_${System.currentTimeMillis()}.jpg",
+                        requestFile
+                    )
+                    
+                    viewModel.uploadAvatar(avatarPart)
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Photo de profil mise à jour")
+                    }
+                }
+            } catch (e: Exception) {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Erreur lors de l'upload: ${e.message}")
+                }
+            }
+        }
+    }
 
     LaunchedEffect(user) {
         user?.let {
@@ -126,9 +169,13 @@ fun UserProfileScreen(
                         name = user?.name ?: "Utilisateur",
                         email = user?.email ?: "",
                         userType = user?.userType ?: "user",
+                        avatarUrl = user?.avatar,
                         onCopyEmail = {
                             copyToClipboard(context, user?.email ?: "", "Email copié")
                             showCopyToast = true
+                        },
+                        onChangeAvatar = {
+                            imagePickerLauncher.launch("image/*")
                         },
                         colorScheme = colorScheme
                     )
@@ -301,6 +348,9 @@ fun UserProfileScreen(
                             onMyClaims = {
                                 nav.navigate(com.travelmate.utils.Constants.Routes.MY_CLAIMS)
                             },
+                            onSettings = {
+                                nav.navigate(com.travelmate.utils.Constants.Routes.SETTINGS)
+                            },
                             colorScheme = colorScheme
                         )
                     }
@@ -405,7 +455,9 @@ private fun ModernProfileHeader(
     name: String,
     email: String,
     userType: String,
+    avatarUrl: String? = null,
     onCopyEmail: () -> Unit,
+    onChangeAvatar: () -> Unit = {},
     colorScheme: ColorScheme
 ) {
     val initials = name.split(" ")
@@ -413,6 +465,11 @@ private fun ModernProfileHeader(
         .mapNotNull { it.firstOrNull()?.uppercase() }
         .joinToString("")
         .ifEmpty { "U" }
+    
+    // Construire l'URL complète de l'avatar si elle existe
+    val fullAvatarUrl = avatarUrl?.let {
+        if (it.startsWith("http")) it else "${AppConfig.BASE_URL}$it"
+    }
     
         Column(
             modifier = Modifier
@@ -439,19 +496,31 @@ private fun ModernProfileHeader(
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                        text = initials,
-                        fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
-                        color = colorScheme.primary
-                    )
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!fullAvatarUrl.isNullOrEmpty()) {
+                        AsyncImage(
+                            model = fullAvatarUrl,
+                            contentDescription = "Photo de profil",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    } else {
+                        Text(
+                            text = initials,
+                            fontSize = 48.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = colorScheme.primary
+                        )
+                    }
                 }
             }
             
-            // Bouton pour changer la photo (futur)
+            // Bouton pour changer la photo
             Surface(
+                onClick = onChangeAvatar,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .size(36.dp),
@@ -836,6 +905,7 @@ private fun ModernProfileFieldItem(
 private fun RedesignedQuickActions(
     onMyRequests: () -> Unit,
     onMyClaims: () -> Unit,
+    onSettings: () -> Unit,
     colorScheme: ColorScheme
 ) {
     Column(
@@ -987,6 +1057,71 @@ private fun RedesignedQuickActions(
             modifier = Modifier.size(24.dp)
         )
     }
+                }
+                
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    color = colorScheme.outline.copy(alpha = 0.3f)
+                )
+                
+                // Paramètres
+                Surface(
+                    onClick = onSettings,
+                    color = Color.Transparent,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Surface(
+                                modifier = Modifier.size(48.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                color = colorScheme.primary.copy(alpha = 0.1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Settings,
+                                        contentDescription = null,
+                                        tint = colorScheme.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+                            
+                            Column {
+                                Text(
+                                    text = "Paramètres",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Changer mot de passe et plus",
+                                    fontSize = 13.sp,
+                                    color = colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        
+                        Icon(
+                            Icons.Default.ChevronRight,
+                            contentDescription = "Ouvrir",
+                            tint = colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
         }
