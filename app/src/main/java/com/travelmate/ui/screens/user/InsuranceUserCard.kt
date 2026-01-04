@@ -30,6 +30,7 @@ fun InsuranceUserCard(
     isInMySubscriptionsTab: Boolean = false,
     isSelected: Boolean = false,
     onSelectionToggle: (() -> Unit)? = null,
+    isRecommendedByAI: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var showDetailsDialog by remember { mutableStateOf(false) }
@@ -88,6 +89,34 @@ fun InsuranceUserCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Column(modifier = Modifier.weight(1f)) {
+                    // Badge "Recommandé par IA" si applicable
+                    if (isRecommendedByAI) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(bottom = 6.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Stars,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    "Recommandé par IA",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                        }
+                    }
+                    
                     Text(
                         insurance.name,
                         fontSize = 16.sp,

@@ -6,6 +6,16 @@ import retrofit2.http.*
 
 interface InsuranceApi {
     
+    // ========== Endpoints IA ==========
+    
+    @GET("insurances/recommendations")
+    suspend fun getRecommendations(): Response<InsuranceRecommendationsResponse>
+    
+    @POST("insurances/compare")
+    suspend fun compareInsurances(
+        @Body request: CompareInsurancesRequest
+    ): Response<ComparisonResult>
+    
     // ========== Endpoints Utilisateurs ==========
     
     @GET("insurances")
@@ -122,11 +132,6 @@ interface InsuranceApi {
     ): Response<InsuranceRequest>
     
     // ========== Endpoint IA : Comparaison d'assurances ==========
-    
-    @POST("insurances/compare")
-    suspend fun compareInsurances(
-        @Body request: CompareInsurancesRequest
-    ): Response<ComparisonResult>
     
     // ========== Endpoints Paiement Stripe ==========
     

@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,12 +41,26 @@ import kotlinx.coroutines.delay
 @Composable
 fun InsurancesUserScreen(
     navController: NavController,
-    viewModel: InsurancesUserViewModel = hiltViewModel()
+    viewModel: InsurancesUserViewModel = hiltViewModel(),
+    profileViewModel: com.travelmate.viewmodel.ProfileViewModel = hiltViewModel()
 ) {
     val insurances by viewModel.insurances.collectAsState()
     val mySubscriptions by viewModel.mySubscriptions.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    
+    // AI Recommendations
+    val recommendations by viewModel.recommendations.collectAsState()
+    val isLoadingRecommendations by viewModel.isLoadingRecommendations.collectAsState()
+    
+    // Profil utilisateur pour le banner
+    val userProfile by profileViewModel.userProfile.collectAsState()
+    val profileCompletionPercentage = userProfile?.profileCompletionPercentage ?: 0
+    
+    // Récupérer les noms d'assurances recommandées depuis UserPreferences
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val userPreferences = remember { com.travelmate.utils.UserPreferences(context) }
+    val recommendedInsuranceNames = remember { userPreferences.getRecommendedInsuranceNames() }
     
     val snackbarHostState = remember { SnackbarHostState() }
     
@@ -64,6 +81,9 @@ fun InsurancesUserScreen(
     LaunchedEffect(Unit) {
         viewModel.loadAllInsurances()
         viewModel.loadMySubscriptions()
+        // Rafraîchir le profil au retour de l'écran pour mettre à jour le banner
+        profileViewModel.loadProfile()
+        android.util.Log.d("InsurancesUserScreen", "Profil rafraîchi, completion: $profileCompletionPercentage%")
     }
     
     // Show error if any
@@ -83,7 +103,7 @@ fun InsurancesUserScreen(
     }
     
     // Filtrer les assurances en fonction de la recherche et des filtres
-    val filteredInsurances = remember(insurances, searchTerm, selectedPriceRange, selectedDestination, selectedDuration) {
+    val filteredInsurances = remember(insurances, searchTerm, selectedPriceRange, selectedDestination, selectedDuration, recommendedInsuranceNames) {
         insurances.filter { insurance ->
             val destinations = insurance.conditions?.destination?.joinToString(" ") ?: ""
             
@@ -102,10 +122,14 @@ fun InsurancesUserScreen(
             
             matchesSearch && matchesPrice && matchesDestination && matchesDuration
         }
+        // NOUVEAU: Trier pour afficher en premier les assurances recommandées par IA
+        .sortedByDescending { insurance ->
+            if (recommendedInsuranceNames.contains(insurance.name)) 1 else 0
+        }
     }
     
     // Filtrer les inscriptions
-    val filteredSubscriptions = remember(mySubscriptions, searchTerm) {
+    val filteredSubscriptions = remember(mySubscriptions, searchTerm, recommendedInsuranceNames) {
         mySubscriptions.filter { insurance ->
             val destinations = insurance.conditions?.destination?.joinToString(" ") ?: ""
             
@@ -113,6 +137,10 @@ fun InsurancesUserScreen(
                 insurance.name.contains(searchTerm, ignoreCase = true) ||
                 insurance.description.contains(searchTerm, ignoreCase = true) ||
                 destinations.contains(searchTerm, ignoreCase = true)
+        }
+        // NOUVEAU: Trier pour afficher en premier les assurances recommandées par IA
+        .sortedByDescending { insurance ->
+            if (recommendedInsuranceNames.contains(insurance.name)) 1 else 0
         }
     }
     
@@ -233,6 +261,45 @@ fun InsurancesUserScreen(
                                 )
                             }
                         }
+                    }
+                }
+            }
+            
+            // Banner de profil incomplet (afficher seulement si profil non complet)
+            if (profileCompletionPercentage < 100) {
+                item {
+                    AnimatedVisibility(
+                        visible = contentVisible,
+                        enter = fadeIn(animationSpec = tween(400, delayMillis = 50)) +
+                                slideInVertically(
+                                    animationSpec = tween(400, delayMillis = 50),
+                                    initialOffsetY = { it / 4 }
+                                )
+                    ) {
+                        ProfileCompletionBanner(
+                            profileCompleteness = profileCompletionPercentage,
+                            onCompleteClick = {
+                                navController.navigate(Constants.Routes.COMPLETE_PROFILE)
+                            }
+                        )
+                    }
+                }
+            } else {
+                // Banner pour les recommandations IA (profil complété)
+                item {
+                    AnimatedVisibility(
+                        visible = contentVisible,
+                        enter = fadeIn(animationSpec = tween(400, delayMillis = 50)) +
+                                slideInVertically(
+                                    animationSpec = tween(400, delayMillis = 50),
+                                    initialOffsetY = { it / 4 }
+                                )
+                    ) {
+                        AIRecommendationBanner(
+                            onViewRecommendationsClick = {
+                                navController.navigate(Constants.Routes.AI_RECOMMENDATIONS)
+                            }
+                        )
                     }
                 }
             }
@@ -830,6 +897,8 @@ fun InsurancesUserScreen(
                                         }
                                     }
                                 },
+                                // Badge "Recommandé par IA" si l'assurance est dans les recommandations
+                                isRecommendedByAI = recommendedInsuranceNames.contains(insurance.name),
                                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
                             )
                         }
@@ -1419,6 +1488,97 @@ fun BenefitCard(
 }
 
 @Composable
+fun ProfileCompletionBanner(
+    profileCompleteness: Int,
+    onCompleteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (profileCompleteness < 100) {
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Filled.Star,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "✨ Profil de voyage",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "Recommandations personnalisées",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                        if (profileCompleteness > 0) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            LinearProgressIndicator(
+                                progress = profileCompleteness / 100f,
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.primary,
+                                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                "$profileCompleteness% complété",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = onCompleteClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        if (profileCompleteness == 0) "Compléter" else "Continuer",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun CompactStatChip(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     count: Int,
@@ -1440,6 +1600,161 @@ fun CompactStatChip(
             color = Color.White.copy(alpha = 0.9f),
             fontWeight = FontWeight.Medium
         )
+    }
+}
+
+@Composable
+fun AIRecommendationCard(
+    recommendation: com.travelmate.data.models.InsuranceRecommendation,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.width(280.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Header avec score
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = recommendation.insuranceName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = when {
+                        recommendation.matchScore >= 90 -> Color(0xFF4CAF50)
+                        recommendation.matchScore >= 75 -> Color(0xFFFF9800)
+                        else -> Color(0xFF9E9E9E)
+                    }
+                ) {
+                    Text(
+                        text = "${recommendation.matchScore}%",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Raison
+            Text(
+                text = recommendation.reason,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Facteurs de correspondance
+            if (recommendation.matchFactors.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    recommendation.matchFactors.take(2).forEach { factor ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = factor,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AIRecommendationBanner(
+    onViewRecommendationsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.AutoAwesome,
+                    contentDescription = null,
+                    tint = Color(0xFFFFD700),
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "✨ Recommandations IA",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = "Découvrez les assurances parfaites pour vous",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    )
+                }
+            }
+            
+            Button(
+                onClick = onViewRecommendationsClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Star,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Voir les recommandations",
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
     }
 }
 

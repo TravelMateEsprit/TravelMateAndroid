@@ -19,6 +19,8 @@ object Constants {
         const val FLIGHT_DETAILS = "flight_details"
         const val USER_PROFILE = "user_profile"
         const val AGENCY_PROFILE = "agency_profile"
+        const val COMPLETE_PROFILE = "complete_profile"
+        const val AI_RECOMMENDATIONS = "ai_recommendations"
         
         // Insurance Requests Routes
         const val CREATE_INSURANCE_REQUEST = "create_insurance_request"

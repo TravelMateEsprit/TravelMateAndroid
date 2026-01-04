@@ -13,6 +13,8 @@ import javax.inject.Singleton
 import com.travelmate.data.models.UpdateAgencyProfileRequest
 import com.travelmate.data.models.UpdateProfileRequest
 import com.travelmate.data.models.User
+import com.travelmate.data.models.TravelProfile
+import com.travelmate.data.models.UpdateTravelProfileResponse
 
 @Singleton
 class AuthRepository @Inject constructor(
@@ -171,6 +173,35 @@ class AuthRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    suspend fun updateTravelProfile(travelProfile: TravelProfile): Result<UpdateTravelProfileResponse> {
+        android.util.Log.d("AuthRepository", "=== updateTravelProfile DEBUT ===")
+        android.util.Log.d("AuthRepository", "Profil à envoyer: $travelProfile")
+        return try {
+            android.util.Log.d("AuthRepository", "Appel API PATCH /auth/profile/travel...")
+            val response = authApi.updateTravelProfile(travelProfile)
+            
+            android.util.Log.d("AuthRepository", "Réponse HTTP: code=${response.code()}, successful=${response.isSuccessful}")
+            android.util.Log.d("AuthRepository", "Headers: ${response.headers()}")
+            
+            if (response.isSuccessful && response.body() != null) {
+                android.util.Log.d("AuthRepository", "✅ Réponse body: ${response.body()}")
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                android.util.Log.e("AuthRepository", "❌ Erreur HTTP ${response.code()}: $errorBody")
+                android.util.Log.e("AuthRepository", "Message: ${response.message()}")
+                Result.failure(Exception(errorBody ?: response.message() ?: "Failed to update travel profile"))
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("AuthRepository", "❌ Exception lors de l'appel API", e)
+            android.util.Log.e("AuthRepository", "Type: ${e.javaClass.name}")
+            android.util.Log.e("AuthRepository", "Message: ${e.message}")
+            Result.failure(e)
+        } finally {
+            android.util.Log.d("AuthRepository", "=== updateTravelProfile FIN ===")
         }
     }
 }

@@ -30,7 +30,11 @@ data class User(
     // val preferences: Map<String, String>? = null, // Complex object handling might require custom serializer
     val logo: String? = null,
     val openingHours: OpeningHours? = null,
-    val location: Location? = null
+    val location: Location? = null,
+    
+    // Travel profile for AI recommendations
+    val travelProfile: TravelProfile? = null,
+    val profileCompletionPercentage: Int? = 0
 )
 
 @Serializable

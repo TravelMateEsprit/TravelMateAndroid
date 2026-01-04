@@ -276,6 +276,20 @@ fun UserProfileScreen(
                     )
                 }
                 
+                // Section Profil de Voyage - Nouveau
+                navController?.let { nav ->
+                    item {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        TravelProfileSection(
+                            profileCompletionPercentage = user?.profileCompletionPercentage ?: 0,
+                            onEditTravelProfile = {
+                                nav.navigate(com.travelmate.utils.Constants.Routes.COMPLETE_PROFILE)
+                            },
+                            colorScheme = colorScheme
+                        )
+                    }
+                }
+                
                 // Actions rapides - Nouveau design
                 navController?.let { nav ->
                     item {
@@ -1229,4 +1243,156 @@ private fun copyToClipboard(context: Context, text: String, label: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
     clipboard.setPrimaryClip(clip)
+}
+
+/**
+ * Section Profil de Voyage avec bouton d'édition
+ */
+@Composable
+private fun TravelProfileSection(
+    profileCompletionPercentage: Int,
+    onEditTravelProfile: () -> Unit,
+    colorScheme: ColorScheme
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+    ) {
+        // Titre de section
+        Text(
+            text = "Profil de Voyage",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        // Carte du profil de voyage
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = colorScheme.primaryContainer.copy(alpha = 0.3f)
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = colorScheme.primary.copy(alpha = 0.15f),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.TravelExplore,
+                                    contentDescription = null,
+                                    tint = colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                        
+                        Column {
+                            Text(
+                                text = if (profileCompletionPercentage >= 100) 
+                                    "Profil Complet" 
+                                else 
+                                    "Profil à compléter",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = colorScheme.onSurface
+                            )
+                            Text(
+                                text = "$profileCompletionPercentage% complété",
+                                fontSize = 13.sp,
+                                color = colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    
+                    IconButton(
+                        onClick = onEditTravelProfile,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(colorScheme.primary.copy(alpha = 0.1f))
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Modifier le profil de voyage",
+                            tint = colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                
+                if (profileCompletionPercentage < 100) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Barre de progression
+                    LinearProgressIndicator(
+                        progress = { profileCompletionPercentage / 100f },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp)),
+                        color = colorScheme.primary,
+                        trackColor = colorScheme.primary.copy(alpha = 0.2f)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Text(
+                        text = "Complétez votre profil pour recevoir des recommandations d'assurance personnalisées par IA",
+                        fontSize = 13.sp,
+                        color = colorScheme.onSurfaceVariant,
+                        lineHeight = 18.sp
+                    )
+                } else {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF4CAF50).copy(alpha = 0.15f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Profil configuré pour les recommandations IA",
+                                fontSize = 13.sp,
+                                color = Color(0xFF2E7D32),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

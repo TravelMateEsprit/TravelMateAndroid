@@ -23,6 +23,7 @@ class UserPreferences @Inject constructor(
         private const val KEY_USER_STATUS = "user_status"
         private const val KEY_USER_DATA = "user_data"
         private const val KEY_USER_PHONE = "user_phone"
+        private const val KEY_RECOMMENDED_INSURANCES = "recommended_insurance_names"
     }
     
     fun saveAuthResponse(accessToken: String, refreshToken: String, user: User?) {
@@ -69,6 +70,14 @@ class UserPreferences @Inject constructor(
     fun isUser(): Boolean = getUserType() == "user"
     
     fun isAgency(): Boolean = getUserType() == "agence"
+    
+    fun saveRecommendedInsuranceNames(names: Set<String>) {
+        prefs.edit().putStringSet(KEY_RECOMMENDED_INSURANCES, names).apply()
+    }
+    
+    fun getRecommendedInsuranceNames(): Set<String> {
+        return prefs.getStringSet(KEY_RECOMMENDED_INSURANCES, emptySet()) ?: emptySet()
+    }
     
     fun clearAll() {
         prefs.edit().clear().apply()

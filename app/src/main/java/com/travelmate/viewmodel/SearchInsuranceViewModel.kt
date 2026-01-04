@@ -3,6 +3,7 @@ package com.travelmate.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.travelmate.data.models.Insurance
+import com.travelmate.data.models.InsuranceRecommendation
 import com.travelmate.data.models.SearchInsuranceRequest
 import com.travelmate.data.repository.InsuranceRepository
 import com.travelmate.utils.UserPreferences
@@ -58,6 +59,42 @@ class SearchInsuranceViewModel @Inject constructor(
     
     private val _sortOrder = MutableStateFlow("desc")
     val sortOrder: StateFlow<String> = _sortOrder.asStateFlow()
+    
+    // AI Recommendations
+    private val _recommendations = MutableStateFlow<List<InsuranceRecommendation>>(emptyList())
+    val recommendations: StateFlow<List<InsuranceRecommendation>> = _recommendations.asStateFlow()
+    
+    private val _isLoadingRecommendations = MutableStateFlow(false)
+    val isLoadingRecommendations: StateFlow<Boolean> = _isLoadingRecommendations.asStateFlow()
+    
+    private val _recommendationsError = MutableStateFlow<String?>(null)
+    val recommendationsError: StateFlow<String?> = _recommendationsError.asStateFlow()
+    
+    init {
+        loadRecommendations()
+    }
+    
+    fun loadRecommendations() {
+        viewModelScope.launch {
+            _isLoadingRecommendations.value = true
+            _recommendationsError.value = null
+            
+            try {
+                val token = userPreferences.getAccessToken() ?: return@launch
+                insuranceRepository.getRecommendations(token)
+                    .onSuccess { response ->
+                        _recommendations.value = response.recommendations
+                    }
+                    .onFailure { e ->
+                        _recommendationsError.value = e.message ?: "Failed to load recommendations"
+                    }
+            } catch (e: Exception) {
+                _recommendationsError.value = e.message ?: "An unexpected error occurred"
+            } finally {
+                _isLoadingRecommendations.value = false
+            }
+        }
+    }
     
     fun updateSearchTerm(term: String) {
         _searchTerm.value = term

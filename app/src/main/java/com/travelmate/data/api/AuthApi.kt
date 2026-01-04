@@ -19,6 +19,9 @@ import retrofit2.http.Part
 import com.travelmate.data.models.UpdateAgencyProfileRequest
 import com.travelmate.data.models.UpdateProfileRequest
 import com.travelmate.data.models.User
+import com.travelmate.data.models.TravelProfile
+import com.travelmate.data.models.UpdateTravelProfileResponse
+import retrofit2.http.PATCH
 
 interface AuthApi {
         @POST("auth/verify-reset-code")
@@ -82,4 +85,9 @@ interface AuthApi {
     suspend fun updateSignatureName(
         @Body body: Map<String, String>
     ): Response<MessageResponse>
+
+    @PATCH("auth/profile/travel")
+    suspend fun updateTravelProfile(
+        @Body travelProfile: TravelProfile
+    ): Response<UpdateTravelProfileResponse>
 }

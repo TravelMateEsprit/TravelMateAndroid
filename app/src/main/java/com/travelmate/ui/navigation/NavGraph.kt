@@ -49,6 +49,8 @@ import com.travelmate.ui.screens.AgencyClaimsScreen
 import com.travelmate.ui.screens.AgencyClaimDetailScreen
 import com.travelmate.ui.profile.UserProfileScreen
 import com.travelmate.ui.profile.AgencyProfileScreen
+import com.travelmate.ui.screens.user.CompleteProfileScreen
+import com.travelmate.ui.screens.user.AIRecommendationsScreen
 import com.travelmate.utils.Constants
 import com.travelmate.utils.UserPreferences
 import com.travelmate.viewmodel.OffersViewModel
@@ -445,6 +447,20 @@ fun NavGraph(
             GroupMembersScreen(
                 groupId = groupId,
                 onBack = { navController.popBackStack() }
+            )
+        }
+        
+        // Complete Profile Screen
+        composable(Constants.Routes.COMPLETE_PROFILE) {
+            CompleteProfileScreen(
+                navController = navController
+            )
+        }
+        
+        // AI Recommendations Screen
+        composable(Constants.Routes.AI_RECOMMENDATIONS) {
+            AIRecommendationsScreen(
+                navController = navController
             )
         }
     }

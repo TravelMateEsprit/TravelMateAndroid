@@ -184,4 +184,17 @@ class InsuranceRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun getRecommendations(token: String): Result<InsuranceRecommendationsResponse> {
+        return try {
+            val response = insuranceApi.getRecommendations()
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception(response.message() ?: "Failed to get recommendations"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
