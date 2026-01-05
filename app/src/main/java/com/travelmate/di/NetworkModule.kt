@@ -9,6 +9,7 @@ import com.travelmate.data.api.GroupsApi
 import com.travelmate.data.api.InsuranceApi
 import com.travelmate.data.api.NotificationApiService
 import com.travelmate.data.api.OffersApi
+import com.travelmate.data.api.ReviewApi
 import com.travelmate.data.api.UserApi
 import com.travelmate.data.socket.SocketConfig
 import com.travelmate.utils.UserPreferences
@@ -130,5 +131,11 @@ object NetworkModule {
     @Singleton
     fun provideGroupsApi(retrofit: Retrofit): GroupsApi {
         return retrofit.create(GroupsApi::class.java)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideReviewApi(retrofit: Retrofit): ReviewApi {
+        return retrofit.create(ReviewApi::class.java)
     }
 }

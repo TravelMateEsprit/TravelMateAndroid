@@ -16,10 +16,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.travelmate.data.models.Insurance
-import com.travelmate.ui.components.ModernButton
-import com.travelmate.ui.components.ModernCard
+import com.travelmate.ui.components.*
 import com.travelmate.ui.theme.*
+import com.travelmate.viewmodel.ReviewViewModel
 
 @Composable
 fun InsuranceUserCard(
@@ -31,9 +32,16 @@ fun InsuranceUserCard(
     isSelected: Boolean = false,
     onSelectionToggle: (() -> Unit)? = null,
     isRecommendedByAI: Boolean = false,
+    reviewViewModel: ReviewViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
     var showDetailsDialog by remember { mutableStateOf(false) }
+    val ratingStats by reviewViewModel.ratingStats.collectAsState()
+    
+    // Load rating stats when card is displayed
+    LaunchedEffect(insurance._id) {
+        reviewViewModel.loadRatingStats(insurance._id)
+    }
     
     // Dialog détaillé
     if (showDetailsDialog) {
@@ -54,7 +62,8 @@ fun InsuranceUserCard(
                     callback(insurance._id)
                 }
             },
-            isInMySubscriptionsTab = isInMySubscriptionsTab
+            isInMySubscriptionsTab = isInMySubscriptionsTab,
+            reviewViewModel = reviewViewModel
         )
     }
     Card(
@@ -272,6 +281,29 @@ fun InsuranceUserCard(
                 }
             }
             
+            // Rating display (compact)
+            ratingStats?.let { stats ->
+                if (stats.totalReviews > 0) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        StarRatingDisplay(
+                            rating = stats.averageRating,
+                            starSize = 16,
+                            showRatingValue = true
+                        )
+                        Text(
+                            text = "(${stats.totalReviews})",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            
             Spacer(modifier = Modifier.height(14.dp))
             
             // Action Buttons modernes
@@ -399,8 +431,48 @@ fun InsuranceDetailsDialog(
     onCreateRequest: () -> Unit,
     onUnsubscribe: () -> Unit,
     onCreateClaim: (() -> Unit)? = null,
-    isInMySubscriptionsTab: Boolean = false
+    isInMySubscriptionsTab: Boolean = false,
+    reviewViewModel: ReviewViewModel = hiltViewModel()
 ) {
+    val insuranceReviews by reviewViewModel.insuranceReviews.collectAsState()
+    val ratingStats by reviewViewModel.ratingStats.collectAsState()
+    val userReview by reviewViewModel.userReview.collectAsState()
+    val canReview by reviewViewModel.canReview.collectAsState()
+    val isLoading by reviewViewModel.isLoading.collectAsState()
+    val isSubmitting by reviewViewModel.isSubmitting.collectAsState()
+    
+    var showReviewBottomSheet by remember { mutableStateOf(false) }
+    
+    // Load reviews when dialog opens
+    LaunchedEffect(insurance._id) {
+        reviewViewModel.loadInsuranceReviews(insurance._id)
+        if (isInMySubscriptionsTab) {
+            reviewViewModel.checkReviewEligibility(insurance._id)
+        }
+    }
+    
+    // Show review bottom sheet
+    if (showReviewBottomSheet) {
+        CreateReviewBottomSheet(
+            onDismiss = { showReviewBottomSheet = false },
+            onSubmit = { rating, comment ->
+                if (userReview != null) {
+                    reviewViewModel.updateReview(
+                        userReview!!._id,
+                        insurance._id,
+                        rating,
+                        comment
+                    )
+                } else {
+                    reviewViewModel.submitReview(insurance._id, rating, comment)
+                }
+                showReviewBottomSheet = false
+            },
+            isLoading = isSubmitting,
+            existingReview = userReview,
+            insuranceName = insurance.name
+        )
+    }
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
@@ -543,6 +615,109 @@ fun InsuranceDetailsDialog(
                                         "Destinations couvertes",
                                         conditions.destination?.joinToString(", ") ?: ""
                                     )
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Section Avis
+                    item {
+                        DetailSection(
+                            title = "Avis (${ratingStats?.totalReviews ?: 0})",
+                            icon = Icons.Default.Star
+                        ) {
+                            if (isLoading) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+                            } else if (ratingStats != null && ratingStats!!.totalReviews > 0) {
+                                // Rating stats
+                                RatingStatsDisplay(
+                                    averageRating = ratingStats!!.averageRating,
+                                    totalReviews = ratingStats!!.totalReviews,
+                                    ratingDistribution = ratingStats!!.ratingDistribution,
+                                    modifier = Modifier.padding(vertical = 16.dp)
+                                )
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                HorizontalDivider()
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                // Reviews list
+                                insuranceReviews.forEach { review ->
+                                    ReviewCard(
+                                        review = review,
+                                        isUserReview = review._id == userReview?._id,
+                                        onEditClick = if (review._id == userReview?._id) {
+                                            { showReviewBottomSheet = true }
+                                        } else null,
+                                        onDeleteClick = if (review._id == userReview?._id) {
+                                            { 
+                                                reviewViewModel.deleteReview(
+                                                    review._id,
+                                                    insurance._id
+                                                )
+                                            }
+                                        } else null
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
+                            } else {
+                                NoReviewsState(
+                                    message = "Aucun avis pour le moment"
+                                )
+                            }
+                            
+                            // Button to add/edit review (if in my subscriptions)
+                            if (isInMySubscriptionsTab) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                if (userReview != null) {
+                                    // User already has a review - show edit button
+                                    OutlinedButton(
+                                        onClick = { showReviewBottomSheet = true },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            "Modifier votre avis",
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                } else if (!isLoading) {
+                                    // User doesn't have a review yet - show add button
+                                    Button(
+                                        onClick = { showReviewBottomSheet = true },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary
+                                        ),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.RateReview,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            "Donner votre avis",
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
                                 }
                             }
                         }

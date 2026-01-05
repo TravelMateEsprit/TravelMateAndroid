@@ -40,6 +40,7 @@ enum class DashboardSection(
 ) {
     OVERVIEW("Vue d'ensemble", Icons.Default.Dashboard, ColorPrimary),
     INSURANCES("Assurances", Icons.Default.Shield, Color(0xFF2196F3)),
+    REVIEWS("Avis clients", Icons.Default.Star, Color(0xFFFFC107)),
     CLAIMS("Réclamations", Icons.Default.Report, Color(0xFFFF9800)),
     BOOKINGS("Réservations", Icons.Default.CalendarMonth, Color(0xFF4CAF50)),
     DESTINATIONS("Destinations", Icons.Default.Flight, Color(0xFFFF9800)),
@@ -116,6 +117,7 @@ fun AgencyMainDashboard(
                 val availableSections = listOf(
                     DashboardSection.OVERVIEW,
                     DashboardSection.INSURANCES,
+                    DashboardSection.REVIEWS,
                     DashboardSection.CLAIMS,
                     DashboardSection.SETTINGS
                 )
@@ -300,6 +302,10 @@ fun AgencyMainDashboard(
                         onViewSubscribers = onViewSubscribers,
                         viewModel = viewModel
                     )
+                    DashboardSection.REVIEWS -> {
+                        // Navigate to reviews dashboard
+                        AgencyReviewsDashboardScreen(navController = navController)
+                    }
                     DashboardSection.CLAIMS -> {
                         // Navigate to claims screen
                         LaunchedEffect(Unit) {
@@ -440,6 +446,23 @@ fun OverviewSection(
                     modifier = Modifier.weight(1f),
                     onClick = { navController.navigate(Constants.Routes.AGENCY_CLAIMS) }
                 )
+            }
+        }
+        
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickStatCard(
+                    icon = Icons.Default.Star,
+                    value = "★",
+                    label = "Avis clients",
+                    color = Color(0xFFFFC107),
+                    modifier = Modifier.weight(1f),
+                    onClick = { onSectionClick(DashboardSection.REVIEWS) }
+                )
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
         
